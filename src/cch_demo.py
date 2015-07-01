@@ -252,13 +252,13 @@ def load_h5(filename, path='') :
 # =============================================================================
 
 # HDF5 Version
-# filename = '../results/hbp_review_task/viz_output_exp.h5'
-# # filename = '../results/hbp_review_task/viz_output_mdl.h5'
+# filename = '../results/hbp_review_task/viz_output_ind.h5'
+# # filename = '../results/hbp_review_task/viz_output_sip.h5'
 # cc = load_h5(filename)
 
 # pickle Version
-filename = '../results/hbp_review_task/viz_output_exp.pkl'
-filename = '../results/hbp_review_task/viz_output_mdl.pkl'
+filename = '../../results/hbp_review_task/viz_output_ind.pkl'
+#filename = '../../results/hbp_review_task/viz_output_sip.pkl'
 f = open(filename, 'r')
 cc = pickle.load(f)
 f.close()
@@ -282,6 +282,7 @@ plt.suptitle("Correlation matrix")
 plt.xlabel("Neuron ID i")
 plt.ylabel("Neuron ID j")
 plt.axis('tight')
+plt.colorbar()
 plt.show()
 
 # example: build 10x10 matrix of firing rates (assuming only one neuron per x,y
