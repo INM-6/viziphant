@@ -42,7 +42,7 @@ import jelephant.core.stocmod as stoc
 t_start = 0.*pq.s
 duration = 10*pq.s
 N = 25
-M = 25
+M = 20
 rate = 10 * pq.Hz
 rate_c = 3 * pq.Hz
 

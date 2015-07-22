@@ -52,7 +52,7 @@ duration = 10.*pq.s
 # Load independent data
 # =============================================================================
 
-filename = '../../data/independent.h5'
+filename = '../../data/independent_1.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
@@ -72,7 +72,7 @@ num_neurons = len(sts_ind)
 # Load sip data
 # =============================================================================
 
-filename = '../../data/sip.h5'
+filename = '../../data/sip_1.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
@@ -158,9 +158,9 @@ for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
     for neuron_i in range(num_neurons):
         lin_channel = neuron_i
         cc[dta]['neuron_topo']['x'][neuron_i] = \
-            int(lin_channel) / 10
+            int(lin_channel) / 5
         cc[dta]['neuron_topo']['y'][neuron_i] = \
-            int(lin_channel) % 10
+            int(lin_channel) % 5
 
     cc[dta]['neuron_single_values']['rate'] = rates[dta]
     cc[dta]['neuron_single_values']['cv'] = cvs[dta]
@@ -168,10 +168,10 @@ for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
 
 # values per edge
 num_tasks = len(glob.glob(
-    '../../results/hbp_review_task/correlation_output_*.h5'))
+    '../../results/hbp_review_task/correlation_output1_*.h5'))
 for job_parameter in range(num_tasks):
     filename = \
-        '../../results/hbp_review_task/correlation_output_' + \
+        '../../results/hbp_review_task/correlation_output1_' + \
         str(job_parameter) + '.h5'
     if not os.path.exists(filename):
         raise IOError('Cannot find file %s.', filename)
@@ -221,14 +221,14 @@ for job_parameter in range(num_tasks):
     del cc_part
 
 # write parameters to disk
-filename = '../../results/hbp_review_task/viz_output_ind.h5'
+filename = '../../results/hbp_review_task/viz_output1_ind.h5'
 if os.path.exists(filename):
     os.remove(filename)
 h5py_wrapper.wrapper.add_to_h5(
     filename,
     cc['ind'], write_mode='w', overwrite_dataset=True)
 
-filename = '../../results/hbp_review_task/viz_output_ind.pkl'
+filename = '../../results/hbp_review_task/viz_output1_ind.pkl'
 if os.path.exists(filename):
     os.remove(filename)
 f = open(filename, 'w')
@@ -236,14 +236,14 @@ pickle.dump(cc['ind'], f)
 f.close()
 
 
-filename = '../../results/hbp_review_task/viz_output_sip.h5'
+filename = '../../results/hbp_review_task/viz_output1_sip.h5'
 if os.path.exists(filename):
     os.remove(filename)
 h5py_wrapper.wrapper.add_to_h5(
     filename,
     cc['sip'], write_mode='w', overwrite_dataset=True)
 
-filename = '../../results/hbp_review_task/viz_output_sip.pkl'
+filename = '../../results/hbp_review_task/viz_output1_sip.pkl'
 if os.path.exists(filename):
     os.remove(filename)
 f = open(filename, 'w')
