@@ -257,8 +257,8 @@ def load_h5(filename, path='') :
 # cc = load_h5(filename)
 
 # pickle Version
-filename = '../../results/hbp_review_task/viz_output1_ind.pkl'
-#filename = '../../results/hbp_review_task/viz_output1_sip.pkl'
+#filename = '../../results/hbp_review_task/viz_output2_ind.pkl'
+filename = '../../results/hbp_review_task/viz_output2_sip.pkl'
 f = open(filename, 'r')
 cc = pickle.load(f)
 f.close()
@@ -283,6 +283,8 @@ plt.xlabel("Neuron ID i")
 plt.ylabel("Neuron ID j")
 plt.axis('tight')
 plt.colorbar()
+ticks=range(0, 100, 2)
+plt.xticks(ticks)
 plt.show()
 
 # example: build 10x10 matrix of firing rates (assuming only one neuron per x,y
@@ -294,7 +296,7 @@ for neuron_i in range(num_neurons):
     T[x[neuron_i], y[neuron_i]] = cc['neuron_single_values']['rate'][neuron_i]
 
 plt.figure()
-plt.pcolor(numpy.arange(6), numpy.arange(6), T)
+plt.pcolor(numpy.arange(10), numpy.arange(10), T)
 plt.suptitle("Rate distribution on 10x10 array")
 plt.xlabel("X (400 um)")
 plt.ylabel("Y (400 um)")

@@ -9,18 +9,18 @@ significance based on 1000 spike dither surrogates on the PBS based cluster.
 
 # this number relates to the "-t" parameter:
 #   -t 0-X => num_tasks=X+1
-num_tasks = 200
+num_tasks = 100
 
 # get job parameter
 import os
+import sys
 PBS_value = os.getenv('PBS_ARRAYID')
 if PBS_value is not None:
     job_parameter = int(PBS_value)
 else:
-    job_parameter = 0
+    job_parameter = 1
 
-# paths
-import sys
+
 # to find our "special" elephant
 sys.path.insert(1, '..')
 # change this to point to your reachgrasp IO
@@ -60,7 +60,7 @@ duration = 50.*pq.s
 # Load experimental data
 # =============================================================================
 
-filename = '../../data/independent.h5'
+filename = '../../data/independent_2.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
@@ -74,7 +74,7 @@ print("Number of independent spike trains: " + str(len(sts_ind)))
 # Load simulation data
 # =============================================================================
 
-filename = '../../data/sip.h5'
+filename = '../../data/sip_2.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
@@ -167,7 +167,7 @@ for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
 
 # write parameters to disk
 import h5py_wrapper.wrapper
-filename = '../../results/hbp_review_task/correlation_output_'
+filename = '../../results/hbp_review_task/correlation_output2_'
 if os.path.exists(filename):
     os.remove(filename)
 h5py_wrapper.wrapper.add_to_h5(
