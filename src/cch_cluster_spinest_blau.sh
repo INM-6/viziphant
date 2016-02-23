@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --output=../qsub/out/findSpikePatterns%j.out
+#SBATCH --output=../../qsub/out/findSpikePatterns%j.out
 # Redirect stderr:
-#SBATCH --error=../qsub/err/findSpikePatterns%j.err
+#SBATCH --error=../../qsub/err/findSpikePatterns%j.err
 # Send mail notifications
 #SBATCH --mail-type=ALL
 # load python module
