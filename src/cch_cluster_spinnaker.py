@@ -14,11 +14,10 @@ num_tasks = 100
 # get job parameter
 import os
 import sys
-PBS_value = os.getenv('PBS_ARRAYID')
-if PBS_value is not None:
-    job_parameter = int(PBS_value)
-else:
-    job_parameter = 1
+try:
+    job_parameter = int(sys.argv[1])
+except:
+    job_parameter = 0
 
 
 # to find our "special" elephant
@@ -159,11 +158,3 @@ h5py_wrapper.wrapper.add_to_h5(
     filename +
     str(job_parameter) + '.h5',
     cc, write_mode='w', overwrite_dataset=True)
-import h5py
-filename = '../../results/hbp_review_task/correlation_output_'
-if os.path.exists(filename):
-    os.remove(filename)
-f = h5py.File(filename + str(job_parameter) + '.h5', 'w')
-for k,v in cc.items():
-    dataset = f.create_dataset(k, data=v)
-f.close()
