@@ -258,7 +258,10 @@ def load_h5(filename, path='') :
 
 # pickle Version
 #filename = '../../results/hbp_review_task/viz_output2_ind.pkl'
-filename = '../../results/hbp_review_task/viz_output2_sip.pkl'
+#filename = '../../results/hbp_review_task/viz_output2_sip.pkl'
+#filename = '../../results/hbp_review_task/viz_output2_mip.pkl'
+filename = '../../results/hbp_review_task/viz_output2_cpp.pkl'
+
 f = open(filename, 'r')
 cc = pickle.load(f)
 f.close()

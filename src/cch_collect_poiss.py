@@ -26,7 +26,7 @@ import pickle
 import numpy as np
 import quantities as pq
 
-# provides neo framework and I/Os to load ind and sip data
+# provides neo framework and I/Os to load ind and cpp data
 import neo
 
 # provides core analysis library component
@@ -49,41 +49,41 @@ duration = 10.*pq.s
 
 
 # =============================================================================
-# Load independent data
+# Load mip data
 # =============================================================================
 
-filename = '../../data/independent_2.h5'
+filename = '../../data/mip.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
 # select spike trains
-sts_ind = block.filter(use_st=True)
+sts_mip = block.filter(use_st=True)
 
-print("Number of independent spike trains: " + str(len(sts_ind)))
+print("Number of independent spike trains: " + str(len(sts_mip)))
 
 # create binned spike trains
-sts_ind_bin = elephant.conversion.BinnedSpikeTrain(
-    sts_ind, binsize=20 * pq.ms,
+sts_mip_bin = elephant.conversion.BinnedSpikeTrain(
+    sts_mip, binsize=20 * pq.ms,
     t_start=rec_start, t_stop=rec_start + duration)
 
-num_neurons = len(sts_ind)
+num_neurons = len(sts_mip)
 
 # =============================================================================
-# Load sip data
+# Load cpp data
 # =============================================================================
 
-filename = '../../data/sip_2.h5'
+filename = '../../data/mip.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 
 # select spike trains
-sts_sip = block.filter(use_st=True)
+sts_cpp = block.filter(use_st=True)
 
-print("Number of sip spike trains: " + str(len(sts_sip)))
+print("Number of cpp spike trains: " + str(len(sts_cpp)))
 
 # create binned spike trains
-sts_sip_bin = elephant.conversion.BinnedSpikeTrain(
-    sts_sip, binsize=20 * pq.ms,
+sts_cpp_bin = elephant.conversion.BinnedSpikeTrain(
+    sts_cpp, binsize=20 * pq.ms,
     t_start=rec_start, t_stop=rec_start + duration)
 
 
@@ -92,23 +92,23 @@ sts_sip_bin = elephant.conversion.BinnedSpikeTrain(
 # =============================================================================
 
 rates = {}
-rates['ind'] = [
+rates['mip'] = [
     elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
-    for st in sts_ind]
-rates['sip'] = [
+    for st in sts_mip]
+rates['cpp'] = [
     elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
-    for st in sts_sip]
+    for st in sts_cpp]
 
-isis_ind = [elephant.statistics.isi(st) for st in sts_ind]
-isis_sip = [elephant.statistics.isi(st) for st in sts_sip]
+isis_mip = [elephant.statistics.isi(st) for st in sts_mip]
+isis_cpp = [elephant.statistics.isi(st) for st in sts_cpp]
 
 cvs = {}
-cvs['ind'] = [elephant.statistics.cv(isi) for isi in isis_ind]
-cvs['sip'] = [elephant.statistics.cv(isi) for isi in isis_sip]
+cvs['mip'] = [elephant.statistics.cv(isi) for isi in isis_mip]
+cvs['cpp'] = [elephant.statistics.cv(isi) for isi in isis_cpp]
 
 lvs = {}
-lvs['ind'] = [elephant.statistics.lv(isi) for isi in isis_ind]
-lvs['sip'] = [elephant.statistics.lv(isi) for isi in isis_sip]
+lvs['mip'] = [elephant.statistics.lv(isi) for isi in isis_mip]
+lvs['cpp'] = [elephant.statistics.lv(isi) for isi in isis_cpp]
 
 
 # =============================================================================
@@ -121,7 +121,7 @@ for ni in range(num_neurons):
         num_edges += 1
 
 cc = {}
-for dta in ['ind', 'sip']:
+for dta in ['mip', 'cpp']:
     cc[dta] = {}
 
     cc[dta]['meta'] = {}
@@ -154,7 +154,7 @@ for dta in ['ind', 'sip']:
     cc[dta]['meta']['num_edges'] = num_edges
 
 # values per neuron
-for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
+for dta, sts in zip(['mip', 'cpp'], [sts_mip, sts_cpp]):
     for neuron_i in range(num_neurons):
         lin_channel = neuron_i
         cc[dta]['neuron_topo']['x'][neuron_i] = \
@@ -168,10 +168,10 @@ for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
 
 # values per edge
 num_tasks = len(glob.glob(
-    '../../results/hbp_review_task/correlation_output2_*.h5'))
+    '../../results/hbp_review_task/correlation_output_*.h5'))
 for job_parameter in range(num_tasks):
     filename = \
-        '../../results/hbp_review_task/correlation_output2_' + \
+        '../../results/hbp_review_task/correlation_output_' + \
         str(job_parameter) + '.h5'
     if not os.path.exists(filename):
         raise IOError('Cannot find file %s.', filename)
@@ -179,7 +179,7 @@ for job_parameter in range(num_tasks):
 
     cc_part = h5py_wrapper.wrapper.load_h5(filename)
 
-    for dta, sts in zip(['ind', 'sip'], [sts_ind, sts_sip]):
+    for dta, sts in zip(['mip', 'cpp'], [sts_mip, sts_cpp]):
         for calc_i in cc_part[dta]['pvalue']:
             print(
                 "Processing %s-%i (%i,%i)" %
@@ -220,32 +220,32 @@ for job_parameter in range(num_tasks):
 
     del cc_part
 
-## write parameters to disk
-#filename = '../../results/hbp_review_task/viz_output2_ind.h5'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#h5py_wrapper.wrapper.add_to_h5(
-#    filename,
-#    cc['ind'], write_mode='w', overwrite_dataset=True)
-#
-#filename = '../../results/hbp_review_task/viz_output2_ind.pkl'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#f = open(filename, 'w')
-#pickle.dump(cc['ind'], f)
-#f.close()
-#
-#
-#filename = '../../results/hbp_review_task/viz_output2_sip.h5'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#h5py_wrapper.wrapper.add_to_h5(
-#    filename,
-#    cc['sip'], write_mode='w', overwrite_dataset=True)
-#
-#filename = '../../results/hbp_review_task/viz_output2_sip.pkl'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#f = open(filename, 'w')
-#pickle.dump(cc['sip'], f)
-#f.close()
+# write parameters to disk
+filename = '../../results/hbp_review_task/viz_output2_mip.h5'
+if os.path.exists(filename):
+    os.remove(filename)
+h5py_wrapper.wrapper.add_to_h5(
+    filename,
+    cc['mip'], write_mode='w', overwrite_dataset=True)
+
+filename = '../../results/hbp_review_task/viz_output2_mip.pkl'
+if os.path.exists(filename):
+    os.remove(filename)
+f = open(filename, 'w')
+pickle.dump(cc['mip'], f)
+f.close()
+
+
+filename = '../../results/hbp_review_task/viz_output2_cpp.h5'
+if os.path.exists(filename):
+    os.remove(filename)
+h5py_wrapper.wrapper.add_to_h5(
+    filename,
+    cc['cpp'], write_mode='w', overwrite_dataset=True)
+
+filename = '../../results/hbp_review_task/viz_output2_cpp.pkl'
+if os.path.exists(filename):
+    os.remove(filename)
+f = open(filename, 'w')
+pickle.dump(cc['cpp'], f)
+f.close()
