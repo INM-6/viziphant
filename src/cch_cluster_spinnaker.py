@@ -23,15 +23,9 @@ else:
 
 # to find our "special" elephant
 sys.path.insert(1, '..')
-# change this to point to your reachgrasp IO
-sys.path.insert(1, '../../dataset_repos/reachgrasp/python')
-sys.path.insert(1, '../../toolboxes/py/python-neo')
-sys.path.insert(1, '../../toolboxes/py/python-odml')
-sys.path.insert(1, '../../toolboxes/py/csn_toolbox')
 
 import numpy as np
 import quantities as pq
-
 # provides neo framework and I/Os to load exp and mdl data
 import neo
 
@@ -84,7 +78,7 @@ print("Number of nest spike trains: " + str(len(sts_nest)))
 
 
 # ## Cross-correlograms
-num_surrs = 1
+num_surrs = 1000
 max_lag_bins = 200
 lag_res = 1 * pq.ms
 max_lag = max_lag_bins * lag_res
@@ -156,15 +150,15 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
         cc[dta]['surr_measure'][calc_i] = ccs
         cc[dta]['pvalue'][calc_i] = np.count_nonzero(np.array(ccs) >= cco)
 
-## write parameters to disk
-#import h5py_wrapper.wrapper
-#filename = '../../results/hbp_review_task/correlation_output_'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#h5py_wrapper.wrapper.add_to_h5(
-#    filename +
-#    str(job_parameter) + '.h5',
-#    cc, write_mode='w', overwrite_dataset=True)
+# write parameters to disk
+import h5py_wrapper.wrapper
+filename = '../../results/hbp_review_task/correlation_output_'
+if os.path.exists(filename):
+    os.remove(filename)
+h5py_wrapper.wrapper.add_to_h5(
+    filename +
+    str(job_parameter) + '.h5',
+    cc, write_mode='w', overwrite_dataset=True)
 import h5py
 filename = '../../results/hbp_review_task/correlation_output_'
 if os.path.exists(filename):
