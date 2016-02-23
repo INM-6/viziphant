@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name cch_spinest
 #SBATCH --array 0-100
-#SBATCH --workdir=$HOME/projects/
+#SBATCH --workdir=$HOME/projects/viziphant
 # Redirect stdout and stderr:
 #SBATCH --output=$HOME/qsub/out/cch_spinest%j.err
 # Redirect stderr:
