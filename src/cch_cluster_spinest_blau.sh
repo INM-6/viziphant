@@ -1,4 +1,7 @@
 #!/bin/bash
+#SBATCH --job-name findSpikePatterns_array
+#SBATCH --array 0-100
+# Redirect stdout and stderr:
 #SBATCH --output=../../qsub/out/findSpikePatterns%j.out
 # Redirect stderr:
 #SBATCH --error=../../qsub/err/findSpikePatterns%j.err
