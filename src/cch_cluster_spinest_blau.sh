@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name findSpikePatterns_array
+#SBATCH --job-name cch_spinest
 #SBATCH --array 0-100
+#SBATCH --workdir=$HOME/projects/
 # Redirect stdout and stderr:
-#SBATCH --output=../../qsub/out/findSpikePatterns%j.out
+#SBATCH --output=$HOME/qsub/out/cch_spinest%j.err
 # Redirect stderr:
-#SBATCH --error=../../qsub/err/findSpikePatterns%j.err
+#SBATCH --error=$HOME/qsub/err/cch_spinest %j.err
 # Send mail notifications
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END
 # load python module
 module load pystuff
 # activate my env
 source activate venv
 # run my python script
-python -B cch_cluster_spinnaker.py
-
+srun python cch_cluster_spinnaker.py
