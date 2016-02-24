@@ -158,7 +158,7 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
 
 # write parameters to disk
 import h5py_wrapper.wrapper
-filename = '../../results/hbp_review_task/correlation_output_'
+filename = '../../results/release_demo/correlation_output_'
 if os.path.exists(filename):
     os.remove(filename)
 h5py_wrapper.wrapper.add_to_h5(
