@@ -130,7 +130,7 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
         # original CCH
         cco = stc.cch(
             conv.BinnedSpikeTrain(sts[ni], lag_res), conv.BinnedSpikeTrain(
-                sts[nj], lag_res), window=[-max_lag_bins, max_lag_bins])
+                sts[nj], lag_res), window=[-max_lag_bins, max_lag_bins])[0]
         cc[dta]['original'][calc_i] = cco.magnitude
         cc[dta]['times_ms'][calc_i] = cco.times.rescale(pq.ms).magnitude
 
@@ -149,7 +149,7 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
             scc = stc.cch(
                 conv.BinnedSpikeTrain(surr_i[surrogate], lag_res),
                 conv.BinnedSpikeTrain(surr_j[surrogate], lag_res),
-                window=[-max_lag_bins, max_lag_bins])
+                window=[-max_lag_bins, max_lag_bins])[0]
             ccs.append(scc.magnitude)
             ccsm.append(cch_measure(scc))
         cc[dta]['surr'][calc_i] = np.array(ccs)
