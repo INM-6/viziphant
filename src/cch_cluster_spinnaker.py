@@ -81,7 +81,6 @@ num_surrs = 1000
 max_lag_bins = 200
 lag_res = 1 * pq.ms
 max_lag = max_lag_bins * lag_res
-smoothing = 10 * pq.ms
 
 num_neurons_spinnaker = len(sts_spinnaker)
 num_ccs = (num_neurons_spinnaker ** 2 - num_neurons_spinnaker) / 2
@@ -126,13 +125,18 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
         cc[dta]['unit_i'][calc_i] = ni
         cc[dta]['unit_j'][calc_i] = nj
 
-        print("Correlating %i and %i" % (ni, nj))
+        print("Cross-correlating %i and %i" % (ni, nj))
 
         # original CCH
-        cco = stc.corrcoef(
-            conv.BinnedSpikeTrain(sts[ni], lag_res) , conv.BinnedSpikeTrain(
-            sts[nj],lag_res))
-        cc[dta]['original_measure'][calc_i] = cco
+        cco = stc.cch(
+            conv.BinnedSpikeTrain(sts[ni], lag_res), conv.BinnedSpikeTrain(
+                sts[nj], lag_res), window=[-max_lag_bins, max_lag_bins])
+        cc[dta]['original'][calc_i] = cco.magnitude
+        cc[dta]['times_ms'][calc_i] = cco.times.rescale(pq.ms).magnitude
+
+        # extract measure
+        ccom = cch_measure(cco)
+        cc[dta]['original_measure'][calc_i] = ccom
 
         surr_i = elephant.spike_train_surrogates.dither_spikes(
             sts[ni], dither=50. * pq.ms, n=num_surrs)
@@ -142,12 +146,15 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
         ccs = []
         ccsm = []
         for surrogate in range(num_surrs):
-            scc = stc.corrcoef(conv.BinnedSpikeTrain(
-                surr_i[surrogate], lag_res), conv.BinnedSpikeTrain(
-                surr_j[surrogate], lag_res))
-            ccs.append(scc)
-        cc[dta]['surr_measure'][calc_i] = ccs
-        cc[dta]['pvalue'][calc_i] = np.count_nonzero(np.array(ccs) >= cco)
+            scc = stc.cch(
+                conv.BinnedSpikeTrain(surr_i[surrogate], lag_res),
+                conv.BinnedSpikeTrain(surr_j[surrogate], lag_res),
+                window=[-max_lag_bins, max_lag_bins])
+            ccs.append(scc.magnitude)
+            ccsm.append(cch_measure(scc))
+        cc[dta]['surr'][calc_i] = np.array(ccs)
+        cc[dta]['surr_measure'][calc_i] = ccsm
+        cc[dta]['pvalue'][calc_i] = np.count_nonzero(np.array(ccsm) >= ccom)
 
 # write parameters to disk
 import h5py_wrapper.wrapper
