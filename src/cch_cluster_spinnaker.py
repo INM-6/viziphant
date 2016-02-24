@@ -15,7 +15,7 @@ num_tasks = 100
 import os
 import sys
 try:
-    job_parameter = int(os.environ['SLURM_JOB_ID'])
+    job_parameter = int(os.environ['SLURM_ARRAY_TASK_ID'])
 except:
     job_parameter = 0
 
