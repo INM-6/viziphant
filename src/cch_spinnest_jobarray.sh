@@ -13,4 +13,4 @@ module load pystuff
 # activate my env
 source activate venv
 # run my python script
-python cch_cluster_spinnest.py
+srun python cch_cluster_spinnest.py
