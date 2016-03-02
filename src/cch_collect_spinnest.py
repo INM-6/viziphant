@@ -59,7 +59,7 @@ num_neurons = len(sts_spinnaker)
 # Load nest data
 # =============================================================================
 
-filename = '../../data/Nest_Data/collected_spikes_L4E-77177.h5'
+filename = '../../data/Nest_Data/example_output_10500ms_nrec_100/spikes_L5E.h5'
 session = neo.NeoHdf5IO(filename=filename)
 
 sts_nest = []
