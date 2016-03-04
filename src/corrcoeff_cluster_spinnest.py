@@ -44,10 +44,10 @@ if job_parameter == 1:
     filename = '../../data/Nest_Data/example_output_10500ms_nrec_100/spikes_L5E.h5'
     session = neo.NeoHdf5IO(filename=filename)
 
-    sts_nest = []
+    sts = []
 
     for k in range(100):
-        sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
+        sts.append(session.get("/" + "SpikeTrain_" + str(k)))
     print("Number of nest spike trains: " + str(len(sts)))
 
 
