@@ -52,7 +52,7 @@ if job_parameter == 1:
 
 
 # ## Analysis parameters
-num_surrs = 1000
+num_surrs = 10
 lag_res = 1 * pq.ms
 
 cc = {}
@@ -89,7 +89,7 @@ for idx_surr in range(num_surrs):
 print 'Computed corrcoeff surrogates'
 t3 = time.time()
 pvalues = np.sum(
-    np.array([(cco_s) >= cco for cco_s in cco_surr]), axis=0) / num_surrs
+    np.array([(cco_s) >= cco for cco_s in cco_surr]), axis=0) / float(num_surrs)
 t4 = time.time()
 cc['surr'] = np.array(cco_surr)
 cc['pvalue'] = pvalues
