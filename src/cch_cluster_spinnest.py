@@ -48,7 +48,7 @@ duration = 50.*pq.s
 
 
 # =============================================================================
-# Load experimental data
+# Load Spinnaker data
 # =============================================================================
 
 filename = '../../data/Spinnaker_Data/results/spikes_L5E.h5'
@@ -59,7 +59,7 @@ print("Number of spinnaker spike trains: " + str(len(sts_spinnaker)))
 
 
 # =============================================================================
-# Load simulation data
+# Load Nest data
 # =============================================================================
 
 filename = '../../data/Nest_Data/example_output_10500ms_nrec_100/spikes_L5E.h5'
