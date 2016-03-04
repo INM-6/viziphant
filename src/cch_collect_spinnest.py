@@ -8,17 +8,6 @@ some additional info).
 # Initialization
 # =============================================================================
 
-# paths
-import sys
-
-# to find our "special" elephant
-sys.path.insert(1, '..')
-# change this to point to your reachgrasp IO
-sys.path.insert(1, '../../dataset_repos/reachgrasp/python')
-sys.path.insert(1, '../../toolboxes/py/python-neo')
-sys.path.insert(1, '../../toolboxes/py/python-odml')
-sys.path.insert(1, '../../toolboxes/py/csn_toolbox')
-
 import os
 import glob
 import pickle
