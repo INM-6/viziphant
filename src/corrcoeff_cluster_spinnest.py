@@ -24,7 +24,7 @@ import h5py_wrapper.wrapper
 try:
     job_parameter = int(os.environ['SLURM_ARRAY_TASK_ID'])
 except:
-    job_parameter = 0
+    job_parameter = 1
 
 # =============================================================================
 # Load Spinnaker data
@@ -52,7 +52,7 @@ if job_parameter == 1:
 
 
 # ## Analysis parameters
-num_surrs = 10
+num_surrs = 1000
 lag_res = 1 * pq.ms
 
 cc = {}
