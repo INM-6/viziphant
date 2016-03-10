@@ -23,8 +23,10 @@ import h5py_wrapper.wrapper
 
 try:
     job_parameter = int(os.environ['SLURM_ARRAY_TASK_ID'])
+    save_res = True
 except:
     job_parameter = 1
+    save_res = False
 
 # =============================================================================
 # Load Spinnaker data
@@ -72,7 +74,10 @@ cc['lv'] = [elephant.statistics.lv(isi) for isi in isis if len(isi) > 1]
 # original corrcoeff
 t0 = time.time()
 cco = stc.corrcoef(conv.BinnedSpikeTrain(sts, lag_res))
-cc['original_measure'] = cco
+cco_neg = cco * [cco < 0] + [cco > 0]
+cco_pos = cco * [cco > 0] + [cco < 0] * np.array([-1])
+cc['corr_coeff'] = cco
+
 
 print 'Computed corrcoeff'
 t1 = time.time()
@@ -89,22 +94,32 @@ for idx_surr in range(num_surrs):
 print 'Computed corrcoeff surrogates'
 t3 = time.time()
 pvalues = np.sum(
-    np.array([(cco_s) >= cco for cco_s in cco_surr]), axis=0) / float(num_surrs)
+    np.array([np.abs(cco_s) >= np.abs(cco) for cco_s in cco_surr]),
+    axis=0) / float(num_surrs)
+pvalues_pos = np.sum(
+    np.array([(cco_s) >= cco_pos for cco_s in cco_surr]), axis=0) / float(
+        num_surrs)
+pvalues_neg = np.sum(
+    np.array([(cco_s) <= cco_neg for cco_s in cco_surr]), axis=0) / float(
+        num_surrs)
 t4 = time.time()
 cc['surr'] = np.array(cco_surr)
-cc['pvalue'] = pvalues
+cc['pvalues'] = pvalues
+cc['pvalue_pos'] = pvalues_pos
+cc['pvalue_neg'] = pvalues_neg
 print 'Corrcoeff data', t1-t0
 print 'Gen surrogate', t2-t1
 print 'Corrcoeff surr', t3-t2
 print 'Pvalues', t4-t3
 
 # write parameters to disk
-if job_parameter == 0:
-    data = 'spinnaker'
-if job_parameter == 1:
-    data = 'nest'
-filename = '../../results/release_demo/viz_corrcoeff_' + data + '.h5'
-if os.path.exists(filename):
-    os.remove(filename)
-h5py_wrapper.wrapper.add_to_h5(
-    filename, cc, write_mode='w', overwrite_dataset=True)
+if save_res:
+    if job_parameter == 0:
+        data = 'spinnaker'
+    if job_parameter == 1:
+        data = 'nest'
+    filename = '../../results/release_demo/viz_corrcoeff_' + data + '.h5'
+    if os.path.exists(filename):
+        os.remove(filename)
+    h5py_wrapper.wrapper.add_to_h5(
+        filename, cc, write_mode='w', overwrite_dataset=True)
