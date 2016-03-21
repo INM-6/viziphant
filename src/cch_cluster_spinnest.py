@@ -51,7 +51,7 @@ duration = 50.*pq.s
 # Load Spinnaker data
 # =============================================================================
 
-filename = '../../data/Spinnaker_Data/results/spikes_L5E.h5'
+filename = '../../data/Spinnaker_Data/spinnaker_spikes_L4E.h5'
 session = neo.NeoHdf5IO(filename=filename)
 block = session.read_block()
 sts_spinnaker=block.list_children_by_class(neo.SpikeTrain)[:100]
@@ -62,13 +62,14 @@ print("Number of spinnaker spike trains: " + str(len(sts_spinnaker)))
 # Load Nest data
 # =============================================================================
 
-filename = '../../data/Nest_Data/example_output_10500ms_nrec_100/spikes_L5E.h5'
+filename = '../../data/Nest_Data/nest_spikes_L4E.h5'
 session = neo.NeoHdf5IO(filename=filename)
 
 sts_nest = []
-
-for k in range(100):
-    sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
+block = session.read_block()
+sts_nest=block.list_children_by_class(neo.SpikeTrain)[:100]
+#for k in range(100):
+#    sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
 
 
 print("Number of nest spike trains: " + str(len(sts_nest)))
