@@ -64,14 +64,14 @@ for pop in populations:
 # Load Nest data
 # =============================================================================
 
-    filename = '../../data/Nest_Data/spikes_{}.h5'.format(pop)
+    filename = '../../data/NEST_Data/spikes_{}.h5'.format(pop)
     session = neo.NeoHdf5IO(filename=filename)
 
     sts_nest = []
     block = session.read_block()
     sts_nest.extend(block.list_children_by_class(neo.SpikeTrain)[:20])
-    #for k in range(100):
-    #    sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
+#    for k in range(100):
+#        sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
 
 
     print("Number of nest spike trains: " + str(len(sts_nest)))
