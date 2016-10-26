@@ -34,33 +34,33 @@ sts_nest = []
 # =============================================================================
 # Load Spinnaker data
 # =============================================================================
-populations = ['L23E','L23I','L4E','L4I','L5E','L5I','L6E','L6I']
-for pop in populations:
-    filename = '../../data/Spinnaker_Data/spikes_{}.h5'.format(pop)
-    session = neo.NeoHdf5IO(filename=filename)
-    block = session.read_block()
-    sts_spinnaker.extend(block.list_children_by_class(neo.SpikeTrain)[:20])
+#populations = ['L23E','L23I','L4E','L4I','L5E','L5I','L6E','L6I']
+#for pop in populations:
+#    filename = '../../data/Spinnaker_Data/spikes_{}.h5'.format(pop)
+#    session = neo.NeoHdf5IO(filename=filename)
+#    block = session.read_block()
+#    sts_spinnaker.extend(block.list_children_by_class(neo.SpikeTrain)[:20])
+#
+#
+## =============================================================================
+## Load Nest data
+## =============================================================================
+#
+#    filename = '../../data/NEST_Data/spikes_{}.h5'.format(pop)
+#    session = neo.NeoHdf5IO(filename=filename)
+#    block = session.read_block()
+#    sts_nest.extend(block.list_children_by_class(neo.SpikeTrain)[:20])
+##    for k in range(100):
+##        sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
+#
+#print("Number of spinnaker spike trains: " + str(len(sts_spinnaker)))
+#print("Number of nest spike trains: " + str(len(sts_nest)))
+## create binned spike trains
+#sts_spinnaker_bin = elephant.conversion.BinnedSpikeTrain(
+#    sts_spinnaker, binsize=1 * pq.ms)
 
-
-# =============================================================================
-# Load Nest data
-# =============================================================================
-
-    filename = '../../data/NEST_Data/spikes_{}.h5'.format(pop)
-    session = neo.NeoHdf5IO(filename=filename)
-    block = session.read_block()
-    sts_nest.extend(block.list_children_by_class(neo.SpikeTrain)[:20])
-#    for k in range(100):
-#        sts_nest.append(session.get("/" + "SpikeTrain_" + str(k)))
-
-print("Number of spinnaker spike trains: " + str(len(sts_spinnaker)))
-print("Number of nest spike trains: " + str(len(sts_nest)))
-# create binned spike trains
-sts_spinnaker_bin = elephant.conversion.BinnedSpikeTrain(
-    sts_spinnaker, binsize=1 * pq.ms)
-
-num_neurons = len(sts_spinnaker)
-
+#num_neurons = len(sts_spinnaker)
+num_neurons = 160
 
 # create binned spike trains
 sts_nest_bin = elephant.conversion.BinnedSpikeTrain(
@@ -132,26 +132,26 @@ for dta in ['spinnaker', 'nest']:
 
     cc[dta]['meta']['num_neurons'] = num_neurons
     cc[dta]['meta']['num_edges'] = num_edges
-
-# values per neuron
-for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
-    for neuron_i in range(num_neurons):
-        lin_channel = neuron_i
-        cc[dta]['neuron_topo']['x'][neuron_i] = \
-            int(lin_channel) / 10
-        cc[dta]['neuron_topo']['y'][neuron_i] = \
-            int(lin_channel) % 10
-
-    cc[dta]['neuron_single_values']['rate'] = rates[dta]
-    cc[dta]['neuron_single_values']['cv'] = cvs[dta]
-    cc[dta]['neuron_single_values']['lv'] = lvs[dta]
+#
+## values per neuron
+#for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
+#    for neuron_i in range(num_neurons):
+#        lin_channel = neuron_i
+#        cc[dta]['neuron_topo']['x'][neuron_i] = \
+#            int(lin_channel) / 10
+#        cc[dta]['neuron_topo']['y'][neuron_i] = \
+#            int(lin_channel) % 10
+#
+#    cc[dta]['neuron_single_values']['rate'] = rates[dta]
+#    cc[dta]['neuron_single_values']['cv'] = cvs[dta]
+#    cc[dta]['neuron_single_values']['lv'] = lvs[dta]
 
 # values per edge
 num_tasks = len(glob.glob(
     '../../results/release_demo/correlation_output_pop*.h5'))
 for job_parameter in range(num_tasks):
     filename = \
-        '../../results/release_demo/correlation_output_pop' + \
+        '../../results/release_demo/correlation_output_pop_' + \
         str(job_parameter) + '.h5'
     if not os.path.exists(filename):
         raise IOError('Cannot find file %s.', filename)
