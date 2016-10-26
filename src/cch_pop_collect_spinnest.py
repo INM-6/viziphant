@@ -199,20 +199,20 @@ for job_parameter in range(num_tasks):
 
     del cc_part
 
-## write parameters to disk
-#filename = '../../results/release_demo/viz_output_spinnaker.h5'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#h5py_wrapper.wrapper.add_to_h5(
-#    filename,
-#    cc['spinnaker'], write_mode='w', overwrite_dataset=True)
-#
-#filename = '../../results/release_demo/viz_output_spinnaker.pkl'
-#if os.path.exists(filename):
-#    os.remove(filename)
-#f = open(filename, 'w')
-#pickle.dump(cc['spinnaker'], f)
-#f.close()
+# write parameters to disk
+filename = '../../results/release_demo/viz_output_spinnaker.h5'
+if os.path.exists(filename):
+    os.remove(filename)
+h5py_wrapper.wrapper.add_to_h5(
+    filename,
+    cc['spinnaker'], write_mode='w', overwrite_dataset=True)
+
+filename = '../../results/release_demo/viz_output_spinnaker.pkl'
+if os.path.exists(filename):
+    os.remove(filename)
+f = open(filename, 'w')
+pickle.dump(cc['spinnaker'], f)
+f.close()
 
 
 filename = '../../results/release_demo/viz_output_nest.h5'
