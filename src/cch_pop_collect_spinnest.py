@@ -62,38 +62,38 @@ sts_nest = []
 #num_neurons = len(sts_spinnaker)
 num_neurons = 160
 
-# create binned spike trains
-sts_nest_bin = elephant.conversion.BinnedSpikeTrain(
-    sts_nest, binsize=1 * pq.ms)
-
-
-# =============================================================================
-# Calculate measures
-# =============================================================================
-
-rates = {}
-rates['spinnaker'] = [
-    elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
-    for st in sts_spinnaker]
-rates['nest'] = [
-    elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
-    for st in sts_nest]
-
-isis_spinnaker = [elephant.statistics.isi(st) for st in sts_spinnaker]
-isis_nest = [elephant.statistics.isi(st) for st in sts_nest]
-
-cvs = {}
-cvs['spinnaker'] = [elephant.statistics.cv(isi) for isi in isis_spinnaker if len(isi)>1]
-cvs['nest'] = [elephant.statistics.cv(isi) for isi in isis_nest if len(isi)>1]
-
-lvs = {}
-lvs['spinnaker'] = [elephant.statistics.lv(isi) for isi in isis_spinnaker  if len(isi)>1]
-lvs['nest'] = [elephant.statistics.lv(isi) for isi in isis_nest  if len(isi)>1]
-
-
-# =============================================================================
-# Rewrite files
-# =============================================================================
+## create binned spike trains
+#sts_nest_bin = elephant.conversion.BinnedSpikeTrain(
+#    sts_nest, binsize=1 * pq.ms)
+#
+#
+## =============================================================================
+## Calculate measures
+## =============================================================================
+#
+#rates = {}
+#rates['spinnaker'] = [
+#    elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
+#    for st in sts_spinnaker]
+#rates['nest'] = [
+#    elephant.statistics.mean_firing_rate(st).rescale("Hz").magnitude
+#    for st in sts_nest]
+#
+#isis_spinnaker = [elephant.statistics.isi(st) for st in sts_spinnaker]
+#isis_nest = [elephant.statistics.isi(st) for st in sts_nest]
+#
+#cvs = {}
+#cvs['spinnaker'] = [elephant.statistics.cv(isi) for isi in isis_spinnaker if len(isi)>1]
+#cvs['nest'] = [elephant.statistics.cv(isi) for isi in isis_nest if len(isi)>1]
+#
+#lvs = {}
+#lvs['spinnaker'] = [elephant.statistics.lv(isi) for isi in isis_spinnaker  if len(isi)>1]
+#lvs['nest'] = [elephant.statistics.lv(isi) for isi in isis_nest  if len(isi)>1]
+#
+#
+## =============================================================================
+## Rewrite files
+## =============================================================================
 
 num_edges = 0
 for ni in range(num_neurons):
