@@ -152,8 +152,6 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
                 window=[-max_lag_bins, max_lag_bins])[0]
             ccs.append(scc.magnitude)
             ccsm.append(cch_measure(scc))
-        cc[dta]['surr'][calc_i] = np.array(ccs)
-        cc[dta]['surr_measure'][calc_i] = ccsm
         cc[dta]['pvalue'][calc_i] = np.count_nonzero(np.array(ccsm) >= ccom)
 
 # write parameters to disk
