@@ -148,10 +148,10 @@ for dta, sts in zip(['spinnaker', 'nest'], [sts_spinnaker, sts_nest]):
 
 # values per edge
 num_tasks = len(glob.glob(
-    '../../results/release_demo/correlation_output_*.h5'))
+    '../../results/release_demo/correlation_output_pop*.h5'))
 for job_parameter in range(num_tasks):
     filename = \
-        '../../results/release_demo/correlation_output_' + \
+        '../../results/release_demo/correlation_output_pop' + \
         str(job_parameter) + '.h5'
     if not os.path.exists(filename):
         raise IOError('Cannot find file %s.', filename)
