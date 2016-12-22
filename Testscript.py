@@ -25,9 +25,10 @@ def load_data(path, file_name_list):
 
 files = np.array(['spikes_L4E.h5'])
 neo_obj = load_data(DATA_PATH, files)[0]
+spiketrain_list = neo_obj.read_block().segments[0].spiketrains
 
 fig = plt.figure('Rasterplot')
 ax = fig.add_subplot(1,1,1)
 
-plotting.rasterplot(ax, neo_obj)
+plotting.rasterplot(ax, [spiketrain_list], ['id','object_ref'])
 plt.show(fig)
