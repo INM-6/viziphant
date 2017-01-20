@@ -2,15 +2,14 @@ import quantities as pq
 import numpy as np
 import sys
 import neo
-import elephant
 import imp
-from elephant.statistics import time_histogram, mean_firing_rate, cv, isi
-from elephant.spike_train_correlation import corrcoef
-from elephant.conversion import BinnedSpikeTrain
+# from elephant.statistics import time_histogram, mean_firing_rate, cv, isi
+# from elephant.spike_train_correlation import corrcoef
+# from elephant.conversion import BinnedSpikeTrain
 import matplotlib.pyplot as plt
 
 # Define path names
-DATA_PATH = '/home/robin/INM6/Projects/viziphant/'
+DATA_PATH = '/home/robin/Projects/INM6/Tasks/viziphant/'
 plotting_path = './plots/generic.py'
 plotting = imp.load_source('*', plotting_path)
 

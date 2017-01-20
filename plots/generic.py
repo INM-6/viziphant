@@ -11,11 +11,11 @@ import seaborn as sns
 # sort key Parameter der nach (liste von) Annotation sortiert
 # analyse funktionen mit numpy/ elephant
 
-def get_attributes(sorted_spiketrains, key_list, FullMatrix='False'):
+def get_attributes(spiketrains, key_list, FullMatrix='False'):
     # find minimal grouping key:
     groupsizes = [0]
     key_count = len(key_list)
-    attribute_array = np.zeros((sorted_spiketrains.__len__(), len(key_list)))
+    attribute_array = np.zeros((spiketrains.__len__(), len(key_list)))
     group_key_nbr = 0
     if FullMatrix:
         group_bound = np.inf
@@ -30,20 +30,20 @@ def get_attributes(sorted_spiketrains, key_list, FullMatrix='False'):
         i = 0
         ref = 0
         values = np.array([])
-        # count all group sizes for key:
-        while i < sorted_spiketrains.__len__():
-            if not np.where(values == sorted_spiketrains[i].annotations[group_key]):
-                values = np.append(values, sorted_spiketrains[i].annotations[group_key])
+        # count all group sizes for values of current key:
+        while i < spiketrains.__len__():
+            if not np.where(values == spiketrains[i].annotations[group_key])[0]:
+                values = np.append(values, spiketrains[i].annotations[group_key])
                 print 'add value'
                 # ToDo: Debug! Does not include new values!
-            # count group size for key:
-            while sorted_spiketrains[i].annotations[group_key] == sorted_spiketrains[ref].annotations[group_key]:
-                attribute_array[i][key_count] = np.where(values == sorted_spiketrains[i].annotations[group_key])[0][0]
+            # count group size for a valuee of the current key:
+            while spiketrains[i].annotations[group_key] == spiketrains[ref].annotations[group_key]:
+                attribute_array[i][key_count] = np.where(values == spiketrains[i].annotations[group_key])[0]
                 groupsizes[-1] += 1
                 i += 1
             groupsizes.append(0)
             ref = i
-        group_key_nbr = np.where(key_list == sorted_spiketrains[i].annotations[group_key])
+        group_key_nbr = np.where(key_list == spiketrains[i].annotations[group_key])
     # group_key is now indicator for coloring
     # attribute array states for each key in key_list the unique value in form
     # of a numerical id.
