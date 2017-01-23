@@ -29,5 +29,15 @@ spiketrain_list = neo_obj.read_block().segments[0].spiketrains
 fig = plt.figure('Rasterplot')
 ax = fig.add_subplot(1,1,1)
 
-plotting.rasterplot(ax, [spiketrain_list], ['id','object_ref'])
-plt.show(fig)
+N = spiketrain_list.__len__()
+
+for i in range(N):
+    if i.__mod__(2):
+        spiketrain_list[i].annotations['key1'] = 'odd'
+    else:
+        spiketrain_list[i].annotations['key1'] = 'even'
+
+plotting.rasterplot(ax, [spiketrain_list[:N/2], spiketrain_list[N/2:]],
+                    ['key1','id','object_ref'])
+
+plt.show()
