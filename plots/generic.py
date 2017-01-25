@@ -7,11 +7,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-# Input as (list of) list of spiketrains
-# Priorisierte Strukturierung nach Listen
-# sort key Parameter der nach (liste von) Annotation sortiert
-# analyse funktionen mit numpy/ elephant
-
 def get_attributes(spiketrains, key_list):
     """Spiketrains must be sorted according to keylist"""
     # find minimal grouping key:
@@ -43,16 +38,25 @@ def get_attributes(spiketrains, key_list):
             groupsizes.append(0)
             ref = i
         maxgroupsizes = np.append(maxgroupsizes, max(groupsizes))
-    mingroupkey = max(np.where(maxgroupsizes >= 2)[0])
-    # group_key is now indicator for coloring
-    # attribute array states for each key in key_list the unique value in form
-    # of a numerical id.
+    if np.where(maxgroupsizes >= 2)[0].size:
+        mingroupkey = max(np.where(maxgroupsizes >= 2)[0])
+    else:
+        mingroupkey = 0
+    # mingroupkey is default indicator for coloring
+    # attribute array states for each key in key_list the unique value in form of a numerical id.
     return attribute_array, mingroupkey
 
 
 def rasterplot(ax, spiketrain_list, key_list=[],
                markersize=4, markertype='.', bins=100, histscale=.1,
                style='ticks', palette='Set2'):
+    # ToDo: coloring key ('list', keyX)
+    # ToDo: grouping depth (0..2)
+    # ToDo: nan oder '' in keylist fuer list position in sorting
+    # ToDo: grouping seperator (linestyle + spacing)
+    # ToDo: annotation->color dict
+    # ToDo: PTSHs according to colors
+    # ToDo: include/exclude dicts
     """"""
     sns.set(style=style, palette=palette)
     sns.despine()
@@ -93,9 +97,6 @@ def rasterplot(ax, spiketrain_list, key_list=[],
         attribute_array, mingroupkey = get_attributes(spiketrains, key_list)
         print attribute_array
 
-        # ToDo: implement coloring (key = ['list', keyX]
-        # ToDo: implement grouping (depth = [0..2])
-        # ToDo: Plot the spiketrains grouped for keys (mingroupsize = 2)
         for st_count, st in enumerate(spiketrains):
             ax.plot(st.times.magnitude,
                     [st.annotations['id'] + nbr_of_drawn_sts] * st.__len__(),
