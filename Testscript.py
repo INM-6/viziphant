@@ -37,7 +37,8 @@ for i in range(N):
     else:
         spiketrain_list[i].annotations['key1'] = 'even'
 
-plotting.rasterplot(ax, [spiketrain_list[:N/2], spiketrain_list[N/2:]],
-                    ['key1','id','object_ref'])
+plotting.rasterplot(ax, [spiketrain_list[:N/3], spiketrain_list[N/3:2*N/3],
+                         spiketrain_list[2*N/3:]],
+                    ['key1','id','object_ref'], groupingdepth=1)
 
 plt.show()
