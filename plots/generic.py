@@ -25,13 +25,13 @@ def get_attributes(spiketrains, key_list):
         values = np.array([])
         # count all group sizes for values of current key:
         while i < spiketrains.__len__():
-            if not np.where(values == spiketrains[i].annotations[group_key])[0]:
+            if not len(np.where(values == spiketrains[i].annotations[group_key])[0]):
                 # ToDo: improve if statement
                 values = np.append(values, spiketrains[i].annotations[group_key])
             # count group size for a valuee of the current key:
             while i < spiketrains.__len__() and \
                     (spiketrains[i].annotations[group_key]
-                         == spiketrains[ref].annotations[group_key]):
+                     == spiketrains[ref].annotations[group_key]):
                 attribute_array[i][key_count] = np.where(values == spiketrains[i].annotations[group_key])[0]
                 groupsizes[-1] += 1
                 i += 1
@@ -67,30 +67,42 @@ def rasterplot(ax, spiketrain_list, key_list=[], groupingdepth=1, spacing=6,
     axhisty = plt.axes([left + margin * width, bottom,
                         histscale * width, margin * height])
 
-    if isinstance(spiketrain_list[0], list):
-        # var spiketrains is list of lists of spiketrains
-        placeholder = 0
-    else:
-        # var spiketrains is list of spiketrains
+    if not isinstance(spiketrain_list[0], list):
         spiketrain_list = [spiketrain_list]
         # var spiketrains is now handled as list of list of spiketrains
 
     if type(key_list) == 'str':
         key_list = [key_list]
+    list_key = "%$\@[#*&/!"   # will surely be unique
     if '' not in key_list:
-        key_list = [''] + key_list
+        key_list = [list_key] + key_list
+    else:
+        key_list = [list_key if not key else key for key in key_list]
+
+    # Flatten list of lists while keeping the groups in annotations
+    for list_nbr, st_list in enumerate(spiketrain_list):
+        for st in st_list:
+            st.annotations[list_key] = "list {}".format(list_nbr)
+    spiketrain_list = [item for sublist in spiketrain_list for item in sublist]
+
+    # Sort and reshape list into sublists according to groupingdepth
+    spiketrain_list = sorted(spiketrain_list, key=lambda x: [x.annotations[key]
+                                                          for key in key_list])
+    attribute_array, mingroupkey = get_attributes(spiketrain_list, key_list)
+
+    # Use attribute_array columns (groupingdepth) as index for matrix/array!
+
     # ToDO:
     # create attribute tensor before going into the loop
     # flatten spiketrain list and add 'list' values to the attribute tensor
     # if necessary resort the spiketrainlist for the new attribute order
     # loop through the first $groupingdepth key
 
-    assert groupingdepth >= 2, "Grouping in limited to two layers"
+    assert groupingdepth <= 2, "Grouping is limited to two layers"
 
 
     t_lims = [[(st.t_start, st.t_stop) for st in spiketrains]
-              for spiketrains in spiketrain_list
-             ]
+              for spiketrains in spiketrain_list]
     tmin = min([min(t_it, key=lambda f: f[0])[0] for t_it in t_lims])
     tmax = max([max(t_it, key=lambda f: f[1])[1] for t_it in t_lims])
     period = tmax - tmin
@@ -103,7 +115,10 @@ def rasterplot(ax, spiketrain_list, key_list=[], groupingdepth=1, spacing=6,
                              key=lambda x: [x.annotations[key]
                                             for key in key_list])
         attribute_array, mingroupkey = get_attributes(spiketrains, key_list)
-        value_array = attribute_array[:, 0]
+        if len(key_list) > 0:
+            value_array = attribute_array[:, 0]
+        else:
+            value_array = np.zeros(len(spiketrains))
 
         # Dot display
         for st_count, st in enumerate(spiketrains):

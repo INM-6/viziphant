@@ -39,6 +39,6 @@ for i in range(N):
 
 plotting.rasterplot(ax, [spiketrain_list[:N/3], spiketrain_list[N/3:2*N/3],
                          spiketrain_list[2*N/3:]],
-                    ['key1','id','object_ref'], groupingdepth=1)
+                    ['key1','id','object_ref'], groupingdepth=2)
 
 plt.show()
