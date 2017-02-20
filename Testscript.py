@@ -37,10 +37,17 @@ for i in range(N):
     else:
         spiketrain_list[i].annotations['key1'] = 'even'
 
+def exclude_function(st):
+    if len(st.times) < 10:
+        return False
+    return True
+
 Q = N/4
-plotting.rasterplot(ax, [spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q],
-                         spiketrain_list[3*Q:]],
-                    ['key1','id','object_ref'], groupingdepth=1,
-                    PSTH_mode='color', seperator=':', spacing=[10,3])
+plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q],
+                         spiketrain_list[3*Q:]], [''],
+                         groupingdepth=1, colorkey='', labelkey='key1', ax=ax,
+                         palette=(['r']),
+                         PSTH_mode='color', seperator='--', spacing=[10,3])
 
 plt.show()
+
