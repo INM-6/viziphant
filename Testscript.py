@@ -8,6 +8,7 @@ import imp
 # from elephant.conversion import BinnedSpikeTrain
 import matplotlib.pyplot as plt
 
+
 # Define path names
 DATA_PATH = '/home/robin/Projects/INM6/Tasks/viziphant/'
 plotting_path = './plots/generic.py'
@@ -44,10 +45,9 @@ def exclude_function(st):
 
 Q = N/4
 plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q],
-                         spiketrain_list[3*Q:]], [''],
-                         groupingdepth=1, colorkey='', labelkey='key1', ax=ax,
-                         palette=(['r']),
-                         PSTH_mode='color', seperator='--', spacing=[10,3])
+                         spiketrain_list[3*Q:]], ['key1', 'id'], legend=True,
+                         groupingdepth=2, colorkey='', labelkey='key1', ax=ax,
+                         PSTH_mode='color', seperator='--', spacing=[6,3])
 
 plt.show()
 

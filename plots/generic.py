@@ -10,57 +10,54 @@ import seaborn as sns
 def get_attributes(spiketrains, key_list):
     """Spiketrains must be sorted according to keylist.
     Keylist must not be empty"""
-    # find minimal grouping key:
-    groupsizes = [0]
     key_count = len(key_list)
     attribute_array = np.zeros((spiketrains.__len__(), len(key_list)))
-    maxgroupsizes = np.array([])
-    group_bound = np.inf
     # count all group sizes for all keys in keylist:
-    while key_count > 0 and max(groupsizes) < group_bound:
+    while key_count > 0:
         key_count -= 1
         group_key = key_list[key_count]
-        groupsizes = [0]
         i = 0
-        ref = 0
+        if group_key in spiketrains[i].annotations:
+            current_value = spiketrains[i].annotations[group_key]
+        else:
+            current_value = '$$$_blank_$$$'
+        ref_value = current_value
         values = np.array([])
         # count all group sizes for values of current key:
         while i < spiketrains.__len__():
-            if not len(values) or spiketrains[i].annotations[group_key] not in values:
-                values = np.append(values, spiketrains[i].annotations[group_key])
+            if not len(values) or current_value not in values:
+                values = np.append(values, current_value)
             # count group size for a value of the current key:
-            while i < spiketrains.__len__() and (spiketrains[i].annotations[group_key]
-                         == spiketrains[ref].annotations[group_key]):
-                attribute_array[i][key_count] = \
-                np.where(values == spiketrains[i].annotations[group_key])[0][0]
-                groupsizes[-1] += 1
+            while i < spiketrains.__len__() and (current_value == ref_value):
+                attribute_array[i][key_count] = np.where(values == current_value)[0][0]
                 i += 1
-            groupsizes.append(0)
-            ref = i
-        maxgroupsizes = np.append(maxgroupsizes, max(groupsizes))
-    if np.where(maxgroupsizes >= 2)[0].size:
-        mingroupkey = max(np.where(maxgroupsizes >= 2)[0])
-    else:
-        mingroupkey = 0
-    # mingroupkey is default indicator for coloring
-    # attribute array states for each key in key_list the unique value in form of a numerical id.
+                if i < spiketrains.__len__():
+                    if group_key in spiketrains[i].annotations:
+                        current_value = spiketrains[i].annotations[group_key]
+                    else:
+                        current_value = '$$$_blank_$$$'
+            ref_value = current_value
+    # attribute array is (len(spiketrains), len(key_list)
+    # and carries a numerical id for each value of a key for all spiketrains
     return attribute_array
 
 
-def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
-               colorkey='', PSTH_mode='color', markersize=4, markertype='.',
+def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
+               colorkey='', legend=False, PSTH_mode='color',
+               markersize=4, markertype='.',
                seperator='', bins=100, histscale=.1, labelkey=None, ax=plt.gca(),
                style='ticks', palette='Set2'):
 
-    # ToDo: cope with nonexisting annotation for keys in get_attributes
     # ToDo: seperator dict for passing line arguments
     # ToDo: marker dict for passing marker arguments
+    # ToDo: legend dict for passing legend arguments
     # ToDo: if labelkey = colorkey use coler for labels
     # ToDo: possibility to give optional seperator_args as dict
     # ToDo: include/exclude dicts with custom selection statement
     # ToDo: elphant PSTH
     # ToDo: optional legend for color
     # ToDo: right-side hist mit custom function (i.e elephants)
+    # ToDo: Check if palette has colorcodes and set them as default
 
     """
     :param ax: matplotlib axis
@@ -85,7 +82,7 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
         a list of two values can specify the distance between the groups in
         level 1 and level 2. When only only one value is given, the first level
         distance is 2 x spacing.
-    :param colorkey: str | int  (default 0)
+    :param colorkey: str | int  (default '')
         Contrasts values of a key by color. The key can be defined by its
         namestring or its position in key_list. Note that position 0 points to
         the list seperation key ('') which has default position 0 if not
@@ -109,6 +106,8 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
         * '0+1': Two level labeling of 0 and 1
         * annotation-key: Labeling each spiketrain with its value for given key
         * None: No labeling
+        Note that only groups (-> grouping) can be labeled as bulks.
+        Alternatively you can color for an annotation key and show a legend.
     :param style:
     :param palette: string | sequence
         Define the color palette either by its name or use a custom palette in
@@ -118,6 +117,8 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
     # Initialize plotting canvas
     sns.set(style=style, palette=palette)
     sns.despine()
+    sns.set_color_codes('colorblind')
+
     margin = 1 - histscale
     left, bottom, width, height = ax.get_position()._get_bounds()
     ax.set_position([left, bottom, margin * width, margin * height])
@@ -143,6 +144,14 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
     if type(colorkey) == int:
         assert colorkey < len(key_list)
         colorkey = key_list[colorkey]
+    else:
+        if not colorkey:
+            colorkey = list_key
+        else:
+            assert colorkey in key_list
+
+    if legend:
+        assert colorkey is not None
 
     if labelkey == '':
         labelkey = list_key
@@ -182,14 +191,13 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
         attribute_array = np.zeros((len(spiketrain_list), 1))
 
     # Define colormap
-    if not colorkey:
-        colorkey = list_key
-    colorkey = np.where(colorkey == np.array(key_list))[0]
     if not len(key_list):
         nbr_of_colors = 1
-        colorkey = 0
+        colorkey = None
     else:
-        nbr_of_colors = int(max(attribute_array[:, colorkey])+1)
+        colorkey = np.where(colorkey == np.array(key_list))[0][0]
+        nbr_of_colors = int(max(attribute_array[:, colorkey]) + 1)
+
     colormap = sns.color_palette(palette, nbr_of_colors)
 
     # Draw PSTH (upper side)
@@ -203,6 +211,15 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
         axhistx.hist([stime for strain in spiketrain_list for stime in strain],
                      bins,
                      color=sns.color_palette(palette, nbr_of_colors+1)[-1])
+
+    # Legend for colorkey
+    if legend:
+        values, index = np.unique(attribute_array[:, colorkey],
+                                  return_index=True)
+        # legend_colors = [colormap[int(v)] for v in values]
+        legend_labels = [spiketrain_list[i].annotations[key_list[colorkey]]
+                         for i in index]
+        legend_handles = [0] * len(values)
 
     # Reshape list into sublists according to groupingdepth
     if groupingdepth > 0:
@@ -241,12 +258,15 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
                  + groupingdepth / 2 * count * spacing[1]
 
             for st_count, st in enumerate(slist):
-                color = colormap[int(attribute_array[nbr_of_drawn_sts,colorkey])]
+                annotation_value = int(attribute_array[nbr_of_drawn_sts, colorkey])
+                color = colormap[annotation_value]
 
                 # Dot display
-                ax.plot(st.times.magnitude,
-                        [st_count + ypos] * st.__len__(),
-                        markertype, ms=markersize, color=color)
+                handle = ax.plot(st.times.magnitude,
+                                 [st_count + ypos] * st.__len__(),
+                                 markertype, ms=markersize, color=color)
+                if legend:
+                    legend_handles[annotation_value] = handle[0]
 
                 # Firing Rate histogram (right side)
                 axhisty.barh(st_count + ypos - .5, st.times.__len__(),
@@ -273,7 +293,7 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
     # Plotting axis
     axhistx.set_xlim(ax.get_xlim())
     axhisty.set_ylim(ax.get_ylim())
-    ax.set_xlabel('t [{0}]'.format(spiketrain_list[0][0][0].units.dimensionality))
+    ax.set_xlabel('t [{}]'.format(spiketrain_list[0][0][0].units.dimensionality))
     ax.set_ylabel('')
     axhistx.get_xaxis().set_visible(False)
     axhistx.get_yaxis().set_visible(False)
@@ -283,13 +303,15 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
     # Y labeling
     if labelkey is not None:
         if key_list and labelkey == key_list[0]:
-            labelkey = 0
+            if groupingdepth > 0:
+                labelkey = 0
         elif len(key_list) > 1 and labelkey == key_list[1]:
-            labelkey = 1
+            if groupingdepth > 1:
+                labelkey = 1
 
         if type(labelkey) == int or labelkey == '0+1':
-            labelpos = [[] for label_level in range((groupingdepth / 2 + 1))]
-            labelname = [[] for label_level in range((groupingdepth / 2 + 1))]
+            labelpos = [[] for label_level in range(2)]
+            labelname = [[] for label_level in range(2)]
 
             values1, index1, counts1 = np.unique(attribute_array[:, 0],
                                                  return_index=True,
@@ -306,7 +328,7 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
                                                      return_index=True,
                                                      return_counts=True)
 
-                if groupingdepth/2 and labelkey:
+                if groupingdepth / 2 and labelkey:
                     for v2, i2, c2 in zip(values2, index2, counts2):
                         st = spiketrain_list[int(v1)][int(v2)][0]
                         if key_list[1] in st.annotations:
@@ -314,7 +336,6 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
                         else:
                             labelname[1] += ['']
                         labelpos[1] += [yticks[i1 + i2 + c2 / 2]]
-
 
             if type(labelkey) == int:
                 ax.set_yticks(labelpos[1] if labelkey else labelpos[0])
@@ -336,8 +357,8 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=1, spacing=3,
             ax.set_yticks(yticks)
             ax.set_yticklabels(labelname)
 
-
-    # legend for colorkey#
-
+    # Draw legend
+    if legend:
+        ax.legend(legend_handles, legend_labels, loc='best')
 
     return ax, axhistx, axhisty
