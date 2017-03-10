@@ -39,15 +39,22 @@ for i in range(N):
         spiketrain_list[i].annotations['key1'] = 'even'
 
 def exclude_function(st):
-    if len(st.times) < 10:
+    if st.size < 100:
+        return True
+    else:
         return False
-    return True
+
+def func(st):
+    return 4
 
 Q = N/4
-plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q],
-                         spiketrain_list[3*Q:]], ['key1', 'id'], legend=True,
-                         groupingdepth=2, colorkey='', labelkey='key1', ax=ax,
-                         PSTH_mode='color', seperator='--', spacing=[6,3])
+_, ax, _ = plotting.rasterplot([spiketrain_list[:2*Q]],
+    #[spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q], spiketrain_list[3*Q:]],
+                    ['key1', 'id'], legend=True,
+                    groupingdepth=2, colorkey='', labelkey='0+1', ax=ax,
+                    PSTH_mode='color', spacing=[6,3],
+                    filter_function=exclude_function,
+                    style='ticks')
 
 plt.show()
 

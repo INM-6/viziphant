@@ -5,6 +5,8 @@ ToDo: Annotation
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import elephant
+from elephant.statistics import *
 
 
 def get_attributes(spiketrains, key_list):
@@ -43,21 +45,18 @@ def get_attributes(spiketrains, key_list):
 
 
 def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
-               colorkey='', legend=False, PSTH_mode='color',
-               markersize=4, markertype='.',
-               seperator='', bins=100, histscale=.1, labelkey=None, ax=plt.gca(),
-               style='ticks', palette='Set2'):
+               colorkey='', PSTH_mode='color', PSTHbins=100,
+               right_histogram=mean_firing_rate, filter_function=None,
+               histscale=.1, labelkey=None,
+               markerargs={'markersize':4,'marker':'.'},
+               seperatorargs={'linewidth':1, 'linestyle':'--', 'color':'grey'},
+               legend=False,
+               legendargs={'loc':(.96,1.), 'markerscale':1.5, 'handletextpad':0},
+               ax=plt.gca(), style='ticks', palette='Set2', context='talk',
+               colorcodes='colorblind'):
 
-    # ToDo: seperator dict for passing line arguments
-    # ToDo: marker dict for passing marker arguments
-    # ToDo: legend dict for passing legend arguments
-    # ToDo: if labelkey = colorkey use coler for labels
-    # ToDo: possibility to give optional seperator_args as dict
-    # ToDo: include/exclude dicts with custom selection statement
-    # ToDo: elphant PSTH
-    # ToDo: optional legend for color
-    # ToDo: right-side hist mit custom function (i.e elephants)
-    # ToDo: Check if palette has colorcodes and set them as default
+    # ToDo: Beautify: Font, Fontsize, borders, grid, background, ...
+    # ToDo: (use elphant PSTH function) -> is overly complicated
 
     """
     :param ax: matplotlib axis
@@ -76,7 +75,7 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
              else grouping by first key
         * 2: additional grouping by first key or second key respectively
         The groups are sperated by whitespace specfied in the spacing parameter
-        and optionally by a line specefied by the teh seperator parameter.
+        and optionally by a line specefied by the the seperator parameter.
     :param spacing: int | [int, int]
         Size of whitespace seperating the groups. When groupingdepth = 2
         a list of two values can specify the distance between the groups in
@@ -91,11 +90,16 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
          * color: For subset of the colorkey argument a seperate overlapping
                   PSTH is drawn.
          * totla: One PSTH for all drawn spiketrains
-    :param markersize:
-    :param markertype:
-    :param seperator:
-    :param bins: int (default 100)
+    :param PSTHbins: int (default 100)
         Number of bins of the PSTH
+    :param right_histogram: function
+        The function gets a neo.SpikeTrain as argument and return a scalar.
+        For example the function in the elephant.statistics module can be use
+        (default: mean_firing_rate)
+    :param filter_function: function
+        The function gets a neo.SpikeTrain as argument and if the return is
+        Truethy the spiketrain is included and if the return is Falsely it is
+        exluded.
     :param histscale: float (default .1)
         Portion of the figure used for the histograms on the right and upper
         side.
@@ -108,6 +112,16 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
         * None: No labeling
         Note that only groups (-> grouping) can be labeled as bulks.
         Alternatively you can color for an annotation key and show a legend.
+    :param markerargs: dict
+        Arguments dictionary is passed on to matplotlib.pyplot.plot()
+    :param seperatorargs: dict | [dict, dict]
+        If dict the arguments are applied to both types of seperators and if
+        list of dicts the arguments can be specified for level 1 and 2
+        seperators.
+        Arguments dictionary is passed on to matplotlib.pyplot.plot()
+    :param legend: boolean
+    :param legendargs: dict
+            Arguments dictionary is passed on to matplotlib.pyplot.legend()
     :param style:
     :param palette: string | sequence
         Define the color palette either by its name or use a custom palette in
@@ -115,9 +129,9 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
     :return: ax, axhistx, axhisty
     """
     # Initialize plotting canvas
-    sns.set(style=style, palette=palette)
-    sns.despine()
-    sns.set_color_codes('colorblind')
+    sns.set(style=style, palette=palette, context=context)
+    sns.despine(ax=ax)
+    sns.set_color_codes(colorcodes)
 
     margin = 1 - histscale
     left, bottom, width, height = ax.get_position()._get_bounds()
@@ -126,6 +140,11 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
                         margin * width, histscale * height])
     axhisty = plt.axes([left + margin * width, bottom,
                         histscale * width, margin * height])
+
+    sns.despine(ax=axhistx, left=True, bottom=True)
+    sns.despine(ax=axhisty, left=True, bottom=True)
+
+    sns.set_style('whitegrid')
 
     # Assertions
     list_key = "%$\@[#*&/!"  # will surely be unique ;)
@@ -138,9 +157,6 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
     if type(spacing) == int:
         spacing = [spacing * 2, spacing]
 
-    if not type(seperator) == list:
-        seperator = [seperator, seperator]
-
     if type(colorkey) == int:
         assert colorkey < len(key_list)
         colorkey = key_list[colorkey]
@@ -151,10 +167,21 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
             assert colorkey in key_list
 
     if legend:
-        assert colorkey is not None
+        assert colorkey is not None, "Legend needs color indication"
 
     if labelkey == '':
         labelkey = list_key
+
+    if type(seperatorargs) == list:
+        assert len(seperatorargs) == 2
+        assert type(seperatorargs[0]) == dict
+        assert type(seperatorargs[1]) == dict
+    else:
+        if 'color' not in seperatorargs and 'c' not in seperatorargs:
+            seperatorargs['color'] = '#DDDDDD'
+        seperatorargs = [seperatorargs, seperatorargs]
+
+    markerargs['linestyle'] = ''
 
     # Flatten list of lists while keeping the grouping info in annotations
     if isinstance(spiketrain_list[0], list):
@@ -168,7 +195,20 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
                 st.annotations[list_key] = "list {}".format(list_nbr)
         spiketrain_list = [st for sublist in spiketrain_list for st in sublist]
 
+    # Assertion on flattened list
     assert len(key_list) >= groupingdepth
+
+    # Filter spiketrains according to given filter function
+    if filter_function is not None:
+        filter_index = []
+        for st_count, spiketrain in enumerate(spiketrain_list):
+            if filter_function(spiketrain):
+                filter_index += [st_count]
+        spiketrain_list = [spiketrain_list[i] for i in filter_index]
+
+        for st_count, spiketrain in enumerate(spiketrain_list):
+            if not filter_function(spiketrain):
+                print spiketrain.times.__len__()
 
     # Initialize plotting parameters
     t_lims = [(st.t_start, st.t_stop) for st in spiketrain_list]
@@ -202,14 +242,18 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
 
     # Draw PSTH (upper side)
     if PSTH_mode == 'color':
-        # Check if colors are repeated and give depreciation warning
-        for value in np.unique(attribute_array[:, colorkey]):
+        colorkeyvalues = np.unique(attribute_array[:, colorkey])
+        if len(sns.color_palette()) < len(colorkeyvalues):
+            print "\033[31mWarning: There are more subsets than can be " \
+                  "seperated by colors in the color palette which might lead "\
+                  "to confusion!\033[0m"
+        for value in colorkeyvalues:
             idx = np.where(attribute_array[:, colorkey] == value)[0]
             axhistx.hist([stime for strain in [spiketrain_list[i] for i in idx]
-                          for stime in strain], bins, color=colormap[int(value)])
+                          for stime in strain], PSTHbins, color=colormap[int(value)])
     else:
         axhistx.hist([stime for strain in spiketrain_list for stime in strain],
-                     bins,
+                     PSTHbins,
                      color=sns.color_palette(palette, nbr_of_colors+1)[-1])
 
     # Legend for colorkey
@@ -263,14 +307,18 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
 
                 # Dot display
                 handle = ax.plot(st.times.magnitude,
-                                 [st_count + ypos] * st.__len__(),
-                                 markertype, ms=markersize, color=color)
+                                 [st_count + ypos] * st.__len__(), color=color,
+                                 **markerargs)
                 if legend:
                     legend_handles[annotation_value] = handle[0]
 
-                # Firing Rate histogram (right side)
-                axhisty.barh(st_count + ypos - .5, st.times.__len__(),
-                             height=1., color=color)
+                # Right side histogram
+                barvalue = right_histogram(st)
+                barwidth = .8
+                axhisty.barh(bottom=st_count + ypos,
+                             width=barvalue,
+                             height=barwidth,
+                             color=color)
 
             ycoords = np.arange(len(slist)) + ypos
             yticks[nbr_of_drawn_sts:nbr_of_drawn_sts+len(slist)] = ycoords
@@ -278,23 +326,18 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
             # Seperator depth 2
             if count < len(SLIST) - 1:
                 linepos = ypos + len(slist) + (spacing[1]-1)/2.
-                ax.plot(ax.get_xlim(), [linepos] * 2,
-                        linestyle=seperator[1], linewidth=markersize/4.,
-                        color='grey')
+                ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[1])
 
         # Seperator depth 1
         if COUNT < len(spiketrain_list) - 1:
             linepos = ypos + len(SLIST[-1]) \
                       + (spacing[0]-1*groupingdepth)/2.*groupingdepth
-            ax.plot(ax.get_xlim(), [linepos] * 2,
-                    linestyle=seperator[1], linewidth=markersize / 4.,
-                    color='red')
+            ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[0])
 
     # Plotting axis
     axhistx.set_xlim(ax.get_xlim())
     axhisty.set_ylim(ax.get_ylim())
     ax.set_xlabel('t [{}]'.format(spiketrain_list[0][0][0].units.dimensionality))
-    ax.set_ylabel('')
     axhistx.get_xaxis().set_visible(False)
     axhistx.get_yaxis().set_visible(False)
     axhisty.get_xaxis().set_visible(False)
@@ -320,7 +363,7 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
             for v1, i1, c1 in zip(values1, index1, counts1):
                 st = spiketrain_list[int(v1)][0][0]
                 if key_list[0] in st.annotations:
-                    labelname[0] += [st.annotations[key_list[0]]]
+                    labelname[0] += [st.annotations[key_list[0]] + ' '*10]
                 else:
                     labelname[0] += ['']
                 labelpos[0] += [yticks[i1 + c1/2]]
@@ -359,6 +402,6 @@ def rasterplot(spiketrain_list, key_list=[], groupingdepth=0, spacing=3,
 
     # Draw legend
     if legend:
-        ax.legend(legend_handles, legend_labels, loc='best')
+        ax.legend(legend_handles, legend_labels, **legendargs)
 
     return ax, axhistx, axhisty
