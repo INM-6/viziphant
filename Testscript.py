@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import neo
 import imp
-# from elephant.statistics import time_histogram, mean_firing_rate, cv, isi
+from elephant.statistics import *
 # from elephant.spike_train_correlation import corrcoef
 # from elephant.conversion import BinnedSpikeTrain
 import matplotlib.pyplot as plt
@@ -48,13 +48,26 @@ def func(st):
     return 4
 
 Q = N/4
-_, ax, _ = plotting.rasterplot([spiketrain_list[:2*Q]],
-    #[spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q], spiketrain_list[3*Q:]],
-                    ['key1', 'id'], legend=True,
-                    groupingdepth=2, colorkey='', labelkey='0+1', ax=ax,
-                    PSTH_mode='color', spacing=[6,3],
-                    filter_function=exclude_function,
-                    style='ticks')
+_, ax, _ = plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q]],# spiketrain_list[3*Q:]],
+                               key_list=['key1'],
+                               groupingdepth=2,
+                               spacing=[7],
+                               colorkey=0,
+                               PSTH_mode='color',
+                               PSTHbins=100,
+                               right_histogram=mean_firing_rate,
+                               filter_function=None,
+                               histscale=.1,
+                               labelkey=None,
+                               markerargs={'markersize': 4, 'marker': '.'},
+                               seperatorargs={'linewidth': 1, 'linestyle': '--', 'color': 'grey'},
+                               legend=False,
+                               legendargs={'loc': (1., 1.), 'markerscale': 1.5, 'handletextpad': 0},
+                               ax=None,
+                               style='ticks',
+                               palette='Set2',
+                               context='paper',
+                               colorcodes='colorblind')
 
 plt.show()
 
