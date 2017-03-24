@@ -48,17 +48,17 @@ def func(st):
     return 4
 
 Q = N/4
-_, ax, _ = plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q]],# spiketrain_list[3*Q:]],
+ax, axhistx, axhisty = plotting.rasterplot([spiketrain_list[:1*Q], spiketrain_list[1*Q:2*Q]],# spiketrain_list[3*Q:]],
                                key_list=['key1'],
                                groupingdepth=2,
-                               spacing=[7],
+                               spacing=[7,2],
                                colorkey=0,
-                               PSTH_mode='color',
-                               PSTHbins=100,
+                               pophist_mode='color',
+                               pophistbins=100,
                                right_histogram=mean_firing_rate,
                                filter_function=None,
                                histscale=.1,
-                               labelkey=None,
+                               labelkey='0+1',
                                markerargs={'markersize': 4, 'marker': '.'},
                                seperatorargs={'linewidth': 1, 'linestyle': '--', 'color': 'grey'},
                                legend=False,
@@ -69,5 +69,6 @@ _, ax, _ = plotting.rasterplot([spiketrain_list[:2*Q], spiketrain_list[2*Q:3*Q]]
                                context='paper',
                                colorcodes='colorblind')
 
+# axhistx.set_ylim(0,100)
 plt.show()
 
