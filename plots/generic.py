@@ -4,7 +4,6 @@ ToDo:
 -   Write more Annotation
 -   Beautify: Fonts, Fontsizes, borders, grid, background, ...
 -   Improve axis handling (of seaborn)
--   (use elphant pophist function) -> is overly complicated
 """
 
 import numpy as np
@@ -14,7 +13,7 @@ from elephant.statistics import mean_firing_rate
 from math import log10, floor
 
 
-def round_to_1(x):
+def _round_to_1(x):
     rounded = round(x, -int(floor(log10(abs(x)))))
     return rounded, rounded > x
 
@@ -74,7 +73,7 @@ def rasterplot(spiketrain_list,
                histscale=.1,
                labelkey=None,
                markerargs={'markersize':4,'marker':'.'},
-               seperatorargs={'linewidth':1, 'linestyle':'--', 'color':'grey'},
+               seperatorargs={'linewidth':1, 'linestyle':'--', 'color':'0.8'},
                legend=False,
                legendargs={'loc':(1.,1.), 'markerscale':1.5, 'handletextpad':0},
                ax=None,
@@ -87,7 +86,11 @@ def rasterplot(spiketrain_list,
     ----Write sth about function----
 
     :param ax: matplotlib axis
-        If undefined takes the current axis.
+        The axis onto which to plot. If None (default) a new figure is created.
+        When an axis is given, the function can't handle the figure settings.
+        Therefore it is recommended to call seaborn.set() with your preferred
+        settings before creating your matplotlib figure in order to control
+        your plotting layout.
     :param spiketrain_list: list
         list can either contain neo spiketrains or lists of spiketrains.
     :param key_list: string | list of strings
@@ -285,9 +288,7 @@ def rasterplot(spiketrain_list,
 
     colormap = sns.color_palette(palette, nbr_of_colors)
 
-    # Draw Population Histogram (upper side)
-    sum_color = seperatorargs[0]['color']
-
+    # Draw population histogram (upper side)
     if pophist_mode == 'color' and colorkey:
         colorkeyvalues = np.unique(attribute_array[:, colorkey])
         if len(sns.color_palette()) < len(colorkeyvalues):
@@ -301,12 +302,18 @@ def rasterplot(spiketrain_list,
                          pophistbins, histtype='step', linewidth=1,
                          color=colormap[int(value)])
 
+    if groupingdepth:
+        sum_color = seperatorargs[0]['color']
+    else:
+        sum_color = sns.color_palette()[0]
+
     histout = axhistx.hist([stime for strain in spiketrain_list
                                   for stime in strain],
                            pophistbins, histtype='step', linewidth=1,
                            color=sum_color)
 
-    axhistx_ydim, up = round_to_1(np.max(histout[0]))
+    # Set ticks and labels for right population histogram
+    axhistx_ydim, up = _round_to_1(np.max(histout[0]))
     if up:
         axhistx.set_ylim(0, axhistx_ydim)
     axhistx.set_yticks([axhistx_ydim])
@@ -409,14 +416,14 @@ def rasterplot(spiketrain_list,
     axhisty.get_yaxis().set_visible(False)
 
     # Set ticks and labels for right side histogram
-    axhisty_xdim, up = round_to_1(axhisty.get_xlim()[-1])
+    axhisty_xdim, up = _round_to_1(axhisty.get_xlim()[-1])
     if up:
         axhistx.set_ylim(0, axhistx_ydim)
     axhisty.set_xticks([axhisty_xdim])
     axhisty.set_xticklabels(['{}'.format(axhisty_xdim)])
 
     # Y labeling
-    if labelkey is not None:
+    if labelkey in key_list + [0, 1, '0+1'] and key_list:
         if key_list and labelkey == key_list[0]:
             if groupingdepth > 0:
                 labelkey = 0
@@ -449,7 +456,7 @@ def rasterplot(spiketrain_list,
                                                      return_index=True,
                                                      return_counts=True)
 
-                if groupingdepth / 2 and labelkey:
+                if groupingdepth / 2 and labelkey and len(key_list)-1:
                     for v2, i2, c2 in zip(values2, index2, counts2):
                         st = spiketrain_list[int(v1)][int(v2)][0]
                         if key_list[1] in st.annotations:
