@@ -1,7 +1,8 @@
 """
 ToDo:
 -   Alpha Testing
--   Write more Annotation
+-   Bugfix: When there is only one element in a group
+-   Write more Annotations
 -   Beautify: Fonts, Fontsizes, borders, grid, background, ...
 -   Improve axis handling (of seaborn)
 """
@@ -73,7 +74,8 @@ def rasterplot(spiketrain_list,
                histscale=.1,
                labelkey=None,
                markerargs={'markersize':4,'marker':'.'},
-               seperatorargs={'linewidth':1, 'linestyle':'--', 'color':'0.8'},
+               seperatorargs=[{'linewidth':2, 'linestyle':'--', 'color':'0.8'},
+                              {'linewidth':1, 'linestyle':'--', 'color':'0.8'}],
                legend=False,
                legendargs={'loc':(1.,1.), 'markerscale':1.5, 'handletextpad':0},
                ax=None,
@@ -148,11 +150,12 @@ def rasterplot(spiketrain_list,
         Alternatively you can color for an annotation key and show a legend.
     :param markerargs: dict
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
-    :param seperatorargs: dict | [dict, dict]
+    :param seperatorargs: dict | [dict, dict] | None
         If dict the arguments are applied to both types of seperators and if
         list of dicts the arguments can be specified for level 1 and 2
         seperators.
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
+        To turn of separators set it to None
     :param legend: boolean
     :param legendargs: dict
             Arguments dictionary is passed on to matplotlib.pyplot.legend()
@@ -208,11 +211,13 @@ def rasterplot(spiketrain_list,
     if type(colorkey) == int and len(key_list):
         assert colorkey < len(key_list)
         colorkey = key_list[colorkey]
+        if not colorkey:
+            colorkey = list_key
     else:
         if not colorkey:
             colorkey = list_key
         else:
-            assert colorkey in key_list
+            assert colorkey in key_list, "The colorkey must be in key_list"
 
     if legend:
         assert len(key_list) > 0
@@ -221,9 +226,9 @@ def rasterplot(spiketrain_list,
         labelkey = list_key
 
     if type(seperatorargs) == list:
-        assert len(seperatorargs) == 2
-        assert type(seperatorargs[0]) == dict
-        assert type(seperatorargs[1]) == dict
+        assert len(seperatorargs) == groupingdepth
+        for level in range(groupingdepth):
+            assert type(seperatorargs[level]) == dict
     else:
         if 'c' in seperatorargs:
             seperatorargs['color'] = seperatorargs['c']
@@ -289,8 +294,9 @@ def rasterplot(spiketrain_list,
     colormap = sns.color_palette(palette, nbr_of_colors)
 
     # Draw population histogram (upper side)
-    if pophist_mode == 'color' and colorkey:
-        colorkeyvalues = np.unique(attribute_array[:, colorkey])
+    colorkeyvalues = np.unique(attribute_array[:, colorkey])
+
+    if pophist_mode == 'color' and len(colorkeyvalues)-1:
         if len(sns.color_palette()) < len(colorkeyvalues):
             print "\033[31mWarning: There are more subsets than can be " \
                   "seperated by colors in the color palette which might lead "\
@@ -302,7 +308,7 @@ def rasterplot(spiketrain_list,
                          pophistbins, histtype='step', linewidth=1,
                          color=colormap[int(value)])
 
-    if groupingdepth:
+    if len(colorkeyvalues)-1:
         sum_color = seperatorargs[0]['color']
     else:
         sum_color = sns.color_palette()[0]
@@ -355,7 +361,7 @@ def rasterplot(spiketrain_list,
     for COUNT, SLIST in enumerate(spiketrain_list):
 
         # Seperator depth 1
-        if COUNT:
+        if COUNT and seperatorargs is not None:
             linepos = ypos + len(spiketrain_list[COUNT-1][-1]) \
                       + spacing[0]/2. - 0.5
             ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[0])
@@ -375,7 +381,7 @@ def rasterplot(spiketrain_list,
                  + groupingdepth/2 * prev_spaces * spacing[1]
 
             # Separator depth 2
-            if count:
+            if count and seperatorargs is not None:
                 linepos = ypos - (spacing[1] + 1) / 2.
                 ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[1])
 
