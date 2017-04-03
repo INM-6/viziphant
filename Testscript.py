@@ -38,6 +38,8 @@ for i in range(N):
     else:
         spiketrain_list[i].annotations['key1'] = 'even'
 
+
+
 def exclude_function(st):
     if st.size < 100:
         return True
@@ -50,7 +52,7 @@ def func(st):
 Q = N/4
 
 ax, axhistx, axhisty = plotting.rasterplot([spiketrain_list[:1*Q], spiketrain_list[3*Q:]],
-                               key_list=['id'],
+                               key_list=['key1'],
                                groupingdepth=2,
                                spacing=10,
                                colorkey=0,
@@ -70,6 +72,5 @@ ax, axhistx, axhisty = plotting.rasterplot([spiketrain_list[:1*Q], spiketrain_li
                                context='paper',
                                colorcodes='colorblind')
 
-# axhistx.set_ylim(0,100)
 plt.show()
 

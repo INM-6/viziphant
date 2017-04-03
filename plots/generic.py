@@ -1,7 +1,7 @@
 """
 ToDo:
 -   Alpha Testing
--   Bugfix: When there is only one element in a group
+-   Pophist ylimit
 -   Write more Annotations
 -   Beautify: Fonts, Fontsizes, borders, grid, background, ...
 -   Improve axis handling (of seaborn)
@@ -343,7 +343,7 @@ def rasterplot(spiketrain_list,
             if groupingdepth > 1:
                 value2, counts2 = np.unique(attribute_array[i1:i1 + c1, 1],
                                             return_counts=True)
-                for v2, c2 in zip(value2, counts2):
+                for v2, c2 in enumerate(counts2):
                     v2 = int(v2)
                     spiketrain_list[v1][v2:v2+c2] = [spiketrain_list[v1][v2:v2+c2]]
             else:
@@ -413,8 +413,8 @@ def rasterplot(spiketrain_list,
 
     # Plotting axis
     yrange = yticks[-1] - yticks[0]
-    ax.set_ylim(int(yticks[0] - ws_margin*yrange),
-                int(yticks[-1] + ws_margin*yrange))
+    ax.set_ylim(yticks[0] - ws_margin*yrange,
+                yticks[-1] + ws_margin*yrange)
     axhistx.set_xlim(ax.get_xlim())
     axhisty.set_ylim(ax.get_ylim())
     ax.set_xlabel('t [{}]'.format(spiketrain_list[0][0][0].units.dimensionality))
@@ -429,7 +429,7 @@ def rasterplot(spiketrain_list,
     axhisty.set_xticklabels(['{}'.format(axhisty_xdim)])
 
     # Y labeling
-    if labelkey in key_list + [0, 1, '0+1'] and key_list:
+    if labelkey in key_list + [0, 1, '0+1'] and key_list and groupingdepth:
         if key_list and labelkey == key_list[0]:
             if groupingdepth > 0:
                 labelkey = 0
@@ -451,7 +451,7 @@ def rasterplot(spiketrain_list,
                 if key_list[0] in st.annotations:
                     labelname[0] += [st.annotations[key_list[0]]]
                     if labelkey == '0+1':
-                        labelname[0][-1] += ' '*5
+                        labelname[0][-1] += ' ' * 5
                 else:
                     labelname[0] += ['']
 
@@ -463,7 +463,7 @@ def rasterplot(spiketrain_list,
                                                      return_counts=True)
 
                 if groupingdepth / 2 and labelkey and len(key_list)-1:
-                    for v2, i2, c2 in zip(values2, index2, counts2):
+                    for v2, (i2, c2) in enumerate(zip(index2, counts2)):
                         st = spiketrain_list[int(v1)][int(v2)][0]
                         if key_list[1] in st.annotations:
                             labelname[1] += [st.annotations[key_list[1]]]
