@@ -318,8 +318,11 @@ def rasterplot(spiketrain_list,
                            pophistbins, histtype='step', linewidth=1,
                            color=sum_color)
 
-    # Set ticks and labels for right population histogram
-    axhistx_ydim, up = _round_to_1(np.max(histout[0]))
+    # Set ticks and labels for population histogram
+    max_y = np.max(histout[0])
+    axhistx_ydim, up = _round_to_1(max_y)
+    if max_y > axhistx.get_ylim()[-1]:
+        axhistx.set_ylim(0, max_y)
     if up:
         axhistx.set_ylim(0, axhistx_ydim)
     axhistx.set_yticks([axhistx_ydim])
