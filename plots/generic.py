@@ -1,5 +1,5 @@
 """
-Simple, highly configurable plotting functions for spiketrains in neo format.
+Simple but highly configurable plotting functions for spiketrains in neo format.
 While building on the matplotlib libary the functions lay an emphasis on clear,
 pleasant-to-look-at visualizations.
 """
@@ -22,8 +22,8 @@ def _get_attributes(spiketrains, key_list):
     and consists of numerical ids for each value of each key for each
     spiketrain.
 
-    Passed spiketrains must be sorted according to keylist.
-    Keylist must not be empty.
+    Passed spiketrains must be sorted according to key_list.
+    key_list must not be empty.
     """
 
     key_count = len(key_list)
@@ -72,10 +72,10 @@ def rasterplot(spiketrain_list,
                histscale=.1,
                labelkey=None,
                markerargs={'markersize':4,'marker':'.'},
-               seperatorargs=[{'linewidth':2, 'linestyle':'--', 'color':'0.8'},
+               separatorargs=[{'linewidth':2, 'linestyle':'--', 'color':'0.8'},
                               {'linewidth':1, 'linestyle':'--', 'color':'0.8'}],
                legend=False,
-               legendargs={'loc':(1.,1.), 'markerscale':1.5, 'handletextpad':0},
+               legendargs={'loc':(.98,1.), 'markerscale':1.5, 'handletextpad':0},
                ax=None,
                style='ticks',
                palette='Set2',
@@ -84,66 +84,64 @@ def rasterplot(spiketrain_list,
 
     """
     This function plots the dot display of spiketrains alongside its population
-    histogram and the mean firing rate (or a custom function). Also visual aids
+    histogram and the mean firing rate (or a custom function). Visual aids
     are offered such as sorting, grouping and colorcoding on the basis of the
-    arrangement of given spiketrain lists and spiketrain annotations.
+    arrangement in list of spiketrains and spiketrain annotations.
 
-    :param ax: matplotlib axis
-        The axis onto which to plot. If None (default) a new figure is created.
-        When an axis is given, the function can't handle the figure settings.
-        Therefore it is recommended to call seaborn.set() with your preferred
-        settings before creating your matplotlib figure in order to control
-        your plotting layout.
     :param spiketrain_list: list
-        list can either contain neo spiketrains or lists of neo spiketrains.
-    :param key_list: string | list of strings
-        Annotation key for which the spiketrains should be ordered. When list
-        of keys is given spiketrains are ordered successively for the keys.roup
-        By default the ordering by the given list of (lists of) spiketrains
-        have priority. This can be bypassed by using an empty string ''
-        as list-key at any position in the key_list.
+        List can either contain neo spiketrains or lists of neo spiketrains.
+    :param key_list: str | list of str
+        Annotation key(s) for which the spiketrains should be ordered.
+        When list of keys is given the spiketrains are ordered successively for
+        the keys.
+        By default the ordering by the given lists of spiketrains have priority.
+        This can be bypassed by using an empty string '' as list-key at any
+        position in the key_list.
     :param groupingdepth: 0 | 1 | 2
-        * 0: No grouping
-        * 1: grouping by given lists when list of list of spiketrains are given
-             else grouping by first key
-        * 2: additional grouping by first key or second key respectively
-        The groups are separated by whitespace specified in the spacing parameter
-        and optionally by a line specified by the the separator parameter.
-    :param spacing: int | [int, int
-        Size of whitespace separating the groups. When groupingdepth = 2
-        a list of two values can specify the distance between the groups in
-        level 1 and level 2. When only only one value is given, the first level
-        distance is 2 x spacing.
-    :param colorkey: str | int  (default '')
+        * 0: No grouping (default)
+        * 1: grouping by first key in key_list.
+             Note that when list of lists of spiketrains are given the first
+             key is by the list identification key ''. If this is unwanted
+             the empty string '' can be placed at a different position in
+             key_list.
+        * 2: additional grouping by second key respectively
+        The groups are separated by whitespace specified in the spacing
+        parameter and optionally by a line specified by the the separatorargs.
+    :param spacing: int | [int] | [int, int]
+        Size of whitespace separating the groups in units of spiketrains.
+        When groupingdepth == 2 a list of two values can specify the distance
+        between the groups in level 1 and level 2. When only one value is given
+        level 2 spacing is set to half the spacing of level 1.
+        Default: [5, 3]
+    :param colorkey: str | int  (default 0)
         Contrasts values of a key by color. The key can be defined by its
         namestring or its position in key_list. Note that position 0 points to
-        the list seperation key ('') which has default position 0 if not
-        otherwise specified in key_list.
+        the list identification key ('') when list of lists of spiketrains are
+        given, if not otherwise specified in key_list!
     :param pophist_mode: 'color' (default) | 'total'
          * total: One population histogram for all drawn spiketrains
          * color: Additionally to the total population histogram,
                   a histogram for each colored subset is drawn (see colorkey).
     :param pophistbins: int (default 100)
-        Number of bins of the population histogram.
+        Number of bins used for the population histogram.
     :param right_histogram: function
-        The function gets one neo.SpikeTrain as argument and has to return a
-        scalar. For example the function in the elephant.statistics module can
+        The function gets ONE neo.SpikeTrain as argument and has to return a
+        scalar. For example the functions in the elephant.statistics module can
         be used. (default: mean_firing_rate)
-        When a function is applied is is recommende to set the axis visible
-        and add an adequate axis label:
-        axhisty.get_xaxis().set_visible(True)
-        axhisty.set_xlabel('<FR>')
+        When a function is applied is is recommended to set the axis label
+        accordingly by using the axis handle returned by the function:
+        axhisty.set_xlabel('Label Name')
     :param filter_function: function
-        The function gets a neo.SpikeTrain as argument and if the return is
+        The function gets ONE neo.SpikeTrain as argument and if the return is
         Truethy the spiketrain is included and if the return is Falsely it is
         exluded.
     :param histscale: float (default .1)
         Portion of the figure used for the histograms on the right and upper
         side.
-    :param labelkey: 0 , 1 , '0+1' (default), 'annotation key', None
-        * 0: Label lists when lists of list of lists of spiketrains are given
-             else label values for first key
-        * 1: Label for first key or second key accordingly
+    :param labelkey: 0 | 1 | '0+1' (default) | 'annotation key' | None
+        * 0, 1: Set label according to first or second key in key_list.
+                Note that the first key is by default the list identification
+                key ('') when list of lists of spiketrains are given.
         * '0+1': Two level labeling of 0 and 1
         * annotation-key: Labeling each spiketrain with its value for given key
         * None: No labeling
@@ -151,16 +149,22 @@ def rasterplot(spiketrain_list,
         Alternatively you can color for an annotation key and show a legend.
     :param markerargs: dict
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
-    :param seperatorargs: dict | [dict, dict] | None
-        If dict the arguments are applied to both types of seperators and if
-        list of dicts the arguments can be specified for level 1 and 2
-        seperators.
+    :param separatorargs: dict | [dict, dict] | None
+        If only one dict is given and groupingdepth == 2 the arguments are
+        applied to the separator of both level. Otherwise the arguments are
+        of separatorargs[0] are applied to the level 1 and [1] to level 2.
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
-        To turn of separators set it to None
+        To turn of separators set it to None.
     :param legend: boolean
         Show legend?
     :param legendargs: dict
-            Arguments dictionary is passed on to matplotlib.pyplot.legend()
+        Arguments dictionary is passed on to matplotlib.pyplot.legend()
+    :param ax: matplotlib axis | None (default)
+        The axis onto which to plot. If None a new figure is created.
+        When an axis is given, the function can't handle the figure settings.
+        Therefore it is recommended to call seaborn.set() with your preferred
+        settings before creating your matplotlib figure in order to control
+        your plotting layout.
     :param style: str
         seaborn style setting. Default: 'ticks'
     :param palette: string | sequence
@@ -169,11 +173,11 @@ def rasterplot(spiketrain_list,
     :param colorcodes: str
         seaborn colorcodes setting. By default this is set to 'colorblind' so
         that any additional drawing into the plot using colorcodes ('r', 'g', ...)
-        are coherent with the default color palette ('Set2')  of the plot.
+        are coherent with the default color palette ('Set2') of the plot.
     :param context: 'paper'(default) | 'talk' | 'poster'
         seaborn context setting which controls the scaling of labels. For the
-        three options the parameters are scaled by .8, 1.3, and 1.6 respectively
-    :return: ax, axhistx, axhisty
+        three options the parameters are scaled by .8, 1.3, and 1.6 respectively.
+    :return: ax, axhistx, axhisty   <matplotlib axis handle>
         * ax is handle of the dot display plot
         * axhistx is handle of the histogram plot above the the dot display
         * axhisty is handle of the histogram plot on the right hand side
@@ -204,29 +208,32 @@ def rasterplot(spiketrain_list,
     ws_margin = 0.02
 
     # Assertions
-    assert groupingdepth <= 2, "Grouping is limited to two layers"
+    assert groupingdepth <= 2, "Grouping is limited to two layers."
     groupingdepth = int(groupingdepth)
+
+    list_key = "%$\@[#*&/!"  # unique key to be added to annotations to store
+                             # list ordering information.
 
     if type(key_list) == 'str':
         key_list = [key_list]
 
+    if '' not in key_list:
+        key_list = [list_key] + key_list
+    else:
+        key_list = [list_key if not key else key for key in key_list]
+
     if type(spacing) == list:
         if len(spacing) == 1:
-            spacing = [spacing[0], spacing[0]]
+            spacing = [spacing[0], spacing[0]/2.]
     else:
         spacing = [spacing, spacing/2.]
     assert spacing[0] >= spacing[1], "For reasonable visual aid spacing[0] must" \
                                    + " be larger than spacing[1]."
 
-    list_key = "%$\@[#*&/!"  # unique key to be added to annotations to store
-                             # list ordering information.
-
     if type(colorkey) == int and len(key_list):
         assert colorkey < len(key_list), "An integer colorkey must refer to a" \
-                                       + "position in key_list."
+                                       + " position in key_list."
         colorkey = key_list[colorkey]
-        if not colorkey:
-            colorkey = list_key
     else:
         if not colorkey:
             colorkey = list_key
@@ -239,35 +246,33 @@ def rasterplot(spiketrain_list,
     if labelkey == '':
         labelkey = list_key
 
-    if type(seperatorargs) == list:
-        if len(seperatorargs) == 1:
-            seperatorargs += seperatorargs
-        for args in seperatorargs:
+    if type(separatorargs) == list:
+        if len(separatorargs) == 1:
+            separatorargs += separatorargs
+        for args in separatorargs:
             assert type(args) == dict, "The parameters must be given as dict."
     else:
-        seperatorargs = [seperatorargs, seperatorargs]
+        separatorargs = [separatorargs, separatorargs]
 
-    for i, args in enumerate(seperatorargs):
+    for i, args in enumerate(separatorargs):
         if 'c' in args:
-            seperatorargs[i]['color'] = args['c']
+            separatorargs[i]['color'] = args['c']
         elif 'color' not in args:
-            seperatorargs[i]['color'] = '0.8'
+            separatorargs[i]['color'] = '0.8'
 
     markerargs['linestyle'] = ''
 
     # Flatten list of lists while keeping the grouping info in annotations
-    if isinstance(spiketrain_list[0], list) and len(spiketrain_list) > 1:
-        if '' not in key_list:
-            key_list = [list_key] + key_list
-        else:
-            key_list = [list_key if not key else key for key in key_list]
-
+    if isinstance(spiketrain_list[0], list):
         for list_nbr, st_list in enumerate(spiketrain_list):
             for st in st_list:
                 st.annotations[list_key] = "set {}".format(list_nbr)
         spiketrain_list = [st for sublist in spiketrain_list for st in sublist]
-    elif isinstance(spiketrain_list[0], list) and len(spiketrain_list) == 1:
-        spiketrain_list = spiketrain_list[0]
+    else:
+        for st in spiketrain_list:
+            st.annotations[list_key] = "set {}".format(0)
+        key_list.remove(list_key)
+        key_list.append(list_key)
 
     # Assertions on flattened list
     assert len(key_list) >= groupingdepth, "Can't group more as keys in key_list"
@@ -318,7 +323,7 @@ def rasterplot(spiketrain_list,
     if pophist_mode == 'color' and len(colorkeyvalues)-1:
         if len(sns.color_palette()) < len(colorkeyvalues):
             print "\033[31mWarning: There are more subsets than can be " \
-                  "seperated by colors in the color palette which might lead "\
+                  "separated by colors in the color palette which might lead "\
                   "to confusion!\033[0m"
         for value in colorkeyvalues:
             idx = np.where(attribute_array[:, colorkey] == value)[0]
@@ -328,7 +333,7 @@ def rasterplot(spiketrain_list,
                          color=colormap[int(value)])
 
     if len(colorkeyvalues)-1:
-        sum_color = seperatorargs[0]['color']
+        sum_color = separatorargs[0]['color']
     else:
         sum_color = sns.color_palette()[0]
 
@@ -342,7 +347,7 @@ def rasterplot(spiketrain_list,
     axhistx_ydim, up = _round_to_1(max_y)
     if max_y > axhistx.get_ylim()[-1]:
         axhistx.set_ylim(0, max_y)
-    if up:
+    if up and axhistx_ydim > max_y:
         axhistx.set_ylim(0, axhistx_ydim)
     axhistx.set_yticks([axhistx_ydim])
     axhistx.set_yticklabels(['{:.0f}'.format(axhistx_ydim)])
@@ -382,11 +387,11 @@ def rasterplot(spiketrain_list,
     # Loop through lists of lists of spiketrains
     for COUNT, SLIST in enumerate(spiketrain_list):
 
-        # Seperator depth 1
-        if COUNT and seperatorargs is not None:
+        # Separator depth 1
+        if COUNT and separatorargs is not None:
             linepos = ypos + len(spiketrain_list[COUNT-1][-1]) \
                       + spacing[0]/2. - 0.5
-            ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[0])
+            ax.plot(ax.get_xlim(), [linepos] * 2, **separatorargs[0])
 
         # Loop through lists of spiketrains
         for count, slist in enumerate(SLIST):
@@ -403,9 +408,9 @@ def rasterplot(spiketrain_list,
                  + groupingdepth/2 * prev_spaces * spacing[1]
 
             # Separator depth 2
-            if count and seperatorargs is not None:
+            if count and separatorargs is not None:
                 linepos = ypos - (spacing[1] + 1) / 2.
-                ax.plot(ax.get_xlim(), [linepos] * 2, **seperatorargs[1])
+                ax.plot(ax.get_xlim(), [linepos] * 2, **separatorargs[1])
 
             # Loop through spiketrains
             for st_count, st in enumerate(slist):

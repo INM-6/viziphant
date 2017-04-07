@@ -58,7 +58,3 @@ docs/_build/
 # PyBuilder
 target/
 
-# Testfiles
-spikes_L4E.h5
-Testbook.ipynb
-Testscript.py
