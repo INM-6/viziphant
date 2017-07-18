@@ -245,7 +245,7 @@ def rasterplot(spiketrain_list,
     if type(palette) == str:
         try:
             sns.set_color_codes(palette)
-        except KeyError:
+        except KeyError or TypeError::
             sns.set_color_codes(colorcodes)
     else:
         sns.set_color_codes(colorcodes)

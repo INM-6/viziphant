@@ -193,7 +193,7 @@ def rasterplot(spiketrain_list,
         * axhistx is handle of the histogram plot above the the dot display
         * axhisty is handle of the histogram plot on the right hand side
 
-    *Simple Example:*
+    *Basic Example:*
         >>> from elephant.spike_train_generation import homogeneous_poisson_process as HPP
         >>> from quantities import Hz
         >>> import matplotlib.pyplot as plt
@@ -223,7 +223,7 @@ def rasterplot(spiketrain_list,
         >>>         st1.annotations['parity'] = 'even'
         >>>         st2.annotations['parity'] = 'even'
         >>>
-        >>> # plot separates the list and the annotation values within each list
+        >>> # plot separates the lists and the annotation values within each list
         >>> rasterplot([st_list1, st_list2], key_list=['parity'],
         >>>            groupingdepth=2, labelkey='0+1')
         >>>
@@ -242,9 +242,12 @@ def rasterplot(spiketrain_list,
 
     # Initialize plotting canvas
     sns.set(style=style, palette=palette, context=context)
-    try:
-        sns.set_color_codes(palette)
-    except KeyError:
+    if type(palette) == str:
+        try:
+            sns.set_color_codes(palette)
+        except KeyError or TypeError:
+            sns.set_color_codes(colorcodes)
+    else:
         sns.set_color_codes(colorcodes)
 
     if ax is None:
