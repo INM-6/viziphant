@@ -7,7 +7,16 @@ import neo
 import elephant.unitary_event_analysis as ue
 import elephant.spike_train_generation as stg
 
-def _plot_UE(data,Js_dict,sig_level,binsize,winsize,winstep, pattern_hash,N,args,add_epochs = []):
+def plot_UE(data,
+             Js_dict,
+             sig_level,
+             binsize,
+             winsize,
+             winstep,
+             pattern_hash,
+             N,
+             args,
+             add_epochs = []):
     """
     Examples:
     ---------

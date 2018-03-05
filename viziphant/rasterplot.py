@@ -251,9 +251,8 @@ def rasterplot(spiketrain_list,
         sns.set_color_codes(colorcodes)
 
     if ax is None:
-        fig = plt.figure()
+        fig, ax = plt.subplots()
         # axis must be created after sns.set() command for style to apply!
-        ax = fig.add_subplot(111)
 
     margin = 1 - histscale
     left, bottom, width, height = ax.get_position()._get_bounds()
@@ -394,25 +393,29 @@ def rasterplot(spiketrain_list,
             print "\033[31mWarning: There are more subsets than can be " \
                   "separated by colors in the color palette which might lead "\
                   "to confusion!\033[0m"
+        max_y = 0
         for value in colorkeyvalues:
             idx = np.where(attribute_array[:, colorkey] == value)[0]
-            axhistx.hist([stime for strain in [spiketrain_list[i] for i in idx]
-                          for stime in strain],
-                         pophistbins, histtype='step', linewidth=1,
-                         color=colormap[int(value)])
+            histout = axhistx.hist([stime for strain in
+                                      [spiketrain_list[i] for i in idx]
+                                      for stime in strain],
+                                     pophistbins, histtype='step', linewidth=1,
+                                     color=colormap[int(value)])
+            max_y = np.max([max_y, np.max(histout[0])])
 
-    if len(colorkeyvalues)-1:
-        sum_color = separatorargs[0]['color']
-    else:
-        sum_color = sns.color_palette()[0]
+    else: # pophist_mode == 'total':
+        if len(colorkeyvalues)-1:
+            sum_color = separatorargs[0]['color']
+        else:
+            sum_color = sns.color_palette()[0]
 
-    histout = axhistx.hist([stime for strain in spiketrain_list
-                                  for stime in strain],
-                           pophistbins, histtype='step', linewidth=1,
-                           color=sum_color)
+        histout = axhistx.hist([stime for strain in spiketrain_list
+                                      for stime in strain],
+                               pophistbins, histtype='step', linewidth=1,
+                               color=sum_color)
+        max_y = np.max(histout[0])
 
     # Set ticks and labels for population histogram
-    max_y = np.max(histout[0])
     axhistx_ydim, up = _round_to_1(max_y)
     if max_y > axhistx.get_ylim()[-1]:
         axhistx.set_ylim(0, max_y)
@@ -497,11 +500,11 @@ def rasterplot(spiketrain_list,
                 # Right side histogram bar
                 barvalue = right_histogram(st)
                 barwidth = .8
-                axhisty.barh(bottom=st_count + ypos,
+                axhisty.barh(bottom=st_count + ypos - barwidth/2.,
                              width=barvalue,
                              height=barwidth,
                              color=color,
-                             edgecolor=color)
+                             edgecolor='w')
 
             # Append positions of spike trains to tick list
             ycoords = np.arange(len(slist)) + ypos
