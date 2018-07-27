@@ -68,6 +68,7 @@ def rasterplot(spiketrain_list,
                pophist_mode='color',
                pophistbins=100,
                right_histogram=mean_firing_rate,
+               righthist_barwidth=1.01,
                filter_function=None,
                histscale=.1,
                labelkey=None,
@@ -78,9 +79,9 @@ def rasterplot(spiketrain_list,
                legendargs={'loc':(.98,1.), 'markerscale':1.5, 'handletextpad':0},
                ax=None,
                style='ticks',
-               palette='Set2',
-               context='paper',
-               colorcodes='colorblind'):
+               palette=None,
+               context='paper', # paper, poster, talk
+                ):
 
     """
     This function plots the dot display of spike trains alongside its
@@ -241,21 +242,20 @@ def rasterplot(spiketrain_list,
     """
 
     # Initialize plotting canvas
-    sns.set(style=style, palette=palette, context=context)
-    if type(palette) == str:
-        try:
-            sns.set_color_codes(palette)
-        except KeyError or TypeError:
-            sns.set_color_codes(colorcodes)
+    sns.set_context(context)
+    sns.set_style(style)
+
+    if palette is not None:
+        sns.set_palette(palette)
     else:
-        sns.set_color_codes(colorcodes)
+        palette = sns.color_palette()
 
     if ax is None:
         fig, ax = plt.subplots()
         # axis must be created after sns.set() command for style to apply!
 
     margin = 1 - histscale
-    left, bottom, width, height = ax.get_position()._get_bounds()
+    left, bottom, width, height = ax.get_position().bounds
     ax.set_position([    left,                  bottom,
                          margin * width,        margin * height])
     axhistx = plt.axes([left,                   bottom + margin * height,
@@ -291,7 +291,7 @@ def rasterplot(spiketrain_list,
     else:
         spacing = [spacing, spacing/2.]
     if spacing[0] < spacing[1]:
-        raise DeprecationWarning("For reasonable visual aid spacing between" \
+        raise DeprecationWarning("For reasonable visual aid, spacing between" \
                                + " top level group (spacing[0]) must be larger" \
                                + " than for subgroups (spacing[1]).")
 
@@ -390,9 +390,9 @@ def rasterplot(spiketrain_list,
 
     if pophist_mode == 'color' and len(colorkeyvalues)-1:
         if len(sns.color_palette()) < len(colorkeyvalues):
-            print "\033[31mWarning: There are more subsets than can be " \
-                  "separated by colors in the color palette which might lead "\
-                  "to confusion!\033[0m"
+            print("\033[31mWarning: There are more subsets than can be " +
+                  "separated by colors in the color palette which might lead " +
+                  "to confusion!\033[0m")
         max_y = 0
         for value in colorkeyvalues:
             idx = np.where(attribute_array[:, colorkey] == value)[0]
@@ -423,6 +423,7 @@ def rasterplot(spiketrain_list,
         axhistx.set_ylim(0, axhistx_ydim)
     axhistx.set_yticks([axhistx_ydim])
     axhistx.set_yticklabels(['{:.0f}'.format(axhistx_ydim)])
+    axhistx.set_ylabel('count')
 
     # Legend for colorkey
     if legend:
@@ -492,19 +493,19 @@ def rasterplot(spiketrain_list,
 
                 # Dot display
                 handle = ax.plot(st.times.magnitude,
-                                 [st_count + ypos] * st.__len__(), color=color,
-                                 **markerargs)
+                                 [st_count + ypos] * st.__len__(),
+                                 color=color, **markerargs)
                 if legend:
                     legend_handles[annotation_value] = handle[0]
 
                 # Right side histogram bar
                 barvalue = right_histogram(st)
-                barwidth = .8
-                axhisty.barh(bottom=st_count + ypos - barwidth/2.,
+                barwidth = righthist_barwidth
+                axhisty.barh(bottom=st_count + ypos, # - barwidth/2.,
                              width=barvalue,
                              height=barwidth,
                              color=color,
-                             edgecolor='w')
+                             edgecolor=color)
 
             # Append positions of spike trains to tick list
             ycoords = np.arange(len(slist)) + ypos
