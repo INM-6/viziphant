@@ -80,7 +80,7 @@ def rasterplot(spiketrain_list,
                ax=None,
                style='ticks',
                palette=None,
-               context='paper', # paper, poster, talk
+               context=None, # paper, poster, talk
                 ):
 
     """
@@ -242,8 +242,10 @@ def rasterplot(spiketrain_list,
     """
 
     # Initialize plotting canvas
-    sns.set_context(context)
     sns.set_style(style)
+
+    if context is not None:
+        sns.set_context(context)
 
     if palette is not None:
         sns.set_palette(palette)
@@ -501,7 +503,7 @@ def rasterplot(spiketrain_list,
                 # Right side histogram bar
                 barvalue = right_histogram(st)
                 barwidth = righthist_barwidth
-                axhisty.barh(bottom=st_count + ypos, # - barwidth/2.,
+                axhisty.barh(y=st_count + ypos, # - barwidth/2.,
                              width=barvalue,
                              height=barwidth,
                              color=color,
