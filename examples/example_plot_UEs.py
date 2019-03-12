@@ -4,7 +4,7 @@ import quantities as pq
 import elephant.unitary_event_analysis as ue
 import neo
 import matplotlib.pyplot as plt
-from UE_plot_funcs import *
+from viziphant.unitary_event_analysis import *
 
 
 # parameters for unitary events analysis
