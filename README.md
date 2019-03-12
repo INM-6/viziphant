@@ -14,3 +14,7 @@ git clone https://github.com/INM-6/viziphant.git
 cd viziphant
 pip install -e .
 ```
+<br><br>
+__Related Projects__
+
+Interactive visualization of neuronal correlation: https://github.com/INM-6/incapy
