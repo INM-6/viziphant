@@ -398,8 +398,7 @@ def rasterplot(spiketrain_list,
         max_y = 0
         for value in colorkeyvalues:
             idx = np.where(attribute_array[:, colorkey] == value)[0]
-            histout = axhistx.hist(np.concatenate([strain for strain in
-                                      [spiketrain_list[i] for i in idx]]),
+            histout = axhistx.hist(np.concatenate([spiketrain_list[i] for i in idx]),
                                      pophistbins, histtype='step', linewidth=1,
                                      color=colormap[int(value)])
             max_y = np.max([max_y, np.max(histout[0])])
@@ -409,8 +408,7 @@ def rasterplot(spiketrain_list,
             sum_color = separatorargs[0]['color']
         else:
             sum_color = sns.color_palette()[0]
-
-        histout = axhistx.hist(np.concatenate([strain for strain in spiketrain_list]),
+        histout = axhistx.hist(np.concatenate(spiketrain_list),
                                pophistbins, histtype='step', linewidth=1,
                                color=sum_color)
         max_y = np.max(histout[0])
