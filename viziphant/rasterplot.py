@@ -140,6 +140,8 @@ def rasterplot(spiketrain_list,
         When a function is applied is is recommended to set the axis label
         accordingly by using the axis handle returned by the function:
         axhisty.set_xlabel('Label Name')
+    :param righthist_barwidth: float (default 1.01)
+        The width of the right side histogram.
     :param filter_function: function
         The function gets ONE neo.SpikeTrain object as argument and if the
         return is True the spike train is included; if False it is exluded.
@@ -178,13 +180,6 @@ def rasterplot(spiketrain_list,
     :param palette: string | sequence
         Define the color palette either by its name or use a custom palette in
         a sequence of the form ([r,g,b],[r,g,b],...).
-    :param colorcodes: str
-        seaborn colorcodes setting which determines the colors for the
-        shorthand codes ('r', 'g', ...). If the given palette does not provide
-        its own color codes the colorcode parameter is applied.
-        By default this is set to 'colorblind'.
-        This setting should ensure a coherent appearance even when additional
-        drawings are added to the rasterplot after its execution.
     :param context: 'paper'(default) | 'talk' | 'poster'
         seaborn context setting which controls the scaling of labels. For the
         three options the parameters are scaled by .8, 1.3, and 1.6
