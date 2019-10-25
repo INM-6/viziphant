@@ -119,7 +119,7 @@ def plot_UE(data,
     plt.figure(1,figsize = figsize)
     if args['suptitle'] == True:
         plt.suptitle("Spike Pattern:"+ str((pat.T)[0]),fontsize = 20)
-    print 'plotting UEs ...'
+    print('plotting UEs ...')
     plt.subplots_adjust(top=top, right=right, left=left, bottom=bottom, hspace=hspace , wspace=wspace)
     ax = plt.subplot(num_row,1,1)
     ax.set_title('Unitary Events',fontsize = 20,color = 'r')
@@ -141,7 +141,7 @@ def plot_UE(data,
     plt.yticks(y_ticks_pos)
     plt.gca().set_yticklabels(unit_real_ids,fontsize = fsize)
     for ch_cnt, ch_id in enumerate(ch_real_ids):
-        print ch_id
+        print(ch_id)
         plt.gca().text((max(t_winpos) + winsize).rescale('ms').magnitude,
                        y_ticks_pos[ch_cnt],'CH-'+str(ch_id),fontsize = fsize)
 
@@ -154,7 +154,7 @@ def plot_UE(data,
             plt.axvline(e_val,ls = ls,color = 'r',lw = 2,alpha = alpha)
     if 'set_xticks' in args.keys() and args['set_xticks'] == False:
         plt.xticks([])
-    print 'plotting Raw Coincidences ...'
+    print('plotting Raw Coincidences ...')
     ax1 = plt.subplot(num_row,1,2,sharex = ax)
     ax1.set_title('Raw Coincidences',fontsize = 20,color = 'c')
     for n in range(N):
@@ -177,7 +177,7 @@ def plot_UE(data,
         for e_val in events[key]:
             plt.axvline(e_val,ls = ls,color = 'r',lw = 2,alpha = alpha)
 
-    print 'plotting PSTH ...'
+    print('plotting PSTH ...')
     plt.subplot(num_row,1,3,sharex=ax)
     #max_val_psth = 0.*pq.Hz
     for n in range(N):
@@ -201,7 +201,7 @@ def plot_UE(data,
 
     if 'set_xticks' in args.keys() and args['set_xticks'] == False:
         plt.xticks([])
-    print 'plotting emp. and exp. coincidences rate ...'
+    print('plotting emp. and exp. coincidences rate ...')
     plt.subplot(num_row,1,4,sharex=ax)
     plt.plot(t_winpos + winsize/2.,Js_dict['n_emp'],label = 'empirical',lw = lw,color = 'c')
     plt.plot(t_winpos + winsize/2.,Js_dict['n_exp'],label = 'expected',lw = lw,color = 'm')
@@ -216,7 +216,7 @@ def plot_UE(data,
     if 'set_xticks' in args.keys() and args['set_xticks'] == False:
         plt.xticks([])
 
-    print 'plotting Surprise ...'
+    print('plotting Surprise ...')
     plt.subplot(num_row,1,5,sharex=ax)
     plt.plot(t_winpos + winsize/2., Js_dict['Js'],lw = lw,color = 'k')
     plt.xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
