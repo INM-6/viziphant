@@ -78,7 +78,7 @@ def plot_array(
     
     # Plot the data
     >>> plot_array(
-            plt.gca(), (4,25), grid_data_obj, direction_data_obj, 
+    ...     plt.gca(), (4,25), grid_data_obj, direction_data_obj, 
             arrow_scale_factor=.7, summary_arrow_scale_factor=.5, 
             color_map=cmap)
     >>> plt.show()
