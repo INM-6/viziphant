@@ -76,7 +76,7 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
     cutting and aligning around a given trigger
     # codes for trigger events (extracted from a
     # documentation of an old file after
-    # contacting Dr. Alexa Rihle)
+    # contacting Dr. Alexa Riehle)
     # 700 : ST (correct) 701, 702, 703, 704*
     # 500 : ST (error =5) 501, 502, 503, 504*
     # 1000: ST (if no selec) 1001,1002,1003,1004*
