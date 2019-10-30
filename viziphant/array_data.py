@@ -105,11 +105,11 @@ def plot_array(
         rotation = 2.*np.pi-rotation
 
         # affine transform
-        X = X - (dimension[0]/2-0.5) #4.5
-        Y = Y - (dimension[1]/2-0.5) #4.5
+        X = X - (dimension[1]/2-0.5) #4.5
+        Y = Y - (dimension[0]/2-0.5) #4.5
         Xr = X * np.cos(rotation) - Y * np.sin(rotation)
         Yr = X * np.sin(rotation) + Y * np.cos(rotation)
-        X = Xr + (dimension[0]/2-0.5)
+        X = Xr + (dimension[1]/2-0.5)
         Y = Yr + (dimension[0]/2-0.5)
     image = axis.pcolormesh(
         X, Y, grid_data, vmin=minc, vmax=maxc, cmap=color_map)
