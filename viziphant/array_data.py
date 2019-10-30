@@ -70,7 +70,7 @@ def plot_array(
     ...     grid_data*pq.mV, t_start=0*pq.s, sampling_rate=1000*pq.Hz)
     
     # Create corresponding directions in the direction 0 rad
-    direction_data = np.exp(np.complex(0,1)*np.random.random((1,100))*.5)
+    >>> direction_data = np.exp(np.complex(0,1)*np.random.random((1,100))*.5)
     >>> direction_data_obj = neo.AnalogSignal(
     ...     direction_data*pq.dimensionless, 
     ...     t_start=0*pq.s, sampling_rate=1000*pq.Hz)
