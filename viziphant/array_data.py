@@ -84,7 +84,7 @@ def plot_array(
     >>> plt.show()
     """
     if not color_map:
-        color_map = matplotlob.pyplot.cm.get_cmap()
+        color_map = plt.cm.get_cmap()
         
     # Broken electrodes
     color_map.set_bad(color='k')
