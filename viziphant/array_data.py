@@ -64,6 +64,7 @@ def plot_array(
     # electrodes high and 25 wide. Electrode 1 is bottom left, electrode 100 
     # is top right. We set channel to a high value. Also, for simplicity, we'll
     # create only one sample of the AnalogSignal.
+    >>> import quantities as pq
     >>> grid_data = np.random.random((1,100))
     >>> grid_data[0,3] = 3
     >>> grid_data_obj = neo.AnalogSignal(
