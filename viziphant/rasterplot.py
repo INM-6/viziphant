@@ -608,3 +608,61 @@ def rasterplot(spiketrain_list,
                 st.annotations.pop(list_key, None)
 
     return ax, axhistx, axhisty
+
+
+def eventplot(times, labels, event=None, event_label_key=None, num_histogram_bins=50):
+    """
+    This function creates a simple event plot with a histogram from quantity arrays or
+    neo objects with a times attribute. Optionally, event times can be marked in the plot.
+
+    Multiple plots are created side by side for nested sublists in the times and labels
+    arguments.
+
+    :param times
+        list of lists of quantity arrays or neo objects with a times attribute to plot
+    :param labels
+        list of labels corresponding to the sublists of times
+    :param event
+        neo event object whose times should be marked in the plots as vertical lines
+        Default: None
+    :param event_label_key
+        key of an array annotation of the event to use for labelling instead of event.labels
+        Default: None
+    :param num_histogram_bins
+        number of bins for the histogram. Default: 50
+    """
+
+    if hasattr(times[0], 'units'):
+        times = [times]
+    if isinstance(labels, str):
+        labels = [labels]
+
+    fig, axes = plt.subplots(2, len(labels), sharex=True, sharey='row',
+                             figsize=(8 * len(labels), 3))
+
+    # make sure the indexing in the loop below does not break down for len(labels) = 1
+    axes = [np.atleast_1d(ax) for ax in axes]
+
+    for idx, label in enumerate(labels):
+        axes[0][idx].eventplot(times[idx])
+        axes[1][idx].hist(np.concatenate(times[idx]).magnitude,
+                          bins=num_histogram_bins)
+        axes[1][idx].set_xlabel(f'Time [{str(times[idx][0].units).split(" ")[-1]}]')
+        axes[0][idx].set_title(labels[idx])
+
+    if event is not None:
+        for event_idx in range(len(event)):
+            time = event.times[event_idx]
+            if event_label_key is not None:
+                label = event.array_annotations[event_label_key][event_idx]
+            else:
+                label = event.labels[event_idx]
+            for idx in range(len(labels)):
+                time = time.rescale(times[idx][0].units)
+                axes[0][idx].axvline(time, color='black')
+                axes[1][idx].axvline(time, color='black')
+                axes[0][idx].text(time, axes[0][idx].get_ylim()[1], label,
+                                  horizontalalignment='left', verticalalignment='bottom', rotation=40)
+
+    return fig, axes
+
