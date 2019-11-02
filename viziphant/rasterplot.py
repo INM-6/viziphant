@@ -647,7 +647,7 @@ def eventplot(times, labels, event=None, event_label_key=None, num_histogram_bin
         axes[0][idx].eventplot(times[idx])
         axes[1][idx].hist(np.concatenate(times[idx]).magnitude,
                           bins=num_histogram_bins)
-        axes[1][idx].set_xlabel(f'Time [{str(times[idx][0].units).split(" ")[-1]}]')
+        axes[1][idx].set_xlabel('Time [{units}]'.format(units=str(times[idx][0].units).split(" ")[-1]))
         axes[0][idx].set_title(labels[idx])
 
     if event is not None:

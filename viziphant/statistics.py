@@ -42,7 +42,7 @@ def isi(isis, labels, binsize=2*pq.ms, cutoff=250*pq.ms):
     for idx, label in enumerate(labels):
         axes[idx].hist(isis[idx], bins=bins)
         axes[idx].set_title(labels[idx])
-        axes[idx].set_xlabel(f'ISI Length [{str(isis[0].units).split(" ")[-1]}]')
+        axes[idx].set_xlabel('ISI Length [{units}]'.format(units=str(isis[0].units).split(" ")[-1]))
     axes[0].set_ylabel('ISI\nHistogram')
 
     return fig, axes
