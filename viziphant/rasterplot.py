@@ -141,7 +141,7 @@ def rasterplot(spiketrain_list,
         accordingly by using the axis handle returned by the function:
         axhisty.set_xlabel('Label Name')
     :param righthist_barwidth: float (default 1.01)
-        The width of the right side histogram.
+        The bin width of the right side histogram.
     :param filter_function: function
         The function gets ONE neo.SpikeTrain object as argument and if the
         return is True the spike train is included; if False it is exluded.
