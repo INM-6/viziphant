@@ -9,7 +9,7 @@ import elephant.unitary_event_analysis as ue
 
 # ToDo: meaningful coloring?!
 # ToDo: Input Events as neo objects/ quantities
-# ToDo: check user entries
+# ToDo: check user entries (=Benutzereingaben)
 # ToDo: rearange the plotting parameters dict
 # ToDo: consistent titles
 # ToDo: solution for legends
@@ -23,16 +23,16 @@ import elephant.unitary_event_analysis as ue
 # ToDo: optional alphabetic labeling
 # ToDo: improve neuron separation
 
-
+#plot_params_default = dictionary { keys : values }
 plot_params_default = {
-    # epochs to be marked on the time axis
-    'events': [],
+    # epochs to be marked on the time axis      #epochs = Def.: https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9
+    'events': [], #leere Liste
     # save figure
     'save_fig': False,
     # show figure
     'showfig': True,
     # figure size
-    'figsize': (10, 12),
+    'figsize': (10, 12), #Tupel
     # right margin
     'right': 0.9,
     # top margin
@@ -43,24 +43,20 @@ plot_params_default = {
     'left': 0.1,
     # id of the units
     'unit_ids': [0, 1],
-    # default line width
-    'linewidth': 2,
-    # delete the x ticks when "False"
+    # delete the x ticks when "False"   #ticks ???
     'set_xticks': False,
-    # default marker size for the UEs and coincidences
-    'marker_size': 4,
     # horizontal white space between subplots
     'hspace': 0.5,
     # width white space between subplots
     'wspace': 0.5,
-    # font size
+    # font size         #Schriftgroesse
     'fsize': 12,
     # the actual unit ids from the experimental recording
     'unit_real_ids': [3, 2],
     # channel id
     'ch_real_ids': [],
     # line width
-    'lw': 2,
+    'lw': 2,        #gleich zeile 47 'linewidth' :2
     # y limit for the surprise
     'S_ylim': (-3, 3),
     # marker size for the UEs and coincidences
@@ -68,7 +64,11 @@ plot_params_default = {
     # path and file name for saving the figure
     'path_filename_format': 'figure.pdf'
 }
-
+    """
+    DeadCode:
+    'marker_size' : 4   ist gleich wie 'ms' : 5 ;; da nur 'ms' im Code genutz wird kann 'marker_size geloescht werden
+    'linewidth' : 2     ist gleich wie 'lw' : 2 ;; da nur 'lw' im Code genutz wird kann 'linewidth' geloescht werden
+    """
 
 def load_gdf2Neo(fname, trigger, t_pre, t_post):
     """
@@ -91,8 +91,7 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
     # 20  : ET 201, 202, 203, 204
     """
 
-    data = numpy.loadtxt(fname)
-
+    data = numpy.loadtxt(fname)         #ist data ein 2D-Feld?? -> (Ja), numpy.loadtxt erstellt abhaengig vom uebergebenen Input immer ein array, dimensonen sind dabei variabel
     if trigger == 'PS_4':
         trigger_code = 114
     if trigger == 'RS_4':
@@ -104,11 +103,11 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
     # specify units
     units_id = numpy.unique(data[:, 0][data[:, 0] < 7])
     # indecies of the trigger
-    sel_tr_idx = numpy.where(data[:, 0] == trigger_code)[0]
+    sel_tr_idx = numpy.where(data[:, 0] == trigger_code)[0] #selectTriggerIndex
     # cutting the data by aligning on the trigger
-    data_tr = []
+    data_tr = []                #leereListe fuer DataTrigger
     for id_tmp in units_id:
-        data_sel_units = []
+        data_sel_units = []     #fuer jede unit in data wird eine leereUnitListe erstellt
         for i_cnt, i in enumerate(sel_tr_idx):
             start_tmp = data[i][1] - t_pre.magnitude
             stop_tmp = data[i][1] + t_post.magnitude
@@ -117,7 +116,7 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
                                  (data[:, 1] >= start_tmp))])
             sp_units_tmp = sel_data_tmp[:, 1][
                 numpy.where(sel_data_tmp[:, 0] == id_tmp)[0]]
-            if len(sp_units_tmp) > 0:
+            if len(sp_units_tmp) > 0:                           #laenge von 2D-Feld 'sp_units_temp' entspricht Anzahl der der Elemente inm array
                 aligned_time = sp_units_tmp - start_tmp
                 data_sel_units.append(neo.SpikeTrain(
                     aligned_time * pq.ms, t_start=0 * pq.ms,
@@ -127,8 +126,8 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
                     [] * pq.ms, t_start=0 * pq.ms,
                     t_stop=t_pre + t_post))
         data_tr.append(data_sel_units)
-    data_tr.reverse()
-    spiketrain = numpy.vstack([i for i in data_tr]).T
+    data_tr.reverse()                                            #warum einmal reversen???
+    spiketrain = numpy.vstack([i for i in data_tr]).T            #numpy.vstack: Stack arrays in sequence vertically
     return spiketrain
 
 
@@ -149,16 +148,15 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     plot_params.update(plot_params_user)
     globals().update(plot_params)
     if len(unit_real_ids) != N:
-        raise ValueError('length of unit_ids should be' +
-                         'equal to number of neurons!')
+        raise ValueError('length of unit_ids should be equal to number of neurons! \nUnit_Ids: '+unit_real_ids +'ungleich NumOfNeurons: '+N)
     plt.rcParams.update({'font.size': fsize})
     plt.rc('legend', fontsize=fsize)
 
-    num_row, num_col = 6, 1
+    num_row = 6  #DeadCode: num_col wird nie verwendet, d.h num_col kann geloescht werden
     ls = '-'
     alpha = 0.5
     plt.figure(1, figsize=figsize)
-    if 'suptitle' in plot_params.keys():
+    if 'suptitle' in plot_params.keys():                                    #'suptitle' im Default nicht vorhanden, kann also nur ueber plot_params_user eingepflegt werden
         plt.suptitle("Trial aligned on " +
                      plot_params['suptitle'], fontsize=20)
     plt.subplots_adjust(top=top, right=right, left=left,
@@ -174,7 +172,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
                      tr + n * (num_tr + 1) + 1,
                      '.', markersize=0.5, color='k')
         if n < N - 1:
-            ax0.axhline((tr + 2) * (n + 1), lw=2, color='k')
+            ax0.axhline((tr + 2) * (n + 1), lw=2, color='k') #deadCode: default: lw = 2; ->Nein, da lw von plt.rc kommt
     ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax0.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
     ax0.set_yticklabels([1, 15, 30], fontsize=fsize)
@@ -183,7 +181,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax0.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
-            ax0.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+            ax0.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha) #deadCode: default: lw = 2;  ->Nein, da lw von plt.rc kommt
     Xlim = ax0.get_xlim()
     ax0.text(Xlim[1] - 200, num_tr * 2 + 7, 'Neuron 2')
     ax0.text(Xlim[1] - 200, -12, 'Neuron 3')
