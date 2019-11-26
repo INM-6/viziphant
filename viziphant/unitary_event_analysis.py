@@ -64,11 +64,11 @@ plot_params_default = {
     # path and file name for saving the figure
     'path_filename_format': 'figure.pdf'
 }
-    """
-    DeadCode:
-    'marker_size' : 4   ist gleich wie 'ms' : 5 ;; da nur 'ms' im Code genutz wird kann 'marker_size geloescht werden
-    'linewidth' : 2     ist gleich wie 'lw' : 2 ;; da nur 'lw' im Code genutz wird kann 'linewidth' geloescht werden
-    """
+"""
+DeadCode:
+'marker_size' : 4   ist gleich wie 'ms' : 5 ;; da nur 'ms' im Code genutz wird kann 'marker_size geloescht werden
+'linewidth' : 2     ist gleich wie 'lw' : 2 ;; da nur 'lw' im Code genutz wird kann 'linewidth' geloescht werden
+"""
 
 def load_gdf2Neo(fname, trigger, t_pre, t_post):
     """
