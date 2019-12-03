@@ -43,7 +43,7 @@ plot_params_default = {
     'left': 0.1,
     # id of the units
     'unit_ids': [0, 1],
-    # delete the x ticks when "False"   #ticks ???
+    # delete the x ticks when "False"   #ticks ->marker on the axis
     'set_xticks': False,
     # horizontal white space between subplots
     'hspace': 0.5,
@@ -133,7 +133,33 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
 
 def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
             pattern_hash, N, plot_params_user):
-    """plots Figure 1 and Figure 2 of the manuscript"""
+
+        """
+        Visualization of the results of the Unitary Event Analysis.
+            The following plots will show:
+            - Spike Events (as rasterplot)
+            - Spike Rates (as curve)
+            - Coincident Events (as ...)
+            - Empirical & Excpected Coincidences Rates
+            - Suprise or Statistical Significance
+            - Unitary Events
+
+        Unitary Event (UE) analysis is a statistical method that
+         enables to analyze in a time resolved manner excess spike correlation
+         between simultaneously recorded neurons by comparing the empirical
+         spike coincidences (precision of a few ms) to the expected number
+         based on the firing rates of the neurons.
+        References:
+          - Gruen, Diesmann, Grammont, Riehle, Aertsen (1999) J Neurosci Methods,
+            94(1): 67-79.
+          - Gruen, Diesmann, Aertsen (2002a,b) Neural Comput, 14(1): 43-80; 81-19.
+          - Gruen S, Riehle A, and Diesmann M (2003) Effect of cross-trial
+            nonstationarity on joint-spike events Biological Cybernetics 88(5):335-351.
+          - Gruen S (2009) Data-driven significance estimation of precise spike
+            correlation. J Neurophysiology 101:1126-1140 (invited review)
+        :copyright: Copyright 2015-2016 by the Elephant team, see `doc/authors.rst`.
+        :license: Modified BSD, see LICENSE.txt for details.
+        """
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
@@ -141,12 +167,12 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)
     Js_sig = ue.jointJ(sig_level)
     num_tr = len(data)
-    pat = ue.inverse_hash_from_pattern(pattern_hash, N)
+    pat = ue.inverse_hash_from_pattern(pattern_hash, N) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, N, base)
 
     # figure format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
-    globals().update(plot_params)
+                                                         #globals().update(plot_params) #keine globals verwenden
     if len(unit_real_ids) != N:
         raise ValueError('length of unit_ids should be equal to number of neurons! \nUnit_Ids: '+unit_real_ids +'ungleich NumOfNeurons: '+N)
     plt.rcParams.update({'font.size': fsize})
