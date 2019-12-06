@@ -3,6 +3,8 @@
 import numpy
 import quantities as pq
 import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
+                               AutoMinorLocator)
 import string
 import neo
 import elephant.unitary_event_analysis as ue
@@ -64,11 +66,7 @@ plot_params_default = {
     # path and file name for saving the figure
     'path_filename_format': 'figure.pdf'
 }
-"""
-DeadCode:
-'marker_size' : 4   ist gleich wie 'ms' : 5 ;; da nur 'ms' im Code genutz wird kann 'marker_size geloescht werden
-'linewidth' : 2     ist gleich wie 'lw' : 2 ;; da nur 'lw' im Code genutz wird kann 'linewidth' geloescht werden
-"""
+
 
 def load_gdf2Neo(fname, trigger, t_pre, t_post):
     """
@@ -89,6 +87,20 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
     # 17  : ES 171, 172, 173, 174
     # 19  : RW 191, 192, 193, 194
     # 20  : ET 201, 202, 203, 204
+
+    Parameters:
+        -fname: String
+            name of the gdf-file
+        -trigger: String
+            spezification of trigger-kind
+        -t_pre: number
+            inicial time
+        -t_post: number
+            final time
+
+    Returns:
+        -spiketrain: 1D-Array
+            spiketrains as representation of neural activity
     """
 
     data = numpy.loadtxt(fname)         #ist data ein 2D-Feld?? -> (Ja), numpy.loadtxt erstellt abhaengig vom uebergebenen Input immer ein array, dimensonen sind dabei variabel
@@ -136,13 +148,39 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
 
     """
     Visualization of the results of the Unitary Event Analysis.
-        The following plots will show:
-        - Spike Events (as rasterplot)
-        - Spike Rates (as curve)
-        - Coincident Events (as ...)
-        - Empirical & Excpected Coincidences Rates
-        - Suprise or Statistical Significance
-        - Unitary Events
+
+    Parameters:
+        -data: 2D-Array
+            spiketrains as representation of neural activity
+        -Js_dict: dictionary
+            JointSuprise dictionary
+        -Js_sig: list of floats
+            list of suprise measure
+        -binsize: Quantity scalar with dimension time
+           size of bins for descritizing spike trains
+        -winsize: Quantity scalar with dimension time
+           size of the window of analysis
+        -winstep: Quantity scalar with dimension time
+           size of the window step
+        -pattern_hash: list of integers
+           list of interested patterns in hash values
+           (see hash_from_pattern and inverse_hash_from_pattern functions)
+        -N: integer
+            number of Neurons
+        -plot_params_user:
+            plotting parameters from the user
+
+    Returns:
+        -NONE
+
+    The following plots will be created:
+    - Spike Events (as rasterplot)
+    - Spike Rates (as curve)
+    - Coincident Events (as rasterplot with markers)
+    - Empirical & Excpected Coincidences Rates (as curves)
+    - Suprise or Statistical Significance (as curve with alpha-limits)
+    - Unitary Events (as rasterplot with markers)
+
 
     Unitary Event (UE) analysis is a statistical method that
      enables to analyze in a time resolved manner excess spike correlation
@@ -210,8 +248,8 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
         for e_val in plot_params['events'][key]:
             ax0.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)                                                     #deadCode: default: lw = 2;  ->Nein, da lw von plt.rc kommt
     Xlim = ax0.get_xlim()
-    ax0.text(Xlim[1] - 200, num_tr * 2 + 7, 'Neuron 1')
-    ax0.text(Xlim[1] - 200, -12, 'Neuron 2')
+    ax0.text(Xlim[1], num_tr * 2 + 7, 'Neuron 1')
+    ax0.text(Xlim[1], -12, 'Neuron 2')
 
     print('plotting Spike Rates as line plots')
     ax1 = plt.subplot(num_row, 1, 2, sharex=ax0)
@@ -226,13 +264,13 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
     ax1.set_ylim(0, max_val_psth)
     ax1.set_yticks([0, int(max_val_psth / 2), int(max_val_psth)])
     ax1.legend(
-        bbox_to_anchor=(1.12, 1.05), fancybox=True, shadow=True)
+        bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
     for key in plot_params['events']:
         for e_val in plot_params['events'][key]:
             ax1.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'], alpha=alpha)
     ax1.set_xticks([])
 
-    print('plotting Raw Coincidences as raster plot with markers indicating the Coincidence')
+    print('plotting Raw Coincidences as raster plot with markers indicating the Coincidences')
     ax2 = plt.subplot(num_row, 1, 3, sharex=ax0)
     ax2.set_title('Coincidence Events')
     for n in range(N):
@@ -271,7 +309,7 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
              label='expected', lw=plot_params['lw'], color='m')
     ax3.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax3.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax3.legend(bbox_to_anchor=(1.12, 1.05), fancybox=True, shadow=True)
+    ax3.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
     YTicks = ax3.get_ylim()
     ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
     for key in plot_params['events']:
@@ -298,7 +336,7 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
             ax4.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'], alpha=alpha)
     ax4.set_xticks([])
 
-    print('plotting Unitary Events as raster plot with markers indicating the Unitary Event')
+    print('plotting Unitary Events as raster plot with markers indicating the Unitary Events')
     ax5 = plt.subplot(num_row, 1, 6, sharex=ax0)
     ax5.set_title('Unitary Events')
     for n in range(N):
@@ -325,12 +363,14 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
             ax5.axhline((tr + 2) * (n + 1), lw=2, color='k')
     ax5.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
     ax5.set_yticklabels([1, 15, 30], fontsize=plot_params['fsize'])
-    ax5.set_xticklabels([0,
-                    (max(t_winpos) + winsize).rescale('ms').magnitude/2,
-                    (max(t_winpos) + winsize).rescale('ms').magnitude], fontsize=plot_params['fsize'] )
+
+    ax5.xaxis.set_major_locator(MultipleLocator(200))
+    ax5.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax5.xaxis.set_minor_locator(MultipleLocator(100))
+
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    print( (max(t_winpos) + winsize).rescale('ms').magnitude )
+
     ax5.set_ylabel('Trial', fontsize=plot_params['fsize'])
     ax5.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
     for key in plot_params['events']:
@@ -338,9 +378,7 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
             ax5.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
             ax5.text(e_val - 10 * pq.ms,
                      plot_params['S_ylim'][0] - 35, key, fontsize=plot_params['fsize'], color='r')
-    ax5.set_xticks([0,
-                    (max(t_winpos) + winsize).rescale('ms').magnitude/2,
-                    (max(t_winpos) + winsize).rescale('ms').magnitude])         #sinvolle Skalierung der Zeit???
+
 
     for i in range(num_row):
         ax = locals()['ax' + str(i)]
