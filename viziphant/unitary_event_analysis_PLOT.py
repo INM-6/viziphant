@@ -93,15 +93,28 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
             name of the gdf-file
         -trigger: String
             spezification of trigger-kind
-        -t_pre: number
+        -t_pre: number (int or float?)
             inicial time
-        -t_post: number
+        -t_post: number (int or float?)
             final time
 
     Returns:
         -spiketrain: 1D-Array
             spiketrains as representation of neural activity
     """
+
+    print("classes of the parameters from 'load_gdf2NEO':")
+    print(type(fname))
+    print(type(trigger))
+    print(type(t_pre))
+    print(type(t_post))
+
+    try:
+        _checkingUserEntries_load_gdf2Neo(fname, trigger, t_pre, t_post)
+    except TypeError as TE:
+        print(TE)
+        raise TE
+
 
     data = numpy.loadtxt(fname)         #ist data ein 2D-Feld?? -> (Ja), numpy.loadtxt erstellt abhaengig vom uebergebenen Input immer ein array, dimensonen sind dabei variabel
     if trigger == 'PS_4':
@@ -150,8 +163,8 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
     Visualization of the results of the Unitary Event Analysis.
 
     Parameters:
-        -data: 2D-Array
-            spiketrains as representation of neural activity
+        -data: list of spiketrains
+            list of spike trains in different trials as representation of neural activity
         -Js_dict: dictionary
             JointSuprise dictionary
         -Js_sig: list of floats
@@ -167,7 +180,7 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
            (see hash_from_pattern and inverse_hash_from_pattern functions)
         -N: integer
             number of Neurons
-        -plot_params_user:
+        -plot_params_user: dictionary
             plotting parameters from the user
 
     Returns:
@@ -198,6 +211,25 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
     :copyright: Copyright 2015-2016 by the Elephant team, see `doc/authors.rst`.
     :license: Modified BSD, see LICENSE.txt for details.
     """
+    print("classes of the parameters from 'plot_UE':")
+    print("data: "+str(type(data)))
+    print("Js_dict: "+str(type(Js_dict)))
+    print("Js_sig: "+str(type(Js_sig)))
+    print("binsize: "+str(type(binsize)))
+    print("winsize: "+str(type(winsize)))
+    print("winstep: "+str(type(winstep)))
+    print("pattern_hash: "+str(type(pattern_hash)))
+    print("N: "+str(type(N)))
+    print("plot_params_user: "+str(type(plot_params_user))+"\n")
+
+
+    try:
+        _checkungUserEntries_plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
+            pattern_hash, N, plot_params_user)
+    except (TypeError, KeyError) as errors:
+        print(errors)
+        raise errors
+
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
@@ -209,7 +241,6 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
     # figure format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
-    #globals().update(plot_params)               #keine globals verwenden
 
 
     if len(plot_params['unit_real_ids']) != N:
@@ -345,7 +376,7 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
                      numpy.ones_like(data_tr[n].magnitude) *
                      tr + n * (num_tr + 1) + 1, '.',
                      markersize=0.5, color='k')
-            sig_idx_win = numpy.where(Js_dict['Js'] >= Js_sig)[0] # Js_sig NotANumber
+            sig_idx_win = numpy.where(Js_dict['Js'] >= Js_sig)[0]
             if len(sig_idx_win) > 0:
                 x = numpy.unique(Js_dict['indices']['trial' + str(tr)])
                 if len(x) > 0:
@@ -396,5 +427,77 @@ def plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
 
     return None
 
+def _checkingUserEntries_load_gdf2Neo(fname, trigger, t_pre, t_post):
+    if (type(fname) != str):
+        raise TypeError('fname must be a string')
+    if (type(trigger) != str):
+        raise TypeError('trigger must be a string')
+    if (type(t_pre) != float): # or int    ## negative values allowed?
+        raise TypeError('t_pre must be a float/integer')
+    if (type(t_post) != float):
+        raise TypeError('t_post must be a float/integer')
 
+def _checkungUserEntries_plot_UE(data, Js_dict, Js_sig, binsize, winsize, winstep,
+            pattern_hash, N, plot_params_user):
+    if (type(data) != list and type(data) != numpy.ndarray): # sollen weiter Typen erlaubt sein???
+        raise TypeError('data must be a list (of spiketrains)')
 
+    if (type(Js_dict) != dict):
+        raise TypeError('Js_dict must be a dictionary')
+    else: #checking if all keys are correct
+        if "Js" not in Js_dict:
+            raise KeyError('"Js"-key is missing in Js_dict')
+        if "indices" not in Js_dict:
+            raise KeyError('"indices"-key is missing in Js_dict')
+        if "n_emp" not in Js_dict:
+            raise KeyError('"n_emp"-key is missing in Js_dict')
+        if "n_exp" not in Js_dict:
+            raise KeyError('"n_exp"-key is missing in Js_dict')
+        if "rate_avg" not in Js_dict:
+            raise KeyError('"rate_avg"-key is missing in Js_dict')
+        #creating keys-list and removing all legal keys
+        keys_Js_dict = list(Js_dict.keys())
+        keys_Js_dict.remove("Js")
+        keys_Js_dict.remove("indices")
+        keys_Js_dict.remove("n_emp")
+        keys_Js_dict.remove("n_exp")
+        keys_Js_dict.remove("rate_avg")
+        if (len(keys_Js_dict) != 0): # checking for additional invalid keys
+            raise KeyError('invalid keys in Js_dict detected')
+
+    if ( (type(Js_sig) != list) and (type(Js_sig) != numpy.float64)
+            and (type(Js_sig) != numpy.ndarray)  ):
+        raise TypeError('Js_sig must be a list (of floats)')
+    elif (type(Js_sig) == list):
+        for i in Js_sig:
+            if ( (type(Js_sig[i]) != numpy.float64) and (type(Js_sig[i]) != float) ):
+                raise TypeError('elements of the Js_sig list are NOT floats')
+
+    if (type(binsize) != pq.quantity.Quantity): #quantity scaler
+        raise TypeError('binsize must be a quantity scaler/int')
+
+    if (type(winsize) != pq.quantity.Quantity):
+        raise TypeError('winsize must be a quantity scaler/int')
+
+    if (type(winstep)!= pq.quantity.Quantity):
+        raise TypeError('winstep must be a quantity scaler/int')
+
+    if (type(pattern_hash) != list and type(pattern_hash) != numpy.ndarray):
+        raise TypeError('pattern_hash must be a list (of integers)')
+    elif (type(pattern_hash) == list):
+        for i in pattern_hash:
+            if (type(pattern_hash[i]) != int):
+                raise TypeError('elements of the pattern_hash list are NOT integers')
+
+    if (type(N) != int):
+        raise TypeError('N must be an integer')
+
+    if (type(plot_params_user) != dict):
+        raise TypeError('plot_params_user must be a dictionary')
+    else: #checking if all key are correct  ->not every key from the default-dict must be in the users-dict, but also no additional keys
+        keys_plot_params_user = list(plot_params_user.keys())
+        for x in list(plot_params_default.keys()):
+            if x in keys_plot_params_user:
+                keys_plot_params_user.remove(x)
+        if (len(keys_plot_params_user) != 0):
+            raise KeyError('invalid keys in plot_params_user detected')
