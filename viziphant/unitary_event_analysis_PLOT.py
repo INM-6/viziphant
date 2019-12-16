@@ -26,24 +26,8 @@ import elephant.unitary_event_analysis as ue
 plot_params_default = {
     # epochs to be marked on the time axis      #epochs = Def.: https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9
     'events': [], #leere Liste
-    # save figure
-    'save_fig': False,
-    # show figure
-    'showfig': True,
-    # figure size
-    'figsize': (10, 12), #Tupel # entfernen
-    # right margin
-    'right': 0.9,  # entfernen
-    # top margin
-    'top': 0.9,  # entfernen
-    # bottom margin
-    'bottom': 0.1, # entfernen
-    # left margin
-    'left': 0.1, # entfernen
     # id of the units
     'unit_ids': [0, 1],
-    # delete the x ticks when "False"   #ticks ->marker on the axis
-    'set_xticks': False,
     # horizontal white space between subplots
     'hspace': 0.5,
     # width white space between subplots
@@ -52,16 +36,12 @@ plot_params_default = {
     'fsize': 12,
     # the actual unit ids from the experimental recording
     'unit_real_ids': [1, 2],
-    # channel id
-    'ch_real_ids': [],
     # line width
     'lw': 2,        #gleich zeile 47 'linewidth' :2
     # y limit for the surprise
     'S_ylim': (-3, 3),
     # marker size for the UEs and coincidences
     'ms': 5,
-    # path and file name for saving the figure
-    'path_filename_format': 'figure.pdf'
 }
 
 
@@ -245,8 +225,7 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
     if 'suptitle' in plot_params.keys():                                                                                #'suptitle' im Default nicht vorhanden, kann also nur ueber plot_params_user eingepflegt werden
         plt.suptitle("Trial aligned on " +
                      plot_params['suptitle'], fontsize=20)
-    plt.subplots_adjust(top=plot_params.get('top'), right=plot_params['right'], left=plot_params['left'],
-                        bottom=plot_params['bottom'], hspace=plot_params['hspace'], wspace=plot_params['wspace'])
+    plt.subplots_adjust(hspace=plot_params['hspace'], wspace=plot_params['wspace'])
 
 
     plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, position[0])
