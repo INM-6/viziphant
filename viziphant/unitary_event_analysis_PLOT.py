@@ -1,5 +1,5 @@
 
-
+import math
 import numpy
 import quantities as pq
 import matplotlib.pyplot as plt
@@ -29,7 +29,7 @@ plot_params_default = {
     # id of the units
     'unit_ids': [0, 1],
     # horizontal white space between subplots
-    'hspace': 0.5,
+    'hspace': 1,
     # width white space between subplots
     'wspace': 0.5,
     # font size         #Schriftgroesse
@@ -37,11 +37,23 @@ plot_params_default = {
     # the actual unit ids from the experimental recording
     'unit_real_ids': [1, 2],
     # line width
-    'lw': 2,        #gleich zeile 47 'linewidth' :2
+    'lw': 0.5,
     # y limit for the surprise
     'S_ylim': (-3, 3),
-    # marker size for the UEs and coincidences
-    'ms': 5,
+
+}
+
+plot_markers_default = {
+    'data_symbol': "s",
+    'data_markersize': 0.5,
+    'data_markercolor': "k",
+    'data_markerfacecolor': "none",
+    'data_markeredgecolor': "none",
+    'event_symbol': "s",
+    'event_markersize': 5,
+    'event_markercolor': "r",
+    'event_markerfacecolor': "none",
+    'event_markeredgecolor': "r",
 }
 
 
@@ -134,7 +146,7 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
 
 
 def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep, numberOfNeurons, plot_params_user,
-            position):
+            plot_markers_user, position):
 
     """
     Visualization of the results of the Unitary Event Analysis.
@@ -159,6 +171,8 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
             number of Neurons
         -plot_params_user: dictionary
             plotting parameters from the user
+        -plot_markers_user: list of dictionaries
+            marker properties from the user
         -position: list of position-tupels
             (posSpikeEvents(c,r,i), posSpikeRates(c,r,i), posCoincidenceEvents(c,r,i), pos CoincidenceRates(c,r,i),
             posStatisticalSignificance(c,r,i), posUnitaryEvents(c,r,i))
@@ -218,7 +232,8 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
     plot_params.update(plot_params_user)
 
     if len(plot_params['unit_real_ids']) != numberOfNeurons:
-        raise ValueError('length of unit_ids should be equal to number of neurons! \nUnit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
+        raise ValueError('length of unit_ids should be equal to number of neurons! \n'
+                         'Unit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
     plt.rcParams.update({'font.size': plot_params['fsize']})
     plt.rc('legend', fontsize=plot_params['fsize'])
 
@@ -228,62 +243,86 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
     plt.subplots_adjust(hspace=plot_params['hspace'], wspace=plot_params['wspace'])
 
 
-    plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, position[0])
+    plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user[0], position[0])
 
-    plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user, position[1])
+    plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
+                    plot_params_user, position[1])
 
     plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
-                           plot_params_user, position[2])
+                           plot_params_user, plot_markers_user[1], position[2])
 
     plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
                           plot_params_user, position[3])
 
-    plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep, numberOfNeurons,
-                                 plot_params_user, position[4])
+    plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep,
+                                 numberOfNeurons, plot_params_user, position[4])
 
-    plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep, numberOfNeurons,
-                       plot_params_user, position[5])
+    plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep,
+                       numberOfNeurons, plot_params_user, plot_markers_user[2], position[5])
     return None
 
 
-def plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, position):
+def plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user, position):
     print('plotting Spike Events as raster plot')
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)                                                                                                              #jointSuprise_sig war NotANumber;; vorher jointSuprise_sig = ue.jointJ(sig_level) ,d.h. doppelter ue.jointJ aufruf und deshalb war jointSuprise_sig NAN
     num_tr = len(data)
-    ls = '-'
-    alpha = 0.5
                                                                                                                         #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
-    # figure format
+    # subplots format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
+    # marker format
+    plot_markers = plot_markers_default
+    plot_markers.update(plot_markers_user)
 
     ax0 = plt.subplot(position[0], position[1], position[2])
     ax0.set_title('Spike Events')
     for n in range(numberOfNeurons):
         for tr, data_tr in enumerate(data):
             ax0.plot(data_tr[n].rescale('ms').magnitude,
-                     numpy.ones_like(data_tr[n].magnitude) *
-                     tr + n * (num_tr + 1) + 1,
-                     '.', markersize=0.5, color='k')
+                     numpy.ones_like(data_tr[n].magnitude) *tr + n * (num_tr + 1) + 1,
+                     marker=plot_markers['data_symbol'], markersize=plot_markers['data_markersize'],
+                     color=plot_markers['data_markercolor'], ls='None')
         if n < numberOfNeurons - 1:
-            ax0.axhline((tr + 2) * (n + 1), lw=2,
-                        color='k')  # deadCode: default: lw = 2; ->Nein, da lw von plt.rc kommt
-    ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax0.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax0.set_yticklabels([1, 15, 30], fontsize=plot_params['fsize'])
+            ax0.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='b')
+
     ax0.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax0.set_xticks([])
+    ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
+
+    ax0.xaxis.set_major_locator(MultipleLocator(200))
+    ax0.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax0.xaxis.set_minor_locator(MultipleLocator(100))
+    #set yaxis
+    yticks_list = []
+    for yt1 in range(1, numberOfNeurons*num_tr, num_tr+1):
+        yticks_list.append(yt1)
+    for n in range(numberOfNeurons):
+        for yt2 in range(n*(num_tr+1)+15, (n+1)*num_tr, 15):
+            yticks_list.append(yt2)
+    yticks_list.sort()
+
+    yticks_labels_list = [1]
+    anzahl_y_ticks_proNeuron = math.floor(num_tr/15)
+    for i in range(anzahl_y_ticks_proNeuron):
+        yticks_labels_list.append((i+1)*15)
+
+    hilfsListe = yticks_labels_list
+    for i in range(numberOfNeurons-1):
+        yticks_labels_list += hilfsListe
+    #print(yticks_list)
+    ax0.set_yticks(yticks_list)
+    ax0.set_yticklabels(yticks_labels_list, fontsize=plot_params['fsize'])
+
+    x_lim = ax0.get_xlim()
+    ax0.text(x_lim[1], num_tr * 2 + 7, 'Neuron 2')
+    ax0.text(x_lim[1], -12, 'Neuron 1')
+
+    ax0.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
     ax0.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax0.axvline(e_val, ls=ls, color='r', lw=2,
-                        alpha=alpha)  # deadCode: default: lw = 2;  ->Nein, da lw von plt.rc kommt
-    Xlim = ax0.get_xlim()
-    ax0.text(Xlim[1], num_tr * 2 + 7, 'Neuron 1')
-    ax0.text(Xlim[1], -12, 'Neuron 2')
+
+    return None
 
 
 def plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user, position):
@@ -292,11 +331,8 @@ def plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)                                                                                                              #jointSuprise_sig war NotANumber;; vorher jointSuprise_sig = ue.jointJ(sig_level) ,d.h. doppelter ue.jointJ aufruf und deshalb war jointSuprise_sig NAN
-    num_tr = len(data)
-    ls = '-'
-    alpha = 0.5
-                                                                                                                        #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
-    # figure format
+                                                                                                     #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
+    # subplot format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
 
@@ -306,32 +342,38 @@ def plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, 
         ax1.plot(t_winpos + winsize / 2.,
                  jointSuprise_dict['rate_avg'][:, n].rescale('Hz'),
                  label='Neuron ' + str(plot_params['unit_real_ids'][n]), lw=plot_params['lw'])
-    ax1.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+
     ax1.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     max_val_psth = 40
     ax1.set_ylim(0, max_val_psth)
+
+    ax1.xaxis.set_major_locator(MultipleLocator(200))
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax1.xaxis.set_minor_locator(MultipleLocator(100))
     ax1.set_yticks([0, int(max_val_psth / 2), int(max_val_psth)])
-    ax1.legend(
-        bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax1.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'], alpha=alpha)
-    ax1.set_xticks([])
+
+    ax1.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
+    ax1.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
+    ax1.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+
+    return None
 
 
-def plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons, plot_params_user, position):
+def plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
+                           plot_params_user, plot_markers_user, position):
     print('plotting Raw Coincidences as raster plot with markers indicating the Coincidences')
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)                                                                                                              #jointSuprise_sig war NotANumber;; vorher jointSuprise_sig = ue.jointJ(sig_level) ,d.h. doppelter ue.jointJ aufruf und deshalb war jointSuprise_sig NAN
     num_tr = len(data)
-    ls = '-'
-    alpha = 0.5
                                                                                                                         #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
-    # figure format
+    # subplot format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
+    # marker format
+    plot_markers = plot_markers_default
+    plot_markers.update(plot_markers_user)
 
     ax2 = plt.subplot(position[0], position[1], position[2])
     ax2.set_title('Coincidence Events')
@@ -340,43 +382,65 @@ def plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, n
             ax2.plot(data_tr[n].rescale('ms').magnitude,
                      numpy.ones_like(data_tr[n].magnitude) *
                      tr + n * (num_tr + 1) + 1,
-                     '.', markersize=0.5, color='k')
-            ax2.plot(
-                numpy.unique(jointSuprise_dict['indices']['trial' + str(tr)]) *
-                binsize,
-                numpy.ones_like(numpy.unique(jointSuprise_dict['indices'][
-                                                 'trial' + str(tr)])) * tr + n * (num_tr + 1) + 1,
-                ls='', ms=plot_params['ms'], marker='s', markerfacecolor='none',
-                markeredgecolor='c')
+                     marker=plot_markers['data_symbol'], markersize=plot_markers['data_markersize'],
+                     color=plot_markers['data_markercolor'],ls='None')
+            ax2.plot(numpy.unique(jointSuprise_dict['indices']['trial' + str(tr)]) *binsize,
+                numpy.ones_like(numpy.unique(jointSuprise_dict['indices']['trial' + str(tr)]))
+                * tr + n * (num_tr + 1) + 1,
+                ls='', ms=plot_markers['event_markersize'], marker=plot_markers['event_symbol'],
+                markerfacecolor=plot_markers['event_markerfacecolor'],
+                markeredgecolor=plot_markers['event_markeredgecolor'])
         if n < numberOfNeurons - 1:
-            ax2.axhline((tr + 2) * (n + 1), lw=2, color='k')
+            ax2.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='b')
     ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax2.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax2.set_yticklabels([1, 15, 30], fontsize=plot_params['fsize'])
     ax2.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax2.set_xticks([])
+
+    ax2.xaxis.set_major_locator(MultipleLocator(200))
+    ax2.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax2.xaxis.set_minor_locator(MultipleLocator(100))
+    # set yaxis
+    yticks_list = []
+    for yt1 in range(1, numberOfNeurons * num_tr, num_tr + 1):
+        yticks_list.append(yt1)
+    for n in range(numberOfNeurons):
+        for yt2 in range(n * (num_tr + 1) + 15, (n + 1) * num_tr, 15):
+            yticks_list.append(yt2)
+    yticks_list.sort()
+
+    yticks_labels_list = [1]
+    anzahl_y_ticks_proNeuron = math.floor(num_tr / 15)
+    for i in range(anzahl_y_ticks_proNeuron):
+        yticks_labels_list.append((i + 1) * 15)
+
+    hilfsListe = yticks_labels_list
+    for i in range(numberOfNeurons - 1):
+        yticks_labels_list += hilfsListe
+    # print(yticks_list)
+    ax2.set_yticks(yticks_list)
+    ax2.set_yticklabels(yticks_labels_list, fontsize=plot_params['fsize'])
+
+    ax2.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
     ax2.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax2.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+
+    return None
 
 
-def plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user, position):
+def plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user,
+                          position):
     print('plotting empirical and expected coincidences rate as line plots')
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)                                                                                                              #jointSuprise_sig war NotANumber;; vorher jointSuprise_sig = ue.jointJ(sig_level) ,d.h. doppelter ue.jointJ aufruf und deshalb war jointSuprise_sig NAN
     num_tr = len(data)
-    ls = '-'
-    alpha = 0.5
                                                                                                                         #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
-    # figure format
+    # subplot format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
 
     if len(plot_params['unit_real_ids']) != numberOfNeurons:
-        raise ValueError('length of unit_ids should be equal to number of neurons! \nUnit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
+        raise ValueError('length of unit_ids should be equal to number of neurons! \n'
+                         'Unit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
     plt.rcParams.update({'font.size': plot_params['fsize']})
     plt.rc('legend', fontsize=plot_params['fsize'])
 
@@ -389,23 +453,28 @@ def plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeu
              jointSuprise_dict['n_exp'] / (winsize.rescale('s').magnitude * num_tr),
              label='expected', lw=plot_params['lw'], color='m')
     ax3.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax3.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax3.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
-    YTicks = ax3.get_ylim()
-    ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax3.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
-    ax3.set_xticks([])
 
-def plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep, numberOfNeurons, plot_params_user, position):
+    ax3.xaxis.set_major_locator(MultipleLocator(200))
+    ax3.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax3.xaxis.set_minor_locator(MultipleLocator(100))
+    y_ticks = ax3.get_ylim()
+    ax3.set_yticks([0, y_ticks[1] / 2, y_ticks[1]])
+
+    ax3.legend(bbox_to_anchor=(1, 1), fancybox=True, shadow=True)
+    ax3.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
+    ax3.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+
+    return None
+
+
+def plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep, numberOfNeurons,
+                                 plot_params_user, position):
     print('plotting Surprise/Statistical Significance as line plot')
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)                                                                                                              #jointSuprise_sig war NotANumber;; vorher jointSuprise_sig = ue.jointJ(sig_level) ,d.h. doppelter ue.jointJ aufruf und deshalb war jointSuprise_sig NAN
-    num_tr = len(data)
-    ls = '-'
+
     alpha = 0.5
                                                                                                                         #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
     # figure format
@@ -421,21 +490,26 @@ def plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, wins
     ax4.set_title('Statistical Significance')
     ax4.plot(t_winpos + winsize / 2., jointSuprise_dict['Js'], lw=plot_params['lw'], color='k')
     ax4.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
+    ax4.set_ylim(plot_params['S_ylim'])
+
     ax4.axhline(jointSuprise_sig, ls='-', color='r')
     ax4.axhline(-jointSuprise_sig, ls='-', color='g')
     ax4.text(t_winpos[30], jointSuprise_sig + 0.3, '$\\alpha +$', color='r')
     ax4.text(t_winpos[30], -jointSuprise_sig - 0.5, '$\\alpha -$', color='g')
-    ax4.set_xticks(t_winpos.magnitude[::int(len(t_winpos) / 10)])
+
+    ax4.xaxis.set_major_locator(MultipleLocator(200))
+    ax4.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    ax4.xaxis.set_minor_locator(MultipleLocator(100))
     ax4.set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
-    ax4.set_yticklabels([0.99, 0.5, 0.01])
 
-    ax4.set_ylim(plot_params['S_ylim'])
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax4.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'], alpha=alpha)
-    ax4.set_xticks([])
+    ax4.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
+    ax4.set_yticklabels([alpha+0.5, alpha, alpha-0.5])
 
-def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep, numberOfNeurons, plot_params_user, position):
+    return None
+
+
+def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep,
+                       numberOfNeurons, plot_params_user, plot_markers_user, position):
     print('plotting Unitary Events as raster plot with markers indicating the Unitary Events')
 
     t_start = data[0][0].t_start
@@ -445,12 +519,17 @@ def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsi
     ls = '-'
     alpha = 0.5
                                                                                                                         #pat = ue.inverse_hash_from_pattern(pattern_hash, numberOfNeurons) # base fehlt?! ~/anaconda3/envs/vizitest/lib/python3.7/site-packages/elephant/unitary_event_analysis.py in inverse_hash_from_pattern(h, numberOfNeurons, base)
-    # figure format
+    # subplot format
     plot_params = plot_params_default
     plot_params.update(plot_params_user)
+    # marker format
+    plot_markers = plot_markers_default
+    plot_markers.update(plot_markers_user)
+    print(plot_markers.values())
 
     if len(plot_params['unit_real_ids']) != numberOfNeurons:
-        raise ValueError('length of unit_ids should be equal to number of neurons! \nUnit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
+        raise ValueError('length of unit_ids should be equal to number of neurons! \n'
+                         'Unit_Ids: '+plot_params['unit_real_ids'] +'ungleich NumOfNeurons: '+numberOfNeurons)
     plt.rcParams.update({'font.size': plot_params['fsize']})
     plt.rc('legend', fontsize=plot_params['fsize'])
 
@@ -460,8 +539,8 @@ def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsi
         for tr, data_tr in enumerate(data):
             ax5.plot(data_tr[n].rescale('ms').magnitude,
                      numpy.ones_like(data_tr[n].magnitude) *
-                     tr + n * (num_tr + 1) + 1, '.',
-                     markersize=0.5, color='k')
+                     tr + n * (num_tr + 1) + 1, marker=plot_markers['data_symbol'],
+                     markersize=plot_markers['data_markersize'], color=plot_markers['data_markercolor'],ls='None')
             sig_idx_win = numpy.where(jointSuprise_dict['Js'] >= jointSuprise_sig)[0]
             if len(sig_idx_win) > 0:
                 x = numpy.unique(jointSuprise_dict['indices']['trial' + str(tr)])
@@ -474,27 +553,48 @@ def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsi
                     ax5.plot(
                         numpy.unique(xx) * binsize,
                         numpy.ones_like(numpy.unique(xx)) * tr + n * (num_tr + 1) + 1,
-                        ms=plot_params['ms'], marker='s', ls='', markerfacecolor='none', markeredgecolor='r')
+                        ms=plot_markers['event_markersize'], marker=plot_markers['event_symbol'], ls='',
+                        markerfacecolor=plot_markers['event_markerfacecolor'],
+                        markeredgecolor=plot_markers['event_markeredgecolor'])
 
         if n < numberOfNeurons - 1:
-            ax5.axhline((tr + 2) * (n + 1), lw=2, color='k')
-    ax5.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax5.set_yticklabels([1, 15, 30], fontsize=plot_params['fsize'])
+            ax5.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='b')
+    ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
+    ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
+
+    x_line_coords = MultipleLocator(200).tick_values(0, 2200)
+    for xc in x_line_coords:
+        ax5.axvline(xc, lw=plot_params['lw'],color='g')
 
     ax5.xaxis.set_major_locator(MultipleLocator(200))
     ax5.xaxis.set_major_formatter(FormatStrFormatter('%d'))
     ax5.xaxis.set_minor_locator(MultipleLocator(100))
+    # set yaxis
+    yticks_list = []
+    for yt1 in range(1, numberOfNeurons * num_tr, num_tr + 1):
+        yticks_list.append(yt1)
+    for n in range(numberOfNeurons):
+        for yt2 in range(n * (num_tr + 1) + 15, (n + 1) * num_tr, 15):
+            yticks_list.append(yt2)
+    yticks_list.sort()
 
-    ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
+    yticks_labels_list = [1]
+    anzahl_y_ticks_proNeuron = math.floor(num_tr / 15)
+    for i in range(anzahl_y_ticks_proNeuron):
+        yticks_labels_list.append((i + 1) * 15)
 
-    ax5.set_ylabel('Trial', fontsize=plot_params['fsize'])
+    hilfsListe = yticks_labels_list
+    for i in range(numberOfNeurons - 1):
+        yticks_labels_list += hilfsListe
+    # print(yticks_list)
+    ax5.set_yticks(yticks_list)
+    ax5.set_yticklabels(yticks_labels_list, fontsize=plot_params['fsize'])
+
     ax5.set_xlabel('Time [ms]', fontsize=plot_params['fsize'])
-    for key in plot_params['events']:
-        for e_val in plot_params['events'][key]:
-            ax5.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
-            ax5.text(e_val - 10 * pq.ms,
-                     plot_params['S_ylim'][0] - 35, key, fontsize=plot_params['fsize'], color='r')
+    ax5.set_ylabel('Trial', fontsize=plot_params['fsize'])
+
+    return None
+
 
 """
 def _checkingUserEntries_load_gdf2Neo(fname, trigger, t_pre, t_post):
