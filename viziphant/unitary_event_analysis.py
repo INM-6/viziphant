@@ -147,7 +147,7 @@ def load_gdf2Neo(fname, trigger, t_pre, t_post):
     return spiketrain
 
 
-def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep, numberOfNeurons, plot_params_user,
+def plot_unitary_event(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep, numberOfNeurons, plot_params_user,
             plot_markers_user, position):
 
     """
@@ -210,7 +210,7 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
     :license: Modified BSD, see LICENSE.txt for details.
     """
     """
-    print("classes of the parameters from 'plot_UE':")
+    print("classes of the parameters from 'plot_unitary_event':")
     print("data: "+str(type(data)))
     print("jointSuprise_dict: "+str(type(jointSuprise_dict)))
     print("jointSuprise_sig: "+str(type(jointSuprise_sig)))
@@ -244,19 +244,19 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
                      plot_params['suptitle'], fontsize=20)
     plt.subplots_adjust(hspace=plot_params['hspace'], wspace=plot_params['wspace'])
 
-    plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user[0],
+    plot_spike_events(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user[0],
                      position[0])
 
-    plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
+    plot_spike_rates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
                     plot_params_user, plot_markers_user[1], position[1])
 
-    plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
+    plot_coincidence_events(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
                            plot_params_user, plot_markers_user[2], position[2])
 
-    plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
+    plot_coincidence_rates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons,
                           plot_params_user,plot_markers_user[3], position[3])
 
-    plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep,
+    plot_statistical_significance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep,
                                  numberOfNeurons, plot_params_user, plot_markers_user[4], position[4])
 
     plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep,
@@ -264,7 +264,7 @@ def plot_UE(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep
     return None
 
 
-def plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user, position):
+def plot_spike_events(data, winsize, winstep, numberOfNeurons, plot_params_user, plot_markers_user, position):
     print('plotting Spike Events as raster plot')
 
     t_start = data[0][0].t_start
@@ -327,7 +327,7 @@ def plot_SpikeEvents(data, winsize, winstep, numberOfNeurons, plot_params_user, 
     return None
 
 
-def plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user,
+def plot_spike_rates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user,
                     plot_markers_user, position):
     print('plotting Spike Rates as line plots')
 
@@ -366,7 +366,7 @@ def plot_SpikeRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, 
     return None
 
 
-def plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
+def plot_coincidence_events(data, jointSuprise_dict, binsize, winsize, winstep, numberOfNeurons,
                            plot_params_user, plot_markers_user, position):
     print('plotting Raw Coincidences as raster plot with markers indicating the Coincidences')
 
@@ -432,7 +432,7 @@ def plot_CoincidenceEvents(data, jointSuprise_dict, binsize, winsize, winstep, n
     return None
 
 
-def plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user,
+def plot_coincidence_rates(data, jointSuprise_dict, winsize, winstep, numberOfNeurons, plot_params_user,
                           plot_markers_user, position):
     print('plotting empirical and expected coincidences rate as line plots')
 
@@ -477,7 +477,7 @@ def plot_CoincidenceRates(data, jointSuprise_dict, winsize, winstep, numberOfNeu
     return None
 
 
-def plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep, numberOfNeurons,
+def plot_statistical_significance(data, jointSuprise_dict, jointSuprise_sig, winsize, winstep, numberOfNeurons,
                                  plot_params_user, plot_markers_user, position):
     print('plotting Surprise/Statistical Significance as line plot')
 
@@ -522,7 +522,7 @@ def plot_StatisticalSignificance(data, jointSuprise_dict, jointSuprise_sig, wins
     return None
 
 
-def plot_UnitaryEvents(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep,
+def plot_unitary_event(data, jointSuprise_dict, jointSuprise_sig, binsize, winsize, winstep,
                        numberOfNeurons, plot_params_user, plot_markers_user, position):
     print('plotting Unitary Events as raster plot with markers indicating the Unitary Events')
 
