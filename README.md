@@ -17,10 +17,11 @@ pip install -e .
 
 
 #### Copyright
-
+:copyright: 2015-2020 by the [Viziphant team](doc/authors.rst)
 
 #### License
 BSD 3-Clause License, see [LICENSE](LICENSE) for details.
 
 
 #### Acknowledgements
+See [acknowledgements](doc/acknowledgements.rst)
