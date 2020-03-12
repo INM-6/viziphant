@@ -33,7 +33,6 @@ def isi(isis, labels, binsize=2*pq.ms, cutoff=250*pq.ms):
     fig, axes = plt.subplots(1, len(labels), sharex=True, sharey=True,
                              figsize=(8 * len(labels), 3))
 
-    # make sure the indexing in the loop below does not break down for len(labels) = 1
     axes = np.atleast_1d(axes)
 
     bins = np.arange(0, cutoff.rescale(isis[0].units).magnitude.item(),
