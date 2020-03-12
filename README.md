@@ -22,5 +22,5 @@ pip install -e .
 #### License
 BSD 3-Clause License, see [LICENSE](LICENSE) for details.
 
-#### Acknowledgements
-See [acknowledgements](doc/acknowledgements.rst).
+#### Acknowledgments
+See [acknowledgments](doc/acknowledgments.rst).
