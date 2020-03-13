@@ -7,23 +7,6 @@ import string
 import neo
 import elephant.unitary_event_analysis as ue
 
-# ToDo: meaningful coloring?!
-# ToDo: Input Events as neo objects/ quantities
-# ToDo: check user entries
-# ToDo: rearange the plotting parameters dict
-# ToDo: consistent titles
-# ToDo: solution for legends
-# ToDo: panel sorting + selection
-# ToDo: use markerdict
-# ToDo: set trial labels
-# ToDo: optional epochs/events + label
-# ToDo: surprise representation
-# ToDo: Make relation between panels clearer?!
-# ToDo: set default figure settings
-# ToDo: optional alphabetic labeling
-# ToDo: improve neuron separation
-
-
 plot_params_default = {
     # epochs to be marked on the time axis
     'events': [],
