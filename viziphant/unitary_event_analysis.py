@@ -1,4 +1,6 @@
-
+"""
+A simple plotting function for pairwise unitary event analysis results.
+"""
 
 import numpy
 import quantities as pq
