@@ -6,7 +6,6 @@ import numpy
 import quantities as pq
 import matplotlib.pyplot as plt
 import string
-import neo
 import elephant.unitary_event_analysis as ue
 
 plot_params_default = {
