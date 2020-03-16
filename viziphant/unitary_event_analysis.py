@@ -35,8 +35,6 @@ plot_params_default = {
     'fsize': 12,
     # the actual unit ids from the experimental recording
     'unit_real_ids': [3, 2],
-    # channel id
-    'ch_real_ids': [],
     # line width
     'lw': 2,
     # y limit for the surprise
@@ -121,8 +119,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
             The size of the font.
         unit_real_ids : list of int
             The unit ids from the experimental recording.
-        ch_real_ids : list of int
-            The channel ids from the experimental recording.
         lw : int
             The default line width.
         S_ylim : tuple of ints or floats
