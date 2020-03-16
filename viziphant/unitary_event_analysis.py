@@ -181,7 +181,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
         for e_val in events[key]:
             ax0.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
     Xlim = ax0.get_xlim()
-    ax0.text(Xlim[1] - 200, -12, f'Unit {unit_real_ids[0]}')
+    ax0.text(Xlim[1] - 200, -24, f'Unit {unit_real_ids[0]}')
     ax0.text(Xlim[1] - 200, num_tr * 2 + 7, f'Unit {unit_real_ids[1]}')
 
     print('plotting Spike Rates ...')
@@ -245,7 +245,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     for key in events.keys():
         for e_val in events[key]:
             ax3.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
-    ax3.set_xticks([])
 
     print('plotting Surprise ...')
     ax4 = plt.subplot(num_row, 1, 5, sharex=ax0)
@@ -256,7 +255,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax4.axhline(-Js_sig, ls='-', color='g')
     ax4.text(t_winpos[30], Js_sig + 0.3, '$\\alpha +$', color='r')
     ax4.text(t_winpos[30], -Js_sig - 0.5, '$\\alpha -$', color='g')
-    ax4.set_xticks(t_winpos.magnitude[::int(len(t_winpos) / 10)])
     ax4.set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
     ax4.set_yticklabels([0.99, 0.5, 0.01])
 
@@ -264,7 +262,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     for key in events.keys():
         for e_val in events[key]:
             ax4.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
-    ax4.set_xticks([])
 
     print('plotting UEs ...')
     ax5 = plt.subplot(num_row, 1, 6, sharex=ax0)
@@ -296,7 +293,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax5.set_yticklabels([1, num_tr+1], fontsize=fsize)
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax5.set_xticks([])
     ax5.set_ylabel('Trial', fontsize=fsize)
     ax5.set_xlabel('Time [ms]', fontsize=fsize)
     for key in events.keys():
@@ -304,7 +300,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
             ax5.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
             ax5.text(e_val - 10 * pq.ms,
                      S_ylim[0] - 35, key, fontsize=fsize, color='r')
-    ax5.set_xticks([])
 
     for i in range(num_row):
         ax = locals()['ax' + str(i)]
