@@ -25,8 +25,6 @@ plot_params_default = {
     'bottom': 0.1,
     # left margin
     'left': 0.1,
-    # delete the x ticks when "False"
-    'set_xticks': False,
     # horizontal white space between subplots
     'hspace': 0.5,
     # width white space between subplots
@@ -109,8 +107,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
             The size of the bottom margin.
         left : float
             The size of the left margin.
-        set_xticks : bool
-            Toggles the drawing of x ticks. Their are not drawn if False.
         hspace : flaot
             The size of the horizontal white space between subplots.
         wspace : float
