@@ -34,7 +34,7 @@ plot_params_default = {
     # font size
     'fsize': 12,
     # the actual unit ids from the experimental recording
-    'unit_real_ids': [3, 2],
+    'unit_real_ids': ['not specified', 'not specified'],
     # line width
     'lw': 2,
     # y limit for the surprise
