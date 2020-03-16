@@ -181,10 +181,9 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
         if n < N - 1:
             ax0.axhline((tr + 2) * (n + 1), lw=2, color='k')
     ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax0.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax0.set_yticklabels([1, 15, 30], fontsize=fsize)
+    ax0.set_yticks([num_tr + 1, 2*num_tr + 1])
+    ax0.set_yticklabels([1, num_tr+1], fontsize=fsize)
     ax0.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax0.set_xticks([])
     ax0.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
@@ -210,7 +209,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     for key in events.keys():
         for e_val in events[key]:
             ax1.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
-    ax1.set_xticks([])
 
     print('plotting Raw Coincidences ...')
     ax2 = plt.subplot(num_row, 1, 3, sharex=ax0)
@@ -231,10 +229,9 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
         if n < N - 1:
             ax2.axhline((tr + 2) * (n + 1), lw=2, color='k')
     ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax2.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax2.set_yticklabels([1, 15, 30], fontsize=fsize)
+    ax2.set_yticks([num_tr + 1, 2*num_tr + 1])
+    ax2.set_yticklabels([1, num_tr+1], fontsize=fsize)
     ax2.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax2.set_xticks([])
     ax2.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
@@ -304,8 +301,8 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
                         ms=ms, marker='s', ls='', mfc='none', mec='r')
         if n < N - 1:
             ax5.axhline((tr + 2) * (n + 1), lw=2, color='k')
-    ax5.set_yticks([num_tr + 1, num_tr + 16, num_tr + 31])
-    ax5.set_yticklabels([1, 15, 30], fontsize=fsize)
+    ax5.set_yticks([num_tr + 1, 2*num_tr + 1])
+    ax5.set_yticklabels([1, num_tr+1], fontsize=fsize)
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax5.set_xticks([])
