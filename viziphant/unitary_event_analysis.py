@@ -312,7 +312,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
         ax.text(-0.05, 1.1, string.ascii_uppercase[i],
                 transform=ax.transAxes, size=fsize + 5,
                 weight='bold')
-    if plot_params['save_fig']:
+    if save_fig:
         plt.savefig(path_filename_format)
         if not showfig:
             plt.cla()
