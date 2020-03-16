@@ -25,8 +25,6 @@ plot_params_default = {
     'bottom': 0.1,
     # left margin
     'left': 0.1,
-    # id of the units
-    'unit_ids': [0, 1],
     # delete the x ticks when "False"
     'set_xticks': False,
     # horizontal white space between subplots
@@ -113,8 +111,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
             The size of the bottom margin.
         left : float
             The size of the left margin.
-        unit_ids : list of int
-            The arbitrary unit IDs.
         set_xticks : bool
             Toggles the drawing of x ticks. Their are not drawn if False.
         hspace : flaot
