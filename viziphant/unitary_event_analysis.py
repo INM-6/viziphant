@@ -190,14 +190,13 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     for n in range(N):
         ax1.plot(t_winpos + winsize / 2.,
                  Js_dict['rate_avg'][:, n].rescale('Hz'),
-                 label='Neuron ' + str(unit_real_ids[n]), lw=lw)
+                 label='Unit ' + str(unit_real_ids[n]), lw=lw)
     ax1.set_ylabel('(1/s)', fontsize=fsize)
     ax1.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     max_val_psth = 40
     ax1.set_ylim(0, max_val_psth)
     ax1.set_yticks([0, int(max_val_psth / 2), int(max_val_psth)])
-    ax1.legend(
-        bbox_to_anchor=(1.12, 1.05), fancybox=True, shadow=True)
+    ax1.legend(fontsize=fsize//2)
     for key in events.keys():
         for e_val in events[key]:
             ax1.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
@@ -240,7 +239,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
              label='expected', lw=lw, color='m')
     ax3.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax3.set_ylabel('(1/s)', fontsize=fsize)
-    ax3.legend(bbox_to_anchor=(1.12, 1.05), fancybox=True, shadow=True)
+    ax3.legend(fontsize=fsize//2)
     YTicks = ax3.get_ylim()
     ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
     for key in events.keys():
