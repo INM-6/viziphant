@@ -179,7 +179,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
                      tr + n * (num_tr + 1) + 1,
                      '.', markersize=0.5, color='k')
         if n < N - 1:
-            ax0.axhline((tr + 2) * (n + 1), lw=2, color='k')
+            ax0.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax0.set_yticks([num_tr + 1, 2*num_tr + 1])
     ax0.set_yticklabels([1, num_tr+1], fontsize=fsize)
@@ -187,7 +187,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax0.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
-            ax0.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+            ax0.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
     Xlim = ax0.get_xlim()
     ax0.text(Xlim[1] - 200, num_tr * 2 + 7, 'Neuron 2')
     ax0.text(Xlim[1] - 200, -12, 'Neuron 3')
@@ -227,7 +227,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
                 ls='', ms=ms, marker='s', markerfacecolor='none',
                 markeredgecolor='c')
         if n < N - 1:
-            ax2.axhline((tr + 2) * (n + 1), lw=2, color='k')
+            ax2.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax2.set_yticks([num_tr + 1, 2*num_tr + 1])
     ax2.set_yticklabels([1, num_tr+1], fontsize=fsize)
@@ -235,7 +235,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax2.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
-            ax2.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+            ax2.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
 
     print('plotting emp. and exp. coincidences rate ...')
     ax3 = plt.subplot(num_row, 1, 4, sharex=ax0)
@@ -253,7 +253,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
     for key in events.keys():
         for e_val in events[key]:
-            ax3.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+            ax3.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
     ax3.set_xticks([])
 
     print('plotting Surprise ...')
@@ -300,7 +300,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
                         tr + n * (num_tr + 1) + 1,
                         ms=ms, marker='s', ls='', mfc='none', mec='r')
         if n < N - 1:
-            ax5.axhline((tr + 2) * (n + 1), lw=2, color='k')
+            ax5.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax5.set_yticks([num_tr + 1, 2*num_tr + 1])
     ax5.set_yticklabels([1, num_tr+1], fontsize=fsize)
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
@@ -310,7 +310,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax5.set_xlabel('Time [ms]', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
-            ax5.axvline(e_val, ls=ls, color='r', lw=2, alpha=alpha)
+            ax5.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
             ax5.text(e_val - 10 * pq.ms,
                      S_ylim[0] - 35, key, fontsize=fsize, color='r')
     ax5.set_xticks([])
