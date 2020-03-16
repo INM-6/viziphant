@@ -229,10 +229,10 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax3.set_title('Coincidence Rates')
     ax3.plot(t_winpos + winsize / 2.,
              Js_dict['n_emp'] / (winsize.rescale('s').magnitude * num_tr),
-             label='empirical', lw=lw, color='c')
+             label='Empirical', lw=lw, color='c')
     ax3.plot(t_winpos + winsize / 2.,
              Js_dict['n_exp'] / (winsize.rescale('s').magnitude * num_tr),
-             label='expected', lw=lw, color='m')
+             label='Expected', lw=lw, color='m')
     ax3.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax3.set_ylabel('(1/s)', fontsize=fsize)
     ax3.legend(fontsize=fsize//2)
