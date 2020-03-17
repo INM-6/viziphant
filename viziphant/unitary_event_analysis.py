@@ -310,8 +310,3 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
 
     if showfig:
         plt.show()
-
-    return None
-
-
-
