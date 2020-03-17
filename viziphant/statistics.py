@@ -9,20 +9,20 @@ import quantities as pq
 
 def plot_isi(isis, labels, binsize=2*pq.ms, cutoff=250*pq.ms):
     """
-    This function creates a simple histogram plot to visualise an ISI distribution
-    computed with elephant.statistics.isi.
+    This function creates a simple histogram plot to visualise an inter-spike
+    interval (ISI) distribution computed with elephant.statistics.isi.
 
-    Multiple plots are created side by side for nested sublists in the isis and labels
+    Multiple plots are created side by side for a list of isis and labels
     arguments.
 
-    :param isis
-        output of elephant.statistics.isi or list of multiple outputs
-    :param labels
-        list of labels corresponding to the isi distributions
-    :param binsize
-        binsize for the histogram. Default: 2 ms
-    :param cutoff
-        largest ISI to consider. Default: 250 ms
+    isis : np.ndarray or pq.Quanitity or list of np.ndarray or list of pq.Quantity
+        The output of elephant.statistics.isi or list of multiple outputs
+    labels : str or list of str
+        The list of labels corresponding to the ISI distributions
+    binsize : pq.Quantity
+        The binsize for the histogram. Default: 2 ms
+    cutoff : pq.Quantity
+        The largest ISI to consider. Default: 250 ms
     """
 
     if hasattr(isis, 'units'):
