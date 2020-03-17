@@ -95,17 +95,17 @@ def rasterplot(spiketrain_list,
     additions to the dot display itself or the two histograms are best realized
     by using the returned axis handles.
 
-    :param spiketrain_list: list
+    spiketrain_list: list of neo.SpikeTrain or list of list of neo.SpikeTrain
         List can either contain Neo SpikeTrains object or lists of Neo
         SpikeTrains objects.
-    :param key_list: str | list of str
+    key_list: str or list of str
         Annotation key(s) for which the spike trains should be ordered.
         When list of keys is given the spike trains are ordered successively
         for the keys.
         By default the ordering by the given lists of spike trains have
         priority. This can be bypassed by using an empty string '' as list-key
         at any position in the key_list.
-    :param groupingdepth: 0 | 1 | 2
+    groupingdepth: int
         * 0: No grouping (default)
         * 1: grouping by first key in key_list.
              Note that when list of lists of spike trains are given the first
@@ -115,24 +115,24 @@ def rasterplot(spiketrain_list,
         * 2: additional grouping by second key respectively
         The groups are separated by whitespace specified in the spacing
         parameter and optionally by a line specified by the the separatorargs.
-    :param spacing: int | [int] | [int, int]
+    spacing: int or list of int
         Size of whitespace separating the groups in units of spike trains.
         When groupingdepth == 2 a list of two values can specify the distance
         between the groups in level 1 and level 2. When only one value is given
         level 2 spacing is set to half the spacing of level 1.
         Default: [5, 3]
-    :param colorkey: str | int  (default 0)
+    colorkey: str or int  (default 0)
         Contrasts values of a key by color. The key can be defined by its
         namestring or its position in key_list. Note that position 0 points to
         the list identification key ('') when list of lists of spike trains are
         given, if not otherwise specified in key_list!
-    :param pophist_mode: 'color' (default) | 'total'
+    pophist_mode: str
          * total: One population histogram for all drawn spike trains
          * color: Additionally to the total population histogram,
                   a histogram for each colored subset is drawn (see colorkey).
-    :param pophistbins: int (default 100)
+    pophistbins: int (default 100)
         Number of bins used for the population histogram.
-    :param right_histogram: function
+    right_histogram: function
         The function gets ONE neo.SpikeTrain object as argument and has to
         return a scalar.
         For example the functions in the elephant.statistics module can
@@ -140,15 +140,15 @@ def rasterplot(spiketrain_list,
         When a function is applied is is recommended to set the axis label
         accordingly by using the axis handle returned by the function:
         axhisty.set_xlabel('Label Name')
-    :param righthist_barwidth: float (default 1.01)
+    righthist_barwidth: float (default 1.01)
         The bin width of the right side histogram.
-    :param filter_function: function
+    filter_function: function
         The function gets ONE neo.SpikeTrain object as argument and if the
         return is True the spike train is included; if False it is exluded.
-    :param histscale: float (default .1)
+    histscale: float (default .1)
         Portion of the figure used for the histograms on the right and upper
         side.
-    :param labelkey: 0 | 1 | '0+1' (default) | 'annotation key' | None
+    labelkey: int or string or None
         * 0, 1: Set label according to first or second key in key_list.
                 Note that the first key is by default the list identification
                 key ('') when list of lists of spike trains are given.
@@ -157,30 +157,31 @@ def rasterplot(spiketrain_list,
         * None: No labeling
         Note that only groups (-> see groupingdepth) can be labeled as bulks.
         Alternatively you can color for an annotation key and show a legend.
-    :param markerargs: dict
+    markerargs: dict
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
-    :param separatorargs: dict | [dict, dict] | None
+    separatorargs: dict or list of dict or None
         If only one dict is given and groupingdepth == 2 the arguments are
         applied to the separator of both level. Otherwise the arguments are
         of separatorargs[0] are applied to the level 1 and [1] to level 2.
         Arguments dictionary is passed on to matplotlib.pyplot.plot()
         To turn of separators set it to None.
-    :param legend: boolean
+    legend: bool
         Show legend?
-    :param legendargs: dict
+    legendargs: dict
         Arguments dictionary is passed on to matplotlib.pyplot.legend()
-    :param ax: matplotlib axis | None (default)
+    ax: matplotlib axis or None (default)
         The axis onto which to plot. If None a new figure is created.
         When an axis is given, the function can't handle the figure settings.
         Therefore it is recommended to call seaborn.set() with your preferred
         settings before creating your matplotlib figure in order to control
         your plotting layout.
-    :param style: str
+    style: str
         seaborn style setting. Default: 'ticks'
-    :param palette: string | sequence
+    palette: str or sequence
         Define the color palette either by its name or use a custom palette in
         a sequence of the form ([r,g,b],[r,g,b],...).
-    :param context: 'paper'(default) | 'talk' | 'poster'
+    context: str
+        'paper'(default) | 'talk' | 'poster'
         seaborn context setting which controls the scaling of labels. For the
         three options the parameters are scaled by .8, 1.3, and 1.6
         respectively.
