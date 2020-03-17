@@ -45,7 +45,7 @@ plot_params_default = {
 
 
 def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
-            pattern_hash, N, plot_params_user):
+            pattern_hash, plot_params_user):
     """
     Plots the results of pairwise unitary event analysis as a column of six subplots,
     comprised of raster plot, peri-stimulus time histogram, coincident event plot,
@@ -86,8 +86,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     pattern_hash : list of int
         List of interested patterns in hash values. This value should be identical to
         the one used to generate Js_dict
-    N : int
-        The number of neurons. This should be equal to 2.
     plot_params_user : dict
         A dictionary of plotting parameters used to update the default plotting
         parameter values.
@@ -131,6 +129,8 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
 
     t_start = data[0][0].t_start
     t_stop = data[0][0].t_stop
+
+    N = len(data[0])
 
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)
     Js_sig = ue.jointJ(sig_level)
