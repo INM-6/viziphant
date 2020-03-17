@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import quantities as pq
 
 
-def isi(isis, labels, binsize=2*pq.ms, cutoff=250*pq.ms):
+def plot_isi(isis, labels, binsize=2*pq.ms, cutoff=250*pq.ms):
     """
     This function creates a simple histogram plot to visualise an ISI distribution
     computed with elephant.statistics.isi.
