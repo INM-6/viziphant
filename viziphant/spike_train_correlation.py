@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
-def corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
+def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
              cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8)):
     """
     This function plots the cross-correlation matrix returned by
@@ -31,10 +31,6 @@ def corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
         relative to colour bar width. Default: .5
     :param figsize
         size of the figure. Default (8, 8)
-    :return: fig, ax, cax
-        * fig is the handle of the created figure
-        * ax is the handle of the correlation matrix plot
-        * cax is the handle of the colour bar
     """
 
     # Initialise plotting canvas
@@ -54,5 +50,4 @@ def corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
     plt.colorbar(im, cax=cax)
 
-    return fig, ax, cax
-
+    plt.show()
