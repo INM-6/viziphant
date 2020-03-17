@@ -122,9 +122,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
         path_filename_format: str
             The path and the filename to save the figure. The format is inferred
             from the filename extension.
-    Returns
-    -------
-
     """
 
     t_start = data[0][0].t_start
