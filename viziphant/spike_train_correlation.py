@@ -6,6 +6,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
+from matplotlib.ticker import MaxNLocator
 
 
 def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
@@ -41,6 +42,8 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
                            figsize=figsize)
 
     im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Initialise colour bar axis
     divider = make_axes_locatable(ax)
