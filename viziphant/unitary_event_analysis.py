@@ -290,7 +290,7 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax5.set_ylabel('Trial', fontsize=fsize)
-    ax5.set_xlabel('Time [ms]', fontsize=fsize)
+    ax5.set_xlabel(f'Time ({t_start.dimensionality.string})', fontsize=fsize)
     for key in events.keys():
         for e_val in events[key]:
             ax5.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
