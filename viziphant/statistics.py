@@ -12,7 +12,7 @@ def plot_isi(intervals, label, binsize=2*pq.ms, cutoff=250*pq.ms):
     This function creates a simple histogram plot to visualise an inter-spike
     interval (ISI) distribution computed with elephant.statistics.isi.
 
-    intervals : np.ndarray or pq.Quanitity
+    intervals : pq.Quanitity
         The output of elephant.statistics.isi
     label : str
         The label of the ISI distribution
