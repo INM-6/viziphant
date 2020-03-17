@@ -15,23 +15,23 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     This function plots the cross-correlation matrix returned by
     elephant.spike_train_correlation.corrcoef and adds a colour bar.
 
-    :param cc
-        output of elephant.spike_train_correlation.corrcoef
-    :param vmin
-        minimum correlation for colour mapping. Default: -1
-    :param vmax
-        maximum correlation for colour mapping. Default: 1
-    :param style: str
-        seaborn style setting. Default: 'ticks'
-    :param cmap
-        colour map. Default: 'bwr'
-    :param cax_aspect
-        aspect ratio of the colour bar. Default: 20
-    :param cax_pad_fraction
-        padding between matrix plot and colour bar
+    cc : np.ndarray
+        The output of elephant.spike_train_correlation.corrcoef.
+    vmin : int or float
+        The minimum correlation for colour mapping. Default: -1
+    vmax : int or float
+        The maximum correlation for colour mapping. Default: 1
+    style: str
+        A seaborn style setting. Default: 'ticks'
+    cmap : str
+        The colour map. Default: 'bwr'
+    cax_aspect : int or float
+        The aspect ratio of the colour bar. Default: 20
+    cax_pad_fraction : int or float
+        The padding between matrix plot and colour bar
         relative to colour bar width. Default: .5
-    :param figsize
-        size of the figure. Default (8, 8)
+    figsize : tuple of int
+        The size of the figure. Default (8, 8)
     """
 
     # Initialise plotting canvas
