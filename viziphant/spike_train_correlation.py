@@ -15,6 +15,8 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     This function plots the cross-correlation matrix returned by
     elephant.spike_train_correlation.corrcoef and adds a colour bar.
 
+    Parameters
+    ----------
     cc : np.ndarray
         The output of elephant.spike_train_correlation.corrcoef.
     vmin : int or float
@@ -32,6 +34,11 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
         relative to colour bar width. Default: .5
     figsize : tuple of int
         The size of the figure. Default (8, 8)
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
     """
 
     # Initialise plotting canvas
@@ -53,4 +60,4 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
     plt.colorbar(im, cax=cax)
 
-    plt.show()
+    return fig, ax
