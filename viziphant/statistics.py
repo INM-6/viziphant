@@ -12,6 +12,8 @@ def plot_isi(intervals, label, binsize=2*pq.ms, cutoff=250*pq.ms):
     This function creates a simple histogram plot to visualise an inter-spike
     interval (ISI) distribution computed with elephant.statistics.isi.
 
+    Parameters
+    ----------
     intervals : pq.Quantity
         The output of elephant.statistics.isi
     label : str
@@ -20,6 +22,11 @@ def plot_isi(intervals, label, binsize=2*pq.ms, cutoff=250*pq.ms):
         The bin size for the histogram. Default: 2 ms
     cutoff : pq.Quantity
         The largest ISI to consider. Default: 250 ms
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
     """
 
     fig, ax = plt.subplots(figsize=(8, 3))
@@ -32,5 +39,5 @@ def plot_isi(intervals, label, binsize=2*pq.ms, cutoff=250*pq.ms):
     ax.set_xlabel(f'Inter-spike interval ({intervals.dimensionality.string})')
     ax.set_ylabel('Count')
 
-    plt.show()
+    return fig, ax
 
