@@ -95,6 +95,9 @@ def rasterplot(spiketrain_list,
     additions to the dot display itself or the two histograms are best realized
     by using the returned axis handles.
 
+
+    Parameters
+    ----------
     spiketrain_list: list of neo.SpikeTrain or list of list of neo.SpikeTrain
         List can either contain Neo SpikeTrains object or lists of Neo
         SpikeTrains objects.
@@ -185,10 +188,15 @@ def rasterplot(spiketrain_list,
         seaborn context setting which controls the scaling of labels. For the
         three options the parameters are scaled by .8, 1.3, and 1.6
         respectively.
-    :return: ax, axhistx, axhisty   <matplotlib axis handle>
-        * ax is handle of the dot display plot
-        * axhistx is handle of the histogram plot above the the dot display
-        * axhisty is handle of the histogram plot on the right hand side
+
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+        The handle of the dot display plot.
+    axhistx : matplotlib.axes.Axes
+        The handle of the histogram plot above the the dot display
+    axhisty : matplotlib.axes.Axes
+        The handle of the histogram plot on the right hand side
 
     *Basic Example:*
         >>> from elephant.spike_train_generation import homogeneous_poisson_process as HPP
