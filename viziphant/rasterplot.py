@@ -614,6 +614,31 @@ def plot_raster_rates(spiketrain_list,
     return ax, axhistx, axhisty
 
 
+def plot_raster(spiketrain_list):
+    """
+    This function generates a simple dot plot using 'plot_raster_rates' as the
+    base function. The two histograms from the aforementioned function are
+    hidden and only the raster plot is returned.
+
+    Parameters
+    ----------
+    spiketrain_list : list of neo.SpikeTrain or list of list of neo.SpikeTrain
+        List can either contain Neo SpikeTrains object or lists of Neo
+        SpikeTrains objects.
+
+    Returns
+    -------
+    ax : matplotlib.Axes.axes
+        The handle for the raster plot.
+
+    """
+    ax, axhistx, axhisty = plot_raster_rates(spiketrain_list)
+    axhistx.set_visible(False)
+    axhisty.set_visible(False)
+
+    return ax
+
+
 def eventplot(times, labels, event=None, event_label_key=None, num_histogram_bins=50):
     """
     This function creates a simple event plot with a histogram from quantity arrays or
