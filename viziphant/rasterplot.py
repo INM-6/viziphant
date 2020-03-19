@@ -60,7 +60,7 @@ def _get_attributes(spiketrains, key_list):
     return attribute_array
 
 
-def rasterplot(spiketrain_list,
+def plot_raster_rates(spiketrain_list,
                key_list=[],
                groupingdepth=0,
                spacing=[8, 3],
@@ -204,7 +204,7 @@ def rasterplot(spiketrain_list,
         >>> import matplotlib.pyplot as plt
         >>>
         >>> st_list = [HPP(rate=10*Hz) for _ in range(100)]
-        >>> rasterplot(st_list)
+        >>> plot_raster_rates(st_list)
         >>> plt.show()
 
     *Grouping Example:*
@@ -217,7 +217,7 @@ def rasterplot(spiketrain_list,
         >>> st_list2 = [HGP(a=3, b=10*Hz) for _ in range(100)]
         >>>
         >>> # plot visually separates the two lists
-        >>> rasterplot([st_list1, st_list2])
+        >>> plot_raster_rates([st_list1, st_list2])
         >>>
         >>> # add annotations to spike trains
         >>> for i, (st1, st2) in enumerate(zip(st_list1, st_list2)):
@@ -229,15 +229,15 @@ def rasterplot(spiketrain_list,
         >>>         st2.annotations['parity'] = 'even'
         >>>
         >>> # plot separates the lists and the annotation values within each list
-        >>> rasterplot([st_list1, st_list2], key_list=['parity'],
+        >>> plot_raster_rates([st_list1, st_list2], key_list=['parity'],
         >>>            groupingdepth=2, labelkey='0+1')
         >>>
         >>> # '' key can change the priority of the list grouping
-        >>> rasterplot([st_list1, st_list2], key_list=['parity', ''],
+        >>> plot_raster_rates([st_list1, st_list2], key_list=['parity', ''],
         >>>            groupingdepth=2, labelkey='0+1')
         >>>
         >>> # groups can also be emphasized by an explicit color code
-        >>> rasterplot([st_list1, st_list2], key_list=['', 'parity'],
+        >>> plot_raster_rates([st_list1, st_list2], key_list=['', 'parity'],
         >>>            groupingdepth=1, labelkey=0, colorkey='parity',
         >>>            legend=True)
         >>>
