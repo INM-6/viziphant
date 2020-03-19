@@ -519,7 +519,7 @@ def rasterplot(spiketrain_list,
                 yticks[-1] + ws_margin*yrange)
     axhistx.set_xlim(ax.get_xlim())
     axhisty.set_ylim(ax.get_ylim())
-    ax.set_xlabel('t [{}]'.format(spiketrain_list[0][0][0].units.dimensionality))
+    ax.set_xlabel(f't ({spiketrain_list[0][0][0].units.dimensionality.string})')
     axhistx.get_xaxis().set_visible(False)
     axhisty.get_yaxis().set_visible(False)
 
@@ -651,7 +651,7 @@ def eventplot(times, labels, event=None, event_label_key=None, num_histogram_bin
         axes[0][idx].eventplot(times[idx])
         axes[1][idx].hist(np.concatenate(times[idx]).magnitude,
                           bins=num_histogram_bins)
-        axes[1][idx].set_xlabel('Time [{units}]'.format(units=str(times[idx][0].units).split(" ")[-1]))
+        axes[1][idx].set_xlabel(f'Time ({times[idx][0].dimensionality.string})')
         axes[0][idx].set_title(labels[idx])
 
     if event is not None:
