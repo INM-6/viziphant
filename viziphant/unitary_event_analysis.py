@@ -132,7 +132,6 @@ def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
     t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)
     Js_sig = ue.jointJ(sig_level)
     num_tr = len(data)
-    pat = ue.inverse_hash_from_pattern(pattern_hash, N)
 
     # figure format
     plot_params = plot_params_default
