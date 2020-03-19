@@ -44,7 +44,7 @@ plot_params_default = {
 }
 
 
-def plot_UE(data, Js_dict, sig_level, binsize, winsize, winstep,
+def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
             pattern_hash, plot_params_user):
     """
     Plots the results of pairwise unitary event analysis as a column of six subplots,
