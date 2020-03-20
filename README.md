@@ -7,7 +7,7 @@ Viziphant provides a high-level API to easily generate plots and interactive vis
 
 #### Installation
 
-For a development install follow these instructions:
+Viziphant works with Python 3.6+ only. For a development install follow these instructions:
 
 ```
 git clone https://github.com/INM-6/viziphant.git
