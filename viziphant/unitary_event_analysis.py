@@ -1,5 +1,5 @@
 """
-A simple plotting function for pairwise unitary event analysis results.
+Standard plot function for pairwise unitary event analysis results resembling the original publication.
 """
 
 import numpy
