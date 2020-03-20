@@ -85,7 +85,7 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
         generate Js_dict.
     pattern_hash : list of int
         List of interested patterns in hash values. This value should be identical to
-        the one used to generate Js_dict
+        the one used to generate Js_dict.
     plot_params_user : dict
         A dictionary of plotting parameters used to update the default plotting
         parameter values.
