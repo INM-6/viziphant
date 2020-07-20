@@ -185,8 +185,16 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
         for e_val in events[key]:
             ax0.axvline(e_val, ls=ls, color='r', lw=lw, alpha=alpha)
     Xlim = ax0.get_xlim()
-    ax0.text(Xlim[1] - 200, -24, f'Unit {unit_real_ids[0]}')
-    ax0.text(Xlim[1] - 200, num_tr * 2 + 7, f'Unit {unit_real_ids[1]}')
+    ax0.text(1.0, 1.0, f"Unit {unit_real_ids[1]}",
+               fontsize=fsize//2,
+               horizontalalignment='right',
+               verticalalignment='bottom',
+               transform=ax0.transAxes)
+    ax0.text(1.0, 0, f"Unit {unit_real_ids[0]}",
+               fontsize=fsize//2,
+               horizontalalignment='right',
+               verticalalignment='top',
+               transform=ax0.transAxes)
 
     print('plotting Spike Rates ...')
     ax1 = plt.subplot(num_row, 1, 2, sharex=ax0)
