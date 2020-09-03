@@ -205,9 +205,6 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
                  label='Unit ' + str(unit_real_ids[n]), lw=lw)
     ax1.set_ylabel('(1/s)', fontsize=fsize)
     ax1.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    max_val_psth = 40
-    ax1.set_ylim(0, max_val_psth)
-    ax1.set_yticks([0, int(max_val_psth / 2), int(max_val_psth)])
     ax1.legend(fontsize=fsize//2)
     for key in events.keys():
         for e_val in events[key]:
