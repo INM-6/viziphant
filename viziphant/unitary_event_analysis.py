@@ -178,7 +178,7 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
             ax0.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax0.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax0.set_yticklabels([1, num_tr+1], fontsize=fsize)
+    ax0.set_yticklabels([1, num_tr], fontsize=fsize)
     ax0.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax0.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
@@ -230,7 +230,7 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
             ax2.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax2.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax2.set_yticklabels([1, num_tr+1], fontsize=fsize)
+    ax2.set_yticklabels([1, num_tr], fontsize=fsize)
     ax2.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax2.set_ylabel('Trial', fontsize=fsize)
     for key in events.keys():
@@ -299,7 +299,7 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
         if n < N - 1:
             ax5.axhline((tr + 2) * (n + 1), lw=lw, color='k')
     ax5.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax5.set_yticklabels([1, num_tr+1], fontsize=fsize)
+    ax5.set_yticklabels([1, num_tr], fontsize=fsize)
     ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
     ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
     ax5.set_ylabel('Trial', fontsize=fsize)
