@@ -53,8 +53,14 @@ coverage.xml
 *.log
 
 # Sphinx documentation
-docs/_build/
+doc/_build/
 
 # PyBuilder
 target/
 
+# ignored folder for prototyping
+ignored/
+
+# test data
+viziphant/tests/data/
+viziphant/tests/target_images/

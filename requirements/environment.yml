@@ -1,0 +1,8 @@
+name: viziphant
+
+dependencies:
+  - python>=3.6
+  - pip
+  - numpy
+  - matplotlib
+  - seaborn

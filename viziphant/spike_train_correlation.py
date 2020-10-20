@@ -1,63 +1,66 @@
 """
 Simple plotting function for spike train correlation measures
 """
+# Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
+
+
+from __future__ import division, print_function, unicode_literals
 
 import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
-from matplotlib.ticker import MaxNLocator
 
 
-def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
-             cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8)):
+def plot_corrcoef(
+        correlation_coefficient_matrix, axes, correlation_minimum=-1.,
+        correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
+        color_bar_padding_fraction=.5):
+
     """
-    This function plots the cross-correlation matrix returned by
-    elephant.spike_train_correlation.corrcoef and adds a colour bar.
+    Plots the cross-correlation matrix returned by
+    :py:func:`elephant.spike_train_correlation.corrcoef` function and adds a
+    color bar.
 
     Parameters
     ----------
-    cc : np.ndarray
-        The output of elephant.spike_train_correlation.corrcoef.
-    vmin : int or float
-        The minimum correlation for colour mapping. Default: -1
-    vmax : int or float
-        The maximum correlation for colour mapping. Default: 1
-    style: str
-        A seaborn style setting. Default: 'ticks'
-    cmap : str
-        The colour map. Default: 'bwr'
-    cax_aspect : int or float
-        The aspect ratio of the colour bar. Default: 20
-    cax_pad_fraction : int or float
-        The padding between matrix plot and colour bar
-        relative to colour bar width. Default: .5
-    figsize : tuple of int
-        The size of the figure. Default (8, 8)
+    correlation_coefficient_matrix : np.ndarray
+        Pearson's correlation coefficient matrix
+    axes : object
+        Matplotlib figure Axes
+    correlation_minimum : float
+        minimum correlation for colour mapping. Default: -1
+    correlation_maximum : float
+        maximum correlation for colour mapping. Default: 1
+    colormap : str
+        colormap. Default: 'bwr'
+    color_bar_aspect : float
+        aspect ratio of the color bar. Default: 20
+    color_bar_padding_fraction : float
+        padding between matrix plot and color bar relative to color bar width.
+        Default: .5
 
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-    ax : matplotlib.axes.Axes
+    Examples
+    --------
+    Create correlation coefficient matrix from Elephant `corrcoef` example
+    and save the result to `corrcoef_matrix`.
+
+    >>> import seaborn
+    >>> seaborn.set_style('ticks')
+    >>> fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'})
+    ...
+    >>> plot_corrcoef(correlation_coefficient_matrix, axes=ax)
+
     """
 
-    # Initialise plotting canvas
-    sns.set_style(style)
-
-    # Initialise figure and image axis
-    fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'},
-                           figsize=figsize)
-
-    im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    image = axes.imshow(correlation_coefficient_matrix,
+                        vmin=correlation_minimum, vmax=correlation_maximum,
+                        cmap=colormap)
 
     # Initialise colour bar axis
-    divider = make_axes_locatable(ax)
-    width = axes_size.AxesY(ax, aspect=1./cax_aspect)
-    pad = axes_size.Fraction(cax_pad_fraction, width)
+    divider = make_axes_locatable(axes)
+    width = axes_size.AxesY(axes, aspect=1. / color_bar_aspect)
+    pad = axes_size.Fraction(color_bar_padding_fraction, width)
     cax = divider.append_axes("right", size=width, pad=pad)
 
-    plt.colorbar(im, cax=cax)
-
-    return fig, ax
+    plt.colorbar(image, cax=cax)

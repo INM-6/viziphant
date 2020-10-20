@@ -12,27 +12,33 @@ with open("README.md") as f:
     long_description = f.read()
 with open('requirements/requirements.txt') as fp:
     install_requires = fp.read()
+extras_require = {}
+for extra in ['docs', 'tests']:
+    with open('requirements/requirements-{0}.txt'.format(extra)) as fp:
+        extras_require[extra] = fp.read()
 
 
 setup(
     name="viziphant",
     version=version,
-    packages=['viziphant'],
+    packages=['viziphant', 'viziphant.tests'],
     include_package_data=True,
     install_requires=install_requires,
+    extras_require=extras_require,
     author="Viziphant authors and contributors",
     author_email="contact@python-elephant.org",
     description="Viziphant is a package for the visualization of the analysis"
                 "results of electrophysiology data in Python",
     long_description=long_description,
     license="BSD",
-    url='https://github.com/INM-6/viziphant',
+    url='https://github.com/INM-6/viziphant-new',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering']
 )
