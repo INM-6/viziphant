@@ -31,7 +31,7 @@ setup(
                 "results of electrophysiology data in Python",
     long_description=long_description,
     license="BSD",
-    url='https://github.com/INM-6/viziphant-new',
+    url='https://github.com/INM-6/viziphant',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
