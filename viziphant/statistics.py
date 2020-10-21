@@ -42,7 +42,7 @@ def plot_isi(intervals, label, binsize=2*pq.ms, cutoff=250*pq.ms):
     return fig, ax
 
 
-def plot_patterns_statistics(patterns, winlen, binsize, n_neurons):
+def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
     """
     This function creates a histogram plot to visualise patterns statistics
     output of a SPADE analysis.
@@ -53,7 +53,7 @@ def plot_patterns_statistics(patterns, winlen, binsize, n_neurons):
         The output of elephant.spade
     winlen : int
         window length of the SPADE analysis
-    binsize : pq.Quantity
+    bin_size : pq.Quantity
         The bin size of the SPADE analysis
     n_neurons : int
         Number of neurons in the data set being analyzed
@@ -101,12 +101,12 @@ def plot_patterns_statistics(patterns, winlen, binsize, n_neurons):
     if winlen != 1:
         # adding panel with histogram of lags for delayed patterns
         axes[3].hist(patterns_dict['lags'],
-                     bins=np.arange(-binsize.magnitude/2,
-                                    winlen*binsize.magnitude +
-                                    binsize.magnitude/2,
-                                    binsize.magnitude))
+                     bins=np.arange(-bin_size.magnitude/2,
+                                    winlen*bin_size.magnitude +
+                                    bin_size.magnitude/2,
+                                    bin_size.magnitude))
         axes[3].set_xlabel('lags (ms)')
-        axes[3].set_xlim([-binsize.magnitude/2,
-                          winlen*binsize.magnitude - binsize.magnitude/2])
+        axes[3].set_xlim([-bin_size.magnitude/2,
+                          winlen*bin_size.magnitude - bin_size.magnitude/2])
         axes[3].set_ylabel('Count')
     return fig, axes
