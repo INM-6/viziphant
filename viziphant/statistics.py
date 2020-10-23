@@ -73,6 +73,11 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
         If None, the label is not plotted.
         If `event_time` is None, this parameter is ignored.
         Default: None
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
     """
     fig, ax = plt.subplots(**kwargs)
 
