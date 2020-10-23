@@ -2,8 +2,8 @@
 Simple plotting functions for statistical measures of spike trains
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import quantities as pq
 
 
@@ -98,7 +98,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
 
     # Create the plot
     ax.bar(times, histogram.squeeze().magnitude, align='edge', width=width)
-    ax.set_xlabel("Time ({})".format(time_unit))
+    ax.set_xlabel(f"Time ({time_unit})")
 
     # Define Y label and Y-axis limits
     if max_y is not None:
@@ -111,7 +111,8 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
     if event_time is not None:
         ax.axvline(0, linewidth=1, linestyle='solid', color='black')
         if event_label is not None:
-            ax.text(0, ax.get_ylim()[1], event_label, horizontalalignment='center',
+            ax.text(0, ax.get_ylim()[1], event_label,
+                    horizontalalignment='center',
                     verticalalignment='bottom')
 
     return fig, ax
