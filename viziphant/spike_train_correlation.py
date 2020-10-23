@@ -10,30 +10,42 @@ from matplotlib.ticker import MaxNLocator
 
 
 def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
-             cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8)):
+                  cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8),
+                  remove_diagonal=True):
     """
     This function plots the cross-correlation matrix returned by
-    elephant.spike_train_correlation.corrcoef and adds a colour bar.
+    `elephant.spike_train_correlation.corrcoef` and adds a colour bar.
 
     Parameters
     ----------
     cc : np.ndarray
-        The output of elephant.spike_train_correlation.corrcoef.
-    vmin : int or float
-        The minimum correlation for colour mapping. Default: -1
-    vmax : int or float
-        The maximum correlation for colour mapping. Default: 1
-    style: str
-        A seaborn style setting. Default: 'ticks'
-    cmap : str
-        The colour map. Default: 'bwr'
-    cax_aspect : int or float
-        The aspect ratio of the colour bar. Default: 20
-    cax_pad_fraction : int or float
-        The padding between matrix plot and colour bar
-        relative to colour bar width. Default: .5
-    figsize : tuple of int
-        The size of the figure. Default (8, 8)
+        The output of
+        `elephant.spike_train_correlation.correlation_coefficient`.
+    vmin : int or float, optional
+        The minimum correlation for colour mapping.
+        Default: -1
+    vmax : int or float, optional
+        The maximum correlation for colour mapping.
+        Default: 1
+    style: {'darkgrid', 'whitegrid', 'dark', 'white', 'ticks'} or dict, optional
+        A seaborn style setting.
+        Default: 'ticks'
+    cmap : str, optional
+        The colour map.
+        Default: 'bwr'
+    cax_aspect : int or float, optional
+        The aspect ratio of the colour bar.
+        Default: 20
+    cax_pad_fraction : int or float, optional
+        The padding between matrix plot and colour bar relative to colour bar
+        width.
+        Default: .5
+    figsize : tuple of int, optional
+        The size of the figure.
+        Default: (8, 8)
+    remove_diagonal : bool
+        If True, the values in the main diagonal are replaced with zeros.
+        Default: True
 
     Returns
     -------
@@ -47,6 +59,10 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     # Initialise figure and image axis
     fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'},
                            figsize=figsize)
+
+    # Remove the diagonal
+    if remove_diagonal:
+        cc[np.diag_indices(cc.shape[0])] = 0
 
     im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
