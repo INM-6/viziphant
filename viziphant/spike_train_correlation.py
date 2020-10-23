@@ -14,7 +14,8 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
                   remove_diagonal=True):
     """
     This function plots the cross-correlation matrix returned by
-    `elephant.spike_train_correlation.corrcoef` and adds a colour bar.
+    `elephant.spike_train_correlation.correlation_coefficient` and adds a
+    colour bar.
 
     Parameters
     ----------
@@ -27,7 +28,8 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     vmax : int or float, optional
         The maximum correlation for colour mapping.
         Default: 1
-    style: {'darkgrid', 'whitegrid', 'dark', 'white', 'ticks'} or dict, optional
+    style: {'darkgrid', 'whitegrid', 'dark', 'white', 'ticks'} or dict,
+           optional
         A seaborn style setting.
         Default: 'ticks'
     cmap : str, optional
@@ -62,7 +64,8 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
     # Remove the diagonal
     if remove_diagonal:
-        cc[np.diag_indices(cc.shape[0])] = 0
+        cc = cc.copy()
+        np.fill_diagonal(cc, val=0)
 
     im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
