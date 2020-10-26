@@ -7,6 +7,8 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 import quantities as pq
+import neo
+from viziphant.rasterplot import plot_raster
 
 
 def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
@@ -69,3 +71,48 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
         axes[3].set_xlim([-bin_size.magnitude / 2, axes3_xmax])
         axes[3].set_ylabel('Count')
     return fig, axes
+
+
+def _build_mask(spiketrains, pattern):
+    mask_patterns = []
+    for index, st in enumerate(spiketrains):
+        if index in pattern['neurons']:
+            patt_st = neo.SpikeTrain(pattern['times'],
+                                     t_start=st.t_start,
+                                     t_stop=st.t_stop)
+        else:
+            patt_st = neo.SpikeTrain([]*pq.ms,
+                                     t_start=st.t_start,
+                                     t_stop=st.t_stop)
+        mask_patterns.append(patt_st)
+    return mask_patterns
+
+
+def plot_pattern(spiketrains, pattern):
+    """
+    Simple plot showing a rasterplot along with one chosen pattern with its
+    spikes represented in red
+
+    Parameters:
+    spiketrains: list
+        List of neo.SpikeTrain of the original data
+    pattern : dictionary
+        One pattern output of elephant.spade to be plotted
+
+    Returns
+    -------
+    ax : matplotlib.axes.Axes
+    """
+    ax = plot_raster(spiketrains)
+    mask_patterns = _build_mask(spiketrains, pattern)
+    for st_index, st in enumerate(mask_patterns):
+        # Dot display
+        if st.__len__():
+            for patt_occurrence in st:
+                ax.plot(patt_occurrence.rescale(pq.s).magnitude,
+                        st_index,
+                        '.',
+                        color='red')
+    ax.set_ylabel('neurons')
+    return ax
+
