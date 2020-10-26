@@ -116,3 +116,91 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
                     verticalalignment='bottom')
 
     return fig, ax
+
+
+def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
+                             events=None):
+    """
+    Plots a list of instantaneous firing rates. Each item is the rate of a
+    single spike train.
+
+    This function helps visualizing the result of
+    `elephant.statistics.instantaneous_rate` for several neurons.
+
+    Parameters
+    ----------
+    rates : list of neo.AnalogSignal
+        List with the rates calculated for each neuron (using
+        `elephant.statistics.instantaneous_rate`).
+    sampling_period : pq.Quantity
+        Same parameter passed to `elephant.statistics.instantaneous_rate`.
+    t_start : pq.Quantity
+        Start time of the spike trains used to calculate the rates.
+    t_stop : pq.Quantity
+        Stop time of the spike trains used to calculate the rates.
+    events : neo.Event, optional
+        If provided, the events will be added to the plot. Labels are taken
+        from the 'trial_event_labels' array annotations.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+    """
+    # Convert list to array
+    all_rates_array = np.asarray(rates)
+
+    # If list with more than one element, the array shape will be
+    # (n_neurons, n_samples, 1)
+    if all_rates_array.ndim == 3 and all_rates_array.shape[2] == 1:
+        # Strip out the last dimension
+        all_rates_array = all_rates_array[:, :, 0]
+    else:
+        # Transpose to get correct orientation, as the shape will be
+        # (n_samples, 1)
+        all_rates_array = all_rates_array.T
+
+    fig, ax = plt.subplots(figsize=(20, 8))
+    im = ax.pcolormesh(all_rates_array, cmap='rainbow', shading='flat')
+
+    # Add colorbar
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label("Firing rate [Hz]")
+
+    # Compute time axis ticks
+    start = t_start.rescale(pq.s).magnitude
+    stop = t_stop.rescale(pq.s).magnitude
+    step = sampling_period.rescale(pq.s).magnitude
+
+    times = np.arange(start, stop,
+                      (500 * pq.ms / sampling_period).magnitude * step)
+    ticks = np.linspace(0, all_rates_array.shape[1], len(times))
+
+    # Define X label and ticks
+    ax.set_xlabel("Time (s)")
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([f"{l:.1f}" for l in times]);
+
+    # Define Y label and ticks (offset by 0.5 to center the lines on the
+    # integer)
+    n_neurons = all_rates_array.shape[0]
+    order_of_magnitude = np.floor(np.log10(n_neurons))
+    step_y = 1 if n_neurons < 10 else int(5**order_of_magnitude)
+
+    ax.set_ylabel("Neuron")
+    ax.set_yticks(np.arange(0.5, n_neurons + 0.5, step_y))
+    ax.set_yticklabels(np.arange(0, n_neurons, step_y))
+
+    if events is not None:
+        unit = pq.CompoundUnit(
+            "{}*s".format(sampling_period.rescale('s').item()))
+
+        # Add vertical lines for events
+        for event_idx in range(len(events)):
+            time = events.times[event_idx].rescale(unit)
+            label = events.array_annotations['trial_event_labels'][event_idx]
+            ax.axvline(time, color='black', linewidth=1)
+            ax.text(time, ax.get_ylim()[1], label, horizontalalignment='left',
+                    verticalalignment='bottom', rotation=40)
+
+    return fig, ax
