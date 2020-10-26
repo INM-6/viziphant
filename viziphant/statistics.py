@@ -119,7 +119,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
 
 
 def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
-                             events=None):
+                             events=None, event_labels=None):
     """
     Plots a list of instantaneous firing rates. Each item is the rate of a
     single spike train.
@@ -139,8 +139,13 @@ def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
     t_stop : pq.Quantity
         Stop time of the spike trains used to calculate the rates.
     events : neo.Event, optional
-        If provided, the events will be added to the plot. Labels are taken
-        from the 'trial_event_labels' array annotations.
+        If provided, the events will be added to the plot.
+        Default: None
+    event_labels : str, optional
+        Array annotations from which the trial labels are obtained.
+        If None, no labels are used.
+        If `events` is None, this parameter is ignored.
+        Default: None
 
     Returns
     -------
@@ -198,9 +203,12 @@ def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
         # Add vertical lines for events
         for event_idx in range(len(events)):
             time = events.times[event_idx].rescale(unit)
-            label = events.array_annotations['trial_event_labels'][event_idx]
             ax.axvline(time, color='black', linewidth=1)
-            ax.text(time, ax.get_ylim()[1], label, horizontalalignment='left',
-                    verticalalignment='bottom', rotation=40)
+            if event_labels is not None:
+                label = events.array_annotations[event_labels][event_idx]
+                ax.text(time, ax.get_ylim()[1], label,
+                        horizontalalignment='left',
+                        verticalalignment='bottom',
+                        rotation=40)
 
     return fig, ax
