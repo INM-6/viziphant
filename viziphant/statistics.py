@@ -118,8 +118,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
     return fig, ax
 
 
-def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
-                             events=None, event_labels=None):
+def plot_instantaneous_rates_colormesh(rates, events=None, event_labels=None):
     """
     Plots a list of instantaneous firing rates. Each item is the rate of a
     single spike train.
@@ -129,15 +128,10 @@ def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
 
     Parameters
     ----------
-    rates : list of neo.AnalogSignal
-        List with the rates calculated for each neuron (using
-        `elephant.statistics.instantaneous_rate`).
-    sampling_period : pq.Quantity
-        Same parameter passed to `elephant.statistics.instantaneous_rate`.
-    t_start : pq.Quantity
-        Start time of the spike trains used to calculate the rates.
-    t_stop : pq.Quantity
-        Stop time of the spike trains used to calculate the rates.
+    rates : neo.AnalogSignal
+        `neo.AnalogSignal` matrix of shape ``(len(spiketrains), time)``
+        containing instantaneous rates obtained by
+        :func:`elephant.statistics.instantaneous_rate` function.
     events : neo.Event, optional
         If provided, the events will be added to the plot.
         Default: None
@@ -151,62 +145,45 @@ def plot_instantaneous_rates(rates, sampling_period, t_start, t_stop,
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> np.random.seed(3)
+    >>> from elephant.statistics import instantaneous_rate
+    >>> from elephant.spike_train_generation import homogeneous_poisson_process
+    >>> from viziphant.statistics import plot_instantaneous_rates_colormesh
+    >>> spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+    ...                t_stop=10*pq.s) for _ in range(10)]
+    >>> rates = instantaneous_rate(spiketrains, sampling_period=20 * pq.ms)
+    >>> plot_instantaneous_rates_colormesh(rates)
     """
-    # Convert list to array
-    all_rates_array = np.asarray(rates)
-
-    # If list with more than one element, the array shape will be
-    # (n_neurons, n_samples, 1)
-    if all_rates_array.ndim == 3 and all_rates_array.shape[2] == 1:
-        # Strip out the last dimension
-        all_rates_array = all_rates_array[:, :, 0]
-    else:
-        # Transpose to get correct orientation, as the shape will be
-        # (n_samples, 1)
-        all_rates_array = all_rates_array.T
-
     fig, ax = plt.subplots(figsize=(20, 8))
-    im = ax.pcolormesh(all_rates_array, cmap='rainbow', shading='flat')
+
+    # time_ticks have sampling_period resolution
+    t_stop = rates.t_stop.rescale(pq.s).item()
+    time_ticks = np.r_[rates.times.rescale(pq.s).magnitude, t_stop]
+    neurons_range = range(rates.shape[1] + 1)
+
+    im = ax.pcolormesh(time_ticks, neurons_range, rates.magnitude.T,
+                       cmap='gray', shading='flat')
 
     # Add colorbar
     cbar = fig.colorbar(im, ax=ax)
     cbar.set_label("Firing rate [Hz]")
 
-    # Compute time axis ticks
-    start = t_start.rescale(pq.s).magnitude
-    stop = t_stop.rescale(pq.s).magnitude
-    step = sampling_period.rescale(pq.s).magnitude
-
-    times = np.arange(start, stop,
-                      (500 * pq.ms / sampling_period).magnitude * step)
-    ticks = np.linspace(0, all_rates_array.shape[1], len(times))
-
-    # Define X label and ticks
     ax.set_xlabel("Time (s)")
-    ax.set_xticks(ticks)
-    ax.set_xticklabels([f"{l:.1f}" for l in times]);
-
-    # Define Y label and ticks (offset by 0.5 to center the lines on the
-    # integer)
-    n_neurons = all_rates_array.shape[0]
-    order_of_magnitude = np.floor(np.log10(n_neurons))
-    step_y = 1 if n_neurons < 10 else int(5**order_of_magnitude)
-
     ax.set_ylabel("Neuron")
-    ax.set_yticks(np.arange(0.5, n_neurons + 0.5, step_y))
-    ax.set_yticklabels(np.arange(0, n_neurons, step_y))
 
     if events is not None:
-        unit = pq.CompoundUnit(
-            "{}*s".format(sampling_period.rescale('s').item()))
+        event_times = (events.times / rates.sampling_period
+                       ).simplified.magnitude
 
         # Add vertical lines for events
-        for event_idx in range(len(events)):
-            time = events.times[event_idx].rescale(unit)
-            ax.axvline(time, color='black', linewidth=1)
+        for event_idx, event_time in enumerate(event_times):
+            ax.axvline(event_time, color='black', linewidth=1)
             if event_labels is not None:
                 label = events.array_annotations[event_labels][event_idx]
-                ax.text(time, ax.get_ylim()[1], label,
+                ax.text(event_time, ax.get_ylim()[1], label,
                         horizontalalignment='left',
                         verticalalignment='bottom',
                         rotation=40)
