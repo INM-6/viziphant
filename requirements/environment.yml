@@ -7,4 +7,4 @@ dependencies:
   - matplotlib
   - seaborn
   - pip:
-     - -r file:requirements.txt
+      - -r file:requirements.txt

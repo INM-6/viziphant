@@ -96,7 +96,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Suppresses  wrong numpy doc warnings
 # see here https://github.com/phn/pytpm/issues/3#issuecomment-12133978
@@ -177,7 +177,7 @@ epub_copyright = copyright
 
 
 # configuration for intersphinx: refer to Elephant
-# intersphinx_mapping = {'elephant': ('https://elephant.readthedocs.io', None)}
+intersphinx_mapping = {'elephant': ('https://elephant.readthedocs.io/en/latest/', None)}
 
 # Use more reliable mathjax source
 mathjax_path = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
