@@ -98,6 +98,25 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant import statistics
+        from viziphant.statistics import plot_time_histogram
+
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        histogram = statistics.time_histogram(spiketrains, bin_size=100*pq.ms)
+
+        plot_time_histogram(histogram, y_label='counts')
+        plt.show()
+
     """
     fig, ax = plt.subplots(**kwargs)
 
