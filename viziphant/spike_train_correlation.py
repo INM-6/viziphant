@@ -15,7 +15,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 def plot_corrcoef(
         correlation_coefficient_matrix, axes, correlation_minimum=-1.,
         correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
-        color_bar_padding_fraction=.5):
+        color_bar_padding_fraction=.5, remove_diagonal=True):
 
     """
     Plots the cross-correlation matrix returned by
@@ -26,7 +26,7 @@ def plot_corrcoef(
     ----------
     correlation_coefficient_matrix : np.ndarray
         Pearson's correlation coefficient matrix
-    axes : object
+    axes : matplotlib.axes.Axes
         Matplotlib figure Axes
     correlation_minimum : float
         minimum correlation for colour mapping. Default: -1
@@ -39,7 +39,9 @@ def plot_corrcoef(
     color_bar_padding_fraction : float
         padding between matrix plot and color bar relative to color bar width.
         Default: .5
-
+    remove_diagonal : bool
+        If True, the values in the main diagonal are replaced with zeros.
+        Default: True
     Examples
     --------
     Create correlation coefficient matrix from Elephant `corrcoef` example
@@ -52,6 +54,9 @@ def plot_corrcoef(
     >>> plot_corrcoef(correlation_coefficient_matrix, axes=ax)
 
     """
+    if remove_diagonal:
+        correlation_coefficient_matrix = correlation_coefficient_matrix.copy()
+        np.fill_diagonal(correlation_coefficient_matrix, val=0)
 
     image = axes.imshow(correlation_coefficient_matrix,
                         vmin=correlation_minimum, vmax=correlation_maximum,
