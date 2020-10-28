@@ -7,6 +7,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 from matplotlib.ticker import MaxNLocator
+import elephant.spike_train_correlation as corr
+import elephant.conversion as conv
 
 
 def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
@@ -79,4 +81,33 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
     plt.colorbar(im, cax=cax)
 
+    return fig, ax
+
+
+def plot_cross_correlation_histogram(
+        cch, surr_cchs=None, title=None, maxlag=None, figsize=(8, 5),
+        legend=True):
+
+    fig, ax = plt.subplots(figsize=figsize)
+    # plot the CCH of the original data
+    plt.plot(cch.times.magnitude, cch.magnitude, color='C0',
+             label='raw CCH')
+
+    if surr_cchs is not None:
+        # Compute the mean CCH, and the threshold for significance
+        cch_mean = surr_cchs.mean(axis=0)
+        cch_threshold = cch_mean + 3 * surr_cchs.std(axis=0, ddof=1)
+
+        # Plot the average from surrogates and the significance threshold
+        plt.plot(cch.times.magnitude, cch_mean, lw=2, color='C2',
+                 label='mean surr. CCH')
+        plt.plot(cch.times.magnitude, cch_threshold, lw=2, color='C3',
+                 label='significance threshold')
+    plt.title(title)
+    plt.xlabel(f'delay ({str(cch.times.units).split()[-1]})')
+    plt.ylabel('counts')
+    if maxlag is not None:
+        plt.xlim(-maxlag, maxlag)
+    if legend:
+        plt.legend()
     return fig, ax
