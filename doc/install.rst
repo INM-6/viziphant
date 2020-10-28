@@ -85,7 +85,7 @@ Installation
 
            .. code-block:: sh
 
-              git clone git://github.com/INM-6/viziphant-new.git
+              git clone git://github.com/INM-6/viziphant.git
               cd viziphant
               pip install -e .
 
@@ -116,5 +116,5 @@ These packages are automatically installed when you run ``pip install viziphant`
 .. _`Conda environment`: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 .. _`tqdm`: https://pypi.org/project/tqdm/
 .. _`six`: https://pypi.org/project/six/
-.. _requirements: https://github.com/INM-6/viziphant-new/blob/master/requirements/requirements.txt
+.. _requirements: https://github.com/INM-6/viziphant/blob/master/requirements/requirements.txt
 .. _PyPI: https://pypi.org/
