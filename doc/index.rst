@@ -1,10 +1,12 @@
-.. Viziphant documentation master file, created by
-   sphinx-quickstart on Fri Feb 21 16:38:50 2020.
-
 Visualization of Elephant -  Electrophysiology Analysis Toolkit
 ===============================================================
 
-Viziphant is a package for the visualization of the analysis results from Elephant_, which is a package for the analysis of neurophysiological data, based on Neo_.
+A Python module for easy visualization of Neo_ objects and Elephant_ results.
+
+Viziphant provides a high-level API to easily generate plots and interactive
+visualizations of neuroscientific data and analysis results. This API uses and
+extends the same structure as in Elephant_ to ensure intuitive usage for
+scientists that are used to Elephant_.
 
 
 .. toctree::

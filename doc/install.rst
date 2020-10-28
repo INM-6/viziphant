@@ -4,8 +4,10 @@
 Installation
 ************
 
-The easiest way to install Viziphant is by creating a conda environment, followed by ``pip install viziphant``.
-Below is the explanation of how to proceed with these two steps.
+The easiest way to install Viziphant is by creating a conda environment,
+followed by ``pip install viziphant``. Below is the explanation of how to
+proceed with these two steps. For in-depth explanation, refer to
+`Elephant installation instructions <https://elephant.readthedocs.io/en/latest/install.html>`_.
 
 
 Prerequisites
@@ -13,32 +15,17 @@ Prerequisites
 
 Viziphant requires Python_ 3.6, 3.7, or 3.8.
 
-.. tabs::
+1. Create your conda environment (e.g., `viziphant`):
 
+   .. code-block:: sh
 
-    .. tab:: (recommended) Conda (Linux/MacOS/Windows)
+      conda create --name viziphant python=3.7 numpy matplotlib seaborn
 
-        1. Create your conda environment (e.g., `viziphant_env`):
+2. Activate your environment:
 
-           .. code-block:: sh
+   .. code-block:: sh
 
-              conda create --name viziphant_env python=3.7 numpy scipy tqdm
-
-        2. Activate your environment:
-
-           .. code-block:: sh
-
-              conda activate viziphant_env
-
-
-    .. tab:: Debian/Ubuntu
-
-        Open a terminal and run:
-
-        .. code-block:: sh
-
-           sudo apt-get install python-pip python-numpy python-scipy python-pip python-six python-tqdm
-
+      conda activate viziphant
 
 
 Installation
