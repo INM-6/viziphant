@@ -7,8 +7,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 from matplotlib.ticker import MaxNLocator
-import elephant.spike_train_correlation as corr
-import elephant.conversion as conv
 
 
 def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
