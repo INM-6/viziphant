@@ -41,6 +41,8 @@ def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
         from viziphant.statistics import plot_isi
+        np.random.seed(12)
+
         spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=10*pq.s)
         plot_isi(spiketrain)
         plt.show()
@@ -109,6 +111,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
         from elephant.spike_train_generation import homogeneous_poisson_process
         from elephant import statistics
         from viziphant.statistics import plot_time_histogram
+        np.random.seed(13)
 
         spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
                        t_stop=10*pq.s) for _ in range(10)]
