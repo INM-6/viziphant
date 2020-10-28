@@ -2,11 +2,12 @@
 Simple plotting function for spike train correlation measures
 """
 
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
+import numpy as np
+import quantities as pq
+import seaborn as sns
 from matplotlib.ticker import MaxNLocator
+from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
 def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
