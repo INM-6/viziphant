@@ -3,21 +3,25 @@ Simple plotting functions for statistical measures of spike trains
 """
 
 import matplotlib.pyplot as plt
+import neo
 import numpy as np
 import quantities as pq
 
+from elephant import statistics
 
-def plot_isi(intervals, label, bin_size=2 * pq.ms, cutoff=250 * pq.ms):
+
+def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
     """
     This function creates a simple histogram plot to visualise an inter-spike
     interval (ISI) distribution computed with `elephant.statistics.isi`.
 
     Parameters
     ----------
-    intervals : pq.Quantity
-        The output of elephant.statistics.isi
-    label : str
-        The label of the ISI distribution
+    intervals : neo.SpikeTrain or pq.Quantity
+        A spiketrain the ISI to be computed from or the direct output of
+        :func:`elephant.statistics.isi`.
+    label : str, optional
+        The label of the ISI distribution. Default: ''
     bin_size : pq.Quantity, optional
         The bin size for the histogram. Default: 2 ms
     cutoff : pq.Quantity, optional
@@ -27,7 +31,24 @@ def plot_isi(intervals, label, bin_size=2 * pq.ms, cutoff=250 * pq.ms):
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.statistics import plot_isi
+        spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=10*pq.s)
+        plot_isi(spiketrain)
+        plt.show()
+
     """
+    if isinstance(intervals, neo.SpikeTrain):
+        intervals = statistics.isi(spiketrain=intervals)
+
     fig, ax = plt.subplots(figsize=(8, 3))
 
     bins = np.arange(0, cutoff.rescale(intervals.units).magnitude.item(),
@@ -45,7 +66,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
                         event_time=None, event_label=None, **kwargs):
     """
     This function plots a time histogram, such as the result of
-    `elephant.statistics.time_histogram`.
+    :func:`elephant.statistics.time_histogram`.
 
     Parameters
     ----------
