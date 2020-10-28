@@ -85,28 +85,75 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
 
 def plot_cross_correlation_histogram(
-        cch, surr_cchs=None, title=None, maxlag=None, figsize=(8, 5),
-        legend=True):
+        cch, surr_cchs=None, significance_threshold=3.,
+        maxlag=None, figsize=None,
+        legend=True, title='', xlabel='', ylabel=''):
+    """
 
-    fig, ax = plt.subplots(figsize=figsize)
+    Parameters
+    ----------
+    cch : neo.AnalogSignal
+        as a result of
+        elephant.spike_train_correlation.cross_correlation_histogram()
+    surr_cchs : np.ndarray of neo.AnalogSignal
+        contains cchs for each surrogate realization
+        If None, only the original cch is plotted
+        Default : None
+    significance_threshold : float
+        Number of standard deviations for significance threshold
+        Default : None
+    maxlag : pq.Quantity
+        left and right border of plot
+        Default : None
+    figsize : tuple
+        figure size
+        Default : None
+    legend : bool
+        Whether to include a legend
+        Default : True
+    title : str
+        title of the plot
+        Default : ''
+    xlabel : str
+        label of x-axis
+        Default : ''
+    ylabel : str
+        label of y-axis
+        Default : ''
+
+    Returns
+    -------
+    fig, ax : figure, axis
+    """
+
+    if figsize is not None:
+        fig, ax = plt.subplots(figsize=figsize)
+    else:
+        fig, ax = plt.subplots()
     # plot the CCH of the original data
     plt.plot(cch.times.magnitude, cch.magnitude, color='C0',
              label='raw CCH')
 
     if surr_cchs is not None:
-        # Compute the mean CCH, and the threshold for significance
+        # Compute the mean CCH
         cch_mean = surr_cchs.mean(axis=0)
-        cch_threshold = cch_mean + 3 * surr_cchs.std(axis=0, ddof=1)
 
-        # Plot the average from surrogates and the significance threshold
+        # Plot the average from surrogates
         plt.plot(cch.times.magnitude, cch_mean, lw=2, color='C2',
                  label='mean surr. CCH')
-        plt.plot(cch.times.magnitude, cch_threshold, lw=2, color='C3',
-                 label='significance threshold')
+
+        # compute the standard deviation and plot the significance threshold
+        if significance_threshold is not None:
+            cch_threshold = cch_mean + 3 * surr_cchs.std(axis=0, ddof=1)
+
+            plt.plot(cch.times.magnitude, cch_threshold, lw=2, color='C3',
+                     label='significance threshold')
+
     plt.title(title)
-    plt.xlabel(f'delay ({str(cch.times.units).split()[-1]})')
-    plt.ylabel('counts')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     if maxlag is not None:
+        maxlag.rescale(cch.times.units)
         plt.xlim(-maxlag, maxlag)
     if legend:
         plt.legend()
