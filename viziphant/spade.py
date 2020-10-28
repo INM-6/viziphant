@@ -39,6 +39,8 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
         patterns_dict['occurrences'].append(len(pattern['times']))
         patterns_dict['pattern_size'].append(len(pattern['neurons']))
         patterns_dict['lags'].append(pattern['lags'])
+    patterns_dict['neurons'] = np.hstack(patterns_dict['neurons'])
+    patterns_dict['lags'] = np.hstack(patterns_dict['lags'])
     if winlen == 1:
         # case of only synchronous patterns
         fig, axes = plt.subplots(3, 1, figsize=(10, 8))
@@ -47,8 +49,7 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
         fig, axes = plt.subplots(4, 1, figsize=(10, 10))
     plt.subplots_adjust(hspace=0.5)
     axes[0].set_title('Patterns statistics')
-    axes[0].hist(patterns_dict['neurons'],
-                 bins=np.arange(0, n_neurons + 1))
+    axes[0].hist(patterns_dict['neurons'], bins=n_neurons)
     axes[0].set_xlabel('Neuronal participation in patterns')
     axes[0].set_ylabel('Count')
     axes[1].hist(patterns_dict['occurrences'],
