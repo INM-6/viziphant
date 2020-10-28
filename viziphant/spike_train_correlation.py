@@ -12,11 +12,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
-def plot_corrcoef(
-        correlation_coefficient_matrix, axes, correlation_minimum=-1.,
-        correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
-        color_bar_padding_fraction=.5, remove_diagonal=True):
-
+def plot_corrcoef(corrcoef_matrix, axes, correlation_minimum=-1.,
+                  correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
+                  color_bar_padding_fraction=.5, remove_diagonal=True):
     """
     Plots the cross-correlation matrix returned by
     :py:func:`elephant.spike_train_correlation.corrcoef` function and adds a
@@ -24,7 +22,7 @@ def plot_corrcoef(
 
     Parameters
     ----------
-    correlation_coefficient_matrix : np.ndarray
+    corrcoef_matrix : np.ndarray
         Pearson's correlation coefficient matrix
     axes : matplotlib.axes.Axes
         Matplotlib figure Axes
@@ -42,23 +40,33 @@ def plot_corrcoef(
     remove_diagonal : bool
         If True, the values in the main diagonal are replaced with zeros.
         Default: True
+
     Examples
     --------
-    Create correlation coefficient matrix from Elephant `corrcoef` example
-    and save the result to `corrcoef_matrix`.
+    Create 10 homogeneous random Poisson spike trains of rate `10Hz` and bin
+    the spikes into bins of `100ms` width, which is relatively large for such
+    a firing rate, so we expect non-zero correlations.
 
-    >>> import seaborn
-    >>> seaborn.set_style('ticks')
-    >>> fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'})
-    ...
-    >>> plot_corrcoef(correlation_coefficient_matrix, axes=ax)
-
+    >>> import quantities as pq
+    >>> from elephant.spike_train_generation import homogeneous_poisson_process
+    >>> from elephant.conversion import BinnedSpikeTrain
+    >>> from elephant.spike_train_correlation import correlation_coefficient
+    >>> np.random.seed(0)
+    >>> spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+    ...                t_stop=10*pq.s) for _ in range(10)]
+    >>> binned_spiketrains = BinnedSpikeTrain(spiketrains, bin_size=100*pq.ms)
+    >>> corrcoef_matrix = correlation_coefficient(binned_spiketrains)
+    >>> fig, axes = plt.subplots()
+    >>> plot_corrcoef(corrcoef_matrix, axes=axes)
+    >>> axes.set_xlabel('Neuron')
+    >>> axes.set_ylabel('Neuron')
+    >>> axes.set_title("Correlation coefficient matrix")
     """
     if remove_diagonal:
-        correlation_coefficient_matrix = correlation_coefficient_matrix.copy()
-        np.fill_diagonal(correlation_coefficient_matrix, val=0)
+        corrcoef_matrix = corrcoef_matrix.copy()
+        np.fill_diagonal(corrcoef_matrix, val=0)
 
-    image = axes.imshow(correlation_coefficient_matrix,
+    image = axes.imshow(corrcoef_matrix,
                         vmin=correlation_minimum, vmax=correlation_maximum,
                         cmap=colormap)
 
