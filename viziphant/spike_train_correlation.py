@@ -85,9 +85,9 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
 def plot_cross_correlation_histogram(
         cch, surr_cchs=None, significance_threshold=3.0,
-        maxlag=None, figsize=None, legend=True, units=pq.ms,
+        maxlag=None, figsize=None, legend=True, units=pq.s,
         title='Cross-correlation histogram',
-        xlabel='Time lag (s)', ylabel='Count'):
+        xlabel=None, ylabel=''):
     """
     Plot a cross correlation histogram, rescaled to seconds.
 
@@ -99,32 +99,32 @@ def plot_cross_correlation_histogram(
     surr_cchs : np.ndarray or neo.AnalogSignal, optional
         Contains cross-correlation histograms for each surrogate realization.
         If None, only the original `cch` is plotted.
-        Default : None
+        Default: None
     significance_threshold : float or None, optional
         Number of standard deviations for significance threshold. If None,
         don't plot the standard deviation.
-        Default : 3.0
+        Default: 3.0
     maxlag : pq.Quantity or None, optional
         Left and right borders of the plot.
-        Default : None
+        Default: None
     figsize : tuple or None, optional
         Figure size
-        Default : None
+        Default: None
     legend : bool, optional
         Whether to include the legend.
-        Default : True
+        Default: True
     units : pq.Quantity, optional
         Unit in which to the CCH time lag
-        Default : pq.ms
+        Default: pq.ms
     title : str, optional
         The plot title.
-        Default : 'Cross-correlation histogram'
-    xlabel : str, optional
-        Labels of X axis.
-        Default : 'Time lag (ms)'
+        Default: 'Cross-correlation histogram'
+    xlabel : str or None, optional
+        Label X axis. If None, it'll be set to `'Time lag (units)'`.
+        Default: None
     ylabel : str, optional
         Label Y axis.
-        Default : 'Count'
+        Default: ''
 
     Returns
     -------
@@ -181,6 +181,8 @@ def plot_cross_correlation_histogram(
                     label='significance threshold')
 
     ax.set_title(title)
+    if xlabel is None:
+        xlabel = f"Time lag ({units.dimensionality})"
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if maxlag is not None:
