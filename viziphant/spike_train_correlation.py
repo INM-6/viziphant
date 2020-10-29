@@ -85,8 +85,9 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
 
 def plot_cross_correlation_histogram(
         cch, surr_cchs=None, significance_threshold=3.0,
-        maxlag=None, figsize=None, legend=True, title='',
-        xlabel='Time offset (s)', ylabel='Cross-correlation'):
+        maxlag=None, figsize=None, legend=True, units=pq.ms,
+        title='Cross-correlation histogram',
+        xlabel='Time lag (s)', ylabel='Count'):
     """
     Plot a cross correlation histogram, rescaled to seconds.
 
@@ -112,12 +113,18 @@ def plot_cross_correlation_histogram(
     legend : bool, optional
         Whether to include the legend.
         Default : True
+    units : pq.Quantity, optional
+        Unit in which to the CCH time lag
+        Default : pq.ms
     title : str, optional
         The plot title.
-        Default : 'Time offset (s)'
-    xlabel, ylabel : str, optional
-        Labels of X and Y axes.
-        Default : 'Cross-correlation'
+        Default : 'Cross-correlation histogram'
+    xlabel : str, optional
+        Labels of X axis.
+        Default : 'Time lag (ms)'
+    ylabel : str, optional
+        Label Y axis.
+        Default : 'Count'
 
     Returns
     -------
@@ -153,9 +160,9 @@ def plot_cross_correlation_histogram(
     """
     fig, ax = plt.subplots(figsize=figsize)
     # plot the CCH of the original data
-    cch_times = cch.times.rescale(pq.s).magnitude
-    plt.plot(cch_times, cch.magnitude, color='C0',
-             label='raw CCH')
+    cch_times = cch.times.rescale(units).magnitude
+    ax.plot(cch_times, cch.magnitude, color='C0',
+            label='raw CCH')
 
     if surr_cchs is not None:
         # Compute the mean CCH
@@ -177,7 +184,7 @@ def plot_cross_correlation_histogram(
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if maxlag is not None:
-        maxlag.rescale(cch.times.units)
+        maxlag = maxlag.rescale(units).magnitude
         ax.set_xlim(-maxlag, maxlag)
     if legend:
         ax.legend()
