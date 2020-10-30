@@ -629,19 +629,17 @@ def plot_raster_rates(spiketrains,
     return ax, axhistx, axhisty
 
 
-def plot_raster(spiketrains, color='black', **kwargs):
+def plot_raster(spiketrains, color='gray', **kwargs):
     """
-    This function generates a simple dot plot using 'plot_raster_rates' as the
-    base function. The two histograms from the aforementioned function are
-    hidden and only the raster plot is returned.
+    Simple raster plot of spike times.
 
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain or pq.Quantity
-        A list of `neo.SpikeTrain`s or quantity arrays.
+        A list of `neo.SpikeTrain`s or quantity arrays with spike times.
     color : str, optional
         Raster color.
-        Default : 'black'
+        Default : 'gray'
     **kwargs
         Other parameters passed to matplotlib `axes.plot` function.
 
@@ -677,14 +675,14 @@ def plot_raster(spiketrains, color='black', **kwargs):
     return axes
 
 
-def eventplot(times, axes=None, histogram_bins=0, title='', **kwargs):
+def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     """
     Spike times eventplot with an additional histogram.
 
     Parameters
     ----------
-    times : list of neo.SpikeTrain or pq.Quantity arrays
-        A list of quantity arrays or `neo.SpikeTrain`s.
+    spiketrains : list of neo.SpikeTrain or pq.Quantity
+        A list of `neo.SpikeTrain`s or quantity arrays with spike times.
     axes : matplotlib.axes.Axes or None
         Matplotlib axes to use in the plot. If set to None, new axes are
         created and returned.
@@ -752,16 +750,16 @@ def eventplot(times, axes=None, histogram_bins=0, title='', **kwargs):
         plt.show()
 
     """
-    times = [st.rescale(pq.s).magnitude for st in times]
+    spiketrains = [st.rescale(pq.s).magnitude for st in spiketrains]
     if axes is None:
         nrows = 2 if histogram_bins else 1
         fig, axes = plt.subplots(nrows=nrows, ncols=1)
     axes = np.atleast_1d(axes)
-    axes[0].eventplot(times, **kwargs)
+    axes[0].eventplot(spiketrains, **kwargs)
     axes[0].set_title(title)
 
     if histogram_bins:
-        axes[1].hist(np.hstack(times), bins=histogram_bins)
+        axes[1].hist(np.hstack(spiketrains), bins=histogram_bins)
         axes[1].set_ylabel('Spike count')
 
     axes[-1].set_xlabel(f'Time (s)')

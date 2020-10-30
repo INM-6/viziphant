@@ -57,7 +57,7 @@ Dependencies
 ------------
 
 Viziphant relies on the following packages (automatically installed when you
-run ``pip install elephant``):
+run ``pip install viziphant``):
 
     * `elephant <https://pypi.org/project/elephant/>`_ - Electrophysiology Analysis Toolkit
     * `quantities <http://pypi.python.org/pypi/quantities>`_ - support for physical quantities with units (mV, ms, etc.)
