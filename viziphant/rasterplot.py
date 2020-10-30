@@ -615,9 +615,6 @@ def plot_raster_rates(spiketrains,
             ax.set_yticks(yticks)
             ax.set_yticklabels(labelname)
 
-    else:
-        ax.set_yticks([])
-
     # Draw legend
     if legend:
         ax.legend(legend_handles, legend_labels, **legendargs)
