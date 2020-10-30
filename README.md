@@ -18,7 +18,7 @@ pip install git+https://github.com/INM-6/viziphant.git
 :copyright: 2015-2020 by the [Viziphant team](doc/authors.rst).
 
 #### License
-BSD 3-Clause License, see [LICENSE](LICENSE) for details.
+BSD 3-Clause License, see [LICENSE.txt](LICENSE.txt) for details.
 
 #### Acknowledgments
 See [acknowledgments](doc/acknowledgments.rst).

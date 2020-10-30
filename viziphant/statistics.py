@@ -1,38 +1,70 @@
 """
-Simple plotting functions for statistical measures of spike trains
+Spike train statistics plots
+----------------------------
+
+.. autosummary::
+    :toctree: toctree/statistics/
+
+    plot_isi
+    plot_time_histogram
+
 """
+# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
 import matplotlib.pyplot as plt
+import neo
 import numpy as np
 import quantities as pq
 
+from elephant import statistics
 
-def plot_isi(intervals, label, binsize=2 * pq.ms, cutoff=250 * pq.ms):
+
+def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
     """
-    This function creates a simple histogram plot to visualise an inter-spike
-    interval (ISI) distribution computed with `elephant.statistics.isi`.
+    Create a simple histogram plot to visualise an inter-spike interval (ISI)
+    distribution computed with :func:`elephant.statistics.isi`.
 
     Parameters
     ----------
-    intervals : pq.Quantity
-        The output of elephant.statistics.isi
-    label : str
-        The label of the ISI distribution
-    binsize : pq.Quantity
+    intervals : neo.SpikeTrain or pq.Quantity
+        A spiketrain the ISI to be computed from or the direct output of
+        :func:`elephant.statistics.isi`.
+    label : str, optional
+        The label of the ISI distribution. Default: ''
+    bin_size : pq.Quantity, optional
         The bin size for the histogram. Default: 2 ms
-    cutoff : pq.Quantity
+    cutoff : pq.Quantity, optional
         The largest ISI to consider. Default: 250 ms
 
     Returns
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.statistics import plot_isi
+        np.random.seed(12)
+
+        spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=10*pq.s)
+        plot_isi(spiketrain)
+        plt.show()
+
     """
+    if isinstance(intervals, neo.SpikeTrain):
+        intervals = statistics.isi(spiketrain=intervals)
 
     fig, ax = plt.subplots(figsize=(8, 3))
 
     bins = np.arange(0, cutoff.rescale(intervals.units).magnitude.item(),
-                     binsize.rescale(intervals.units).magnitude.item())
+                     bin_size.rescale(intervals.units).magnitude.item())
 
     ax.hist(intervals, bins=bins)
     ax.set_title(f'{label} ISI distribution')
@@ -46,7 +78,7 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
                         event_time=None, event_label=None, **kwargs):
     """
     This function plots a time histogram, such as the result of
-    `elephant.statistics.time_histogram`.
+    :func:`elephant.statistics.time_histogram`.
 
     Parameters
     ----------
@@ -78,6 +110,26 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant import statistics
+        from viziphant.statistics import plot_time_histogram
+        np.random.seed(13)
+
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        histogram = statistics.time_histogram(spiketrains, bin_size=100*pq.ms)
+
+        plot_time_histogram(histogram, y_label='counts')
+        plt.show()
+
     """
     fig, ax = plt.subplots(**kwargs)
 

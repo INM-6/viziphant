@@ -1,6 +1,18 @@
 """
-Simple plotting functions for statistical measures of spike trains
+Spike Pattern Detection and Evaluation (SPADE) plots
+----------------------------------------------------
+
+Visualizes output of :func:`elephant.spade.spade` analysis.
+
+.. autosummary::
+    :toctree: toctree/spade/
+
+    plot_patterns_statistics
+    plot_pattern
+
 """
+# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
 from collections import defaultdict
 
@@ -15,7 +27,7 @@ from viziphant.rasterplot import plot_raster
 def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
     """
     This function creates a histogram plot to visualise patterns statistics
-    output of a SPADE analysis (:func:`elephant.spade.spade`).
+    output of a SPADE analysis.
 
     Parameters
     ----------
@@ -32,6 +44,29 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import neo
+        import numpy as np
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant import spade
+        from viziphant.spade import plot_patterns_statistics
+        np.random.seed(12)
+
+        spiketrains = [neo.SpikeTrain((np.arange(20)+np.random.rand(20))*pq.s,
+                       t_stop=21) for _ in range(50)]
+        patterns = spade.spade(spiketrains, bin_size=100*pq.ms,
+                               winlen=1)['patterns']
+
+        plot_patterns_statistics(patterns, winlen=1, bin_size=100*pq.ms,
+                                 n_neurons=len(spiketrains))
+        plt.show()
+
     """
     patterns_dict = defaultdict(list)
     for pattern in patterns:
@@ -52,13 +87,14 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
     axes[0].hist(patterns_dict['neurons'], bins=n_neurons)
     axes[0].set_xlabel('Neuronal participation in patterns')
     axes[0].set_ylabel('Count')
-    axes[1].hist(patterns_dict['occurrences'],
-                 bins=np.arange(1.5, np.max(
-                     patterns_dict['occurrences']) + 1, 1))
+    occurrences, counts = np.unique(patterns_dict['occurrences'],
+                                    return_counts=True)
+    axes[1].bar(occurrences, counts)
     axes[1].set_xlabel('Pattern occurrences')
     axes[1].set_ylabel('Count')
-    axes[2].hist(patterns_dict['pattern_size'],
-                 bins=np.arange(1.5, np.max(patterns_dict['pattern_size']), 1))
+    sizes, counts = np.unique(patterns_dict['pattern_size'],
+                              return_counts=True)
+    axes[2].bar(sizes, counts)
     axes[2].set_xlabel('Pattern size')
     axes[2].set_ylabel('Count')
     if winlen != 1:
@@ -77,26 +113,50 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
 
 def plot_pattern(spiketrains, pattern):
     """
-    Simple plot showing a rasterplot along with one chosen pattern with its
-    spikes represented in red
+    Simple plot showing a rasterplot in gray along with one chosen SPADE
+    pattern with its spikes represented in red.
 
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain
         List of `neo.SpikeTrain` that were used as the input.
-    pattern : dictionary
+    pattern : dict
         A pattern from a list of found patterns returned by
         :func:`elephant.spade.spade` function.
 
     Returns
     -------
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import neo
+        import numpy as np
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant import spade
+        from viziphant.spade import plot_pattern
+        np.random.seed(12)
+
+        spiketrains = [neo.SpikeTrain(
+            np.sort((np.arange(20) + 3 * np.random.rand(20))) * pq.s,
+            t_stop=23) for _ in range(10)
+        ]
+        patterns = spade.spade(spiketrains, bin_size=500*pq.ms,
+                               winlen=1)['patterns']
+
+        plot_pattern(spiketrains, pattern=patterns[0])
+        plt.show()
+
     """
-    ax = plot_raster(spiketrains)
+    axes = plot_raster(spiketrains, color='darkgray', ms=3)
     pattern_times = pattern['times'].rescale(pq.s).magnitude
     # for each neuron that participated in the pattern
     for neuron in pattern['neurons']:
-        ax.plot(pattern_times, [neuron] * len(pattern_times), '.', color='red')
-    ax.set_ylabel('Neuron')
-    return ax
-
+        axes.plot(pattern_times, [neuron] * len(pattern_times),
+                  'o', color='red', ms=7)
+    axes.set_ylabel('Neuron')
+    return axes

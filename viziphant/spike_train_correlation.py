@@ -1,86 +1,99 @@
 """
-Simple plotting function for spike train correlation measures
+Spike train correlation plots
+-----------------------------
+
+.. autosummary::
+    :toctree: toctree/spike_train_correlation/
+
+    plot_corrcoef
+    plot_cross_correlation_histogram
+
 """
+# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
+
+
+from __future__ import division, print_function, unicode_literals
 
 import matplotlib.pyplot as plt
 import numpy as np
 import quantities as pq
-import seaborn as sns
-from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
-def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
-                  cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8),
-                  remove_diagonal=True):
+def plot_corrcoef(corrcoef_matrix, axes, correlation_minimum=-1.,
+                  correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
+                  color_bar_padding_fraction=.5, remove_diagonal=True):
     """
-    This function plots the cross-correlation matrix returned by
-    `elephant.spike_train_correlation.correlation_coefficient` and adds a
-    colour bar.
+    Plots a cross-correlation matrix returned by
+    :func:`elephant.spike_train_correlation.correlation_coefficient`
+    function and adds a color bar.
 
     Parameters
     ----------
-    cc : np.ndarray
-        The output of
-        `elephant.spike_train_correlation.correlation_coefficient`.
-    vmin : int or float, optional
-        The minimum correlation for colour mapping.
-        Default: -1
-    vmax : int or float, optional
-        The maximum correlation for colour mapping.
-        Default: 1
-    style: {'darkgrid', 'whitegrid', 'dark', 'white', 'ticks'} or dict,
-           optional
-        A seaborn style setting.
-        Default: 'ticks'
-    cmap : str, optional
-        The colour map.
-        Default: 'bwr'
-    cax_aspect : int or float, optional
-        The aspect ratio of the colour bar.
-        Default: 20
-    cax_pad_fraction : int or float, optional
-        The padding between matrix plot and colour bar relative to colour bar
-        width.
+    corrcoef_matrix : np.ndarray
+        Pearson's correlation coefficient matrix
+    axes : matplotlib.axes.Axes
+        Matplotlib figure Axes
+    correlation_minimum : float
+        minimum correlation for colour mapping. Default: -1
+    correlation_maximum : float
+        maximum correlation for colour mapping. Default: 1
+    colormap : str
+        colormap. Default: 'bwr'
+    color_bar_aspect : float
+        aspect ratio of the color bar. Default: 20
+    color_bar_padding_fraction : float
+        padding between matrix plot and color bar relative to color bar width.
         Default: .5
-    figsize : tuple of int, optional
-        The size of the figure.
-        Default: (8, 8)
     remove_diagonal : bool
         If True, the values in the main diagonal are replaced with zeros.
         Default: True
 
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-    ax : matplotlib.axes.Axes
+    Examples
+    --------
+    Create 10 homogeneous random Poisson spike trains of rate `10Hz` and bin
+    the spikes into bins of `100ms` width, which is relatively large for such
+    a firing rate, so we expect non-zero correlations.
+
+    .. plot::
+       :include-source:
+
+        import quantities as pq
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_correlation import correlation_coefficient
+        from viziphant.spike_train_correlation import plot_corrcoef
+        np.random.seed(0)
+
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        binned_spiketrains = BinnedSpikeTrain(spiketrains, bin_size=100*pq.ms)
+        corrcoef_matrix = correlation_coefficient(binned_spiketrains)
+
+        fig, axes = plt.subplots()
+        plot_corrcoef(corrcoef_matrix, axes=axes)
+        axes.set_xlabel('Neuron')
+        axes.set_ylabel('Neuron')
+        axes.set_title("Correlation coefficient matrix")
+        plt.show()
+
     """
-
-    # Initialise plotting canvas
-    sns.set_style(style)
-
-    # Initialise figure and image axis
-    fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'},
-                           figsize=figsize)
-
-    # Remove the diagonal
     if remove_diagonal:
-        cc = cc.copy()
-        np.fill_diagonal(cc, val=0)
+        corrcoef_matrix = corrcoef_matrix.copy()
+        np.fill_diagonal(corrcoef_matrix, val=0)
 
-    im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    image = axes.imshow(corrcoef_matrix,
+                        vmin=correlation_minimum, vmax=correlation_maximum,
+                        cmap=colormap)
 
     # Initialise colour bar axis
-    divider = make_axes_locatable(ax)
-    width = axes_size.AxesY(ax, aspect=1./cax_aspect)
-    pad = axes_size.Fraction(cax_pad_fraction, width)
+    divider = make_axes_locatable(axes)
+    width = axes_size.AxesY(axes, aspect=1. / color_bar_aspect)
+    pad = axes_size.Fraction(color_bar_padding_fraction, width)
     cax = divider.append_axes("right", size=width, pad=pad)
 
-    plt.colorbar(im, cax=cax)
-
-    return fig, ax
+    plt.colorbar(image, cax=cax)
 
 
 def plot_cross_correlation_histogram(
@@ -89,13 +102,14 @@ def plot_cross_correlation_histogram(
         title='Cross-correlation histogram',
         xlabel=None, ylabel=''):
     """
-    Plot a cross correlation histogram, rescaled to seconds.
+    Plot a cross-correlation histogram returned by
+    :func:`elephant.spike_train_correlation.cross_correlation_histogram`,
+    rescaled to seconds.
 
     Parameters
     ----------
     cch : neo.AnalogSignal
-        A result of
-        :func:`elephant.spike_train_correlation.cross_correlation_histogram`
+        Cross-correlation histogram.
     surr_cchs : np.ndarray or neo.AnalogSignal, optional
         Contains cross-correlation histograms for each surrogate realization.
         If None, only the original `cch` is plotted.
@@ -140,9 +154,9 @@ def plot_cross_correlation_histogram(
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
         from elephant.conversion import BinnedSpikeTrain
-        from elephant.spike_train_correlation import
+        from elephant.spike_train_correlation import \
              cross_correlation_histogram
-        from viziphant.spike_train_correlation import
+        from viziphant.spike_train_correlation import \
              plot_cross_correlation_histogram
 
         spiketrain1 = homogeneous_poisson_process(rate=10*pq.Hz,

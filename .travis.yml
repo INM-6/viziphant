@@ -1,0 +1,33 @@
+dist: xenial
+language: python
+sudo: false
+
+addons:
+   apt:
+     update: false
+
+
+matrix:
+  include:
+
+    - name: "pip 3.6"
+      python: 3.6
+
+    - name: "pip 3.7"
+      python: 3.7
+
+    - name: "pip 3.8"
+      python: 3.8
+
+
+install:
+  - pip install -r requirements/requirements.txt
+  - pip install -r requirements/requirements-docs.txt
+  - pip -V
+  - python -c "from elephant.spade import HAVE_FIM; assert HAVE_FIM"
+  - pip list
+  - python --version
+
+
+script:
+  make html SPHINXOPTS="-W --keep-going -n"
