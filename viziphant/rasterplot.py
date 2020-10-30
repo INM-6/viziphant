@@ -629,7 +629,7 @@ def plot_raster_rates(spiketrains,
     return ax, axhistx, axhisty
 
 
-def plot_raster(spiketrains):
+def plot_raster(spiketrains, color='black', **kwargs):
     """
     This function generates a simple dot plot using 'plot_raster_rates' as the
     base function. The two histograms from the aforementioned function are
@@ -637,21 +637,44 @@ def plot_raster(spiketrains):
 
     Parameters
     ----------
-    spiketrains : list of neo.SpikeTrain or list of list of neo.SpikeTrain
-        List can either contain Neo SpikeTrains object or lists of Neo
-        SpikeTrains objects.
+    spiketrains : list of neo.SpikeTrain or pq.Quantity
+        A list of `neo.SpikeTrain`s or quantity arrays.
+    color : str, optional
+        Raster color.
+        Default : 'black'
+    **kwargs
+        Other parameters passed to matplotlib `axes.plot` function.
 
     Returns
     -------
-    ax : matplotlib.Axes.axes
-        The handle for the raster plot.
+    axes : matplotlib.Axes.axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import numpy as np
+        import neo
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.rasterplot import plot_raster
+        np.random.seed(7)
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        plot_raster(spiketrains, markersize=2)
+        plt.show()
 
     """
-    ax, axhistx, axhisty = plot_raster_rates(spiketrains)
-    axhistx.set_visible(False)
-    axhisty.set_visible(False)
+    fig, axes = plt.subplots()
+    spiketrains = [st.rescale(pq.s).magnitude for st in spiketrains]
+    for neuron, spiketrain in enumerate(spiketrains):
+        axes.plot(spiketrain, [neuron] * len(spiketrain),
+                  'o', color=color, **kwargs)
+    axes.set_xlabel("Time (s)")
 
-    return ax
+    return axes
 
 
 def eventplot(times, axes=None, histogram_bins=0, title='', **kwargs):
