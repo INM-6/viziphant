@@ -10,11 +10,8 @@ addons:
 matrix:
   include:
 
-    - name: "pip 3.6 PyPi"
+    - name: "pip 3.6"
       python: 3.6
-      before_install:
-        - sudo apt install -y libopenmpi-dev openmpi-bin
-        - pip install elephant[extras]
 
     - name: "pip 3.7"
       python: 3.7
