@@ -6,3 +6,5 @@ Function Reference by Module
    :maxdepth: 1
 
    reference/spike_train_correlation
+   reference/rasterplot
+   reference/events

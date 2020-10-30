@@ -4,12 +4,12 @@ format. While building on the matplotlib library the functions lay an emphasis
 on clear, pleasant-to-look-at visualizations.
 """
 
-from math import log10, floor
-
 import matplotlib.pyplot as plt
 import numpy as np
+import quantities as pq
 import seaborn as sns
 import warnings
+from math import log10, floor
 
 from elephant.statistics import mean_firing_rate
 
@@ -647,96 +647,93 @@ def plot_raster(spiketrains):
     return ax
 
 
-def eventplot_histogram(times, labels, event=None, event_label_key=None,
-                        num_histogram_bins=50):
+def eventplot(times, axes=None, histogram_bins=0, title='', **kwargs):
     """
-    This function creates a simple event plot with a histogram from quantity
-    arrays or neo objects with a times attribute. Optionally, event times can
-    be marked in the plot.
-
-    Multiple plots are created side by side for nested sublists in the `times`
-    and `labels` arguments.
+    Spike times eventplot with an additional histogram.
 
     Parameters
     ----------
     times : list of neo.SpikeTrain or pq.Quantity arrays
-        A list of lists of quantity arrays or neo objects with a `times`
-        attribute to plot.
-    labels : list of str
-        A list of labels corresponding to the sublists of `times`.
-    event : neo.Event, optional
-        A `neo.Event` object whose times should be marked in the plots as
-        vertical lines.
+        A list of quantity arrays or `neo.SpikeTrain`s.
+    axes : matplotlib.axes.Axes or None
+        Matplotlib axes to use in the plot. If set to None, new axes are
+        created and returned.
         Default: None
-    event_label_key : str, optional
-        The key of an array annotation of the event to use for labelling
-        instead of event.labels.
-        Default: None
-    num_histogram_bins : int, optional
-        The number of histogram bins.
-        Default: 50
-    """
-
-    if hasattr(times[0], 'units'):
-        times = [times]
-    if isinstance(labels, str):
-        labels = [labels]
-
-    fig, axes = plt.subplots(2, len(labels), sharex=True, sharey='row',
-                             figsize=(8 * len(labels), 3))
-
-    # make sure the indexing in the loop below does not break down for
-    # len(labels) = 1
-    axes = [np.atleast_1d(ax) for ax in axes]
-
-    for idx, label in enumerate(labels):
-        axes[0][idx].eventplot(times[idx])
-        axes[1][idx].hist(np.concatenate(times[idx]).magnitude,
-                          bins=num_histogram_bins)
-        axes[1][idx].set_xlabel(
-            f'Time ({times[idx][0].dimensionality.string})')
-        axes[0][idx].set_title(labels[idx])
-
-    if event is not None:
-        for event_idx in range(len(event)):
-            time = event.times[event_idx]
-            if event_label_key is not None:
-                label = event.array_annotations[event_label_key][event_idx]
-            else:
-                label = event.labels[event_idx]
-            for idx in range(len(labels)):
-                time = time.rescale(times[idx][0].units)
-                axes[0][idx].axvline(time, color='black')
-                axes[1][idx].axvline(time, color='black')
-                axes[0][idx].text(time, axes[0][idx].get_ylim()[1], label,
-                                  horizontalalignment='left',
-                                  verticalalignment='bottom', rotation=40)
-
-    return fig, axes
-
-
-def eventplot(times, linelengths=0.75):
-    """
-    A simple eventplot.
-
-    Parameters
-    ----------
-    times : list of neo.SpikeTrain or pq.Quantity arrays
-        A list of lists of quantity arrays or neo objects with a `times`
-        attribute to plot.
-    linelengths : float, optional
-        The length of event lines, passed to matplotlib `eventplot` function.
-        Default: 0.75
+    histogram_bins : int, optional
+        Defines the number of histogram bins. If set to ``0``, no histogram
+        is shown.
+        Default: 0
+    title : str, optional
+        The title of eventplot.
+        Default: ''
+    kwargs
+        Additional parameters, passed to matplotlib `eventplot` function.
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
+
+    Examples
+    --------
+    Basic spike times eventplot.
+
+    .. plot::
+        :include-source:
+
+        import numpy as np
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.rasterplot import eventplot
+        np.random.seed(12)
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        eventplot(spiketrains, linelengths=0.75, color='black')
+        plt.show()
+
+    To plot with a histogram, provide a value for ``histogram_bins``.
+    To compare spike times between different neurons, create
+    `matplotlib.axes.Axes` instance prior to calling the function.
+    Additionally, you can add events to the plot with
+    :func:`viziphant.events.add_event` function.
+
+    .. plot::
+        :include-source:
+
+        import numpy as np
+        import neo
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.rasterplot import eventplot
+        from viziphant.events import add_event
+        np.random.seed(12)
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(20)]
+
+        fig, axes = plt.subplots(2, 2, sharex=True, sharey='row')
+        event = neo.Event([0.5, 8]*pq.s, labels=['trig0', 'trig1'])
+        eventplot(spiketrains[:10], axes=axes[:, 0], histogram_bins=20,
+                  title="Neuron A")
+        add_event(axes[:, 0], event)
+        eventplot(spiketrains[10:], axes=axes[:, 1], histogram_bins=20,
+                  title="Neuron B")
+        add_event(axes[:, 1], event)
+        plt.show()
+
     """
-    units = times[0].units
-    times = [st.rescale(units).magnitude for st in times]
-    fig, axes = plt.subplots(nrows=1, ncols=1)
-    axes.eventplot(times, linelengths=linelengths, color='black')
-    axes.set_xlabel(f'Time ({units.dimensionality})')
-    axes.set_ylabel("Spike trains")
-    return fig, axes
+    times = [st.rescale(pq.s).magnitude for st in times]
+    if axes is None:
+        nrows = 2 if histogram_bins else 1
+        fig, axes = plt.subplots(nrows=nrows, ncols=1)
+    axes = np.atleast_1d(axes)
+    axes[0].eventplot(times, **kwargs)
+    axes[0].set_title(title)
+
+    if histogram_bins:
+        axes[1].hist(np.hstack(times), bins=histogram_bins)
+        axes[1].set_ylabel('Spike count')
+
+    axes[-1].set_xlabel(f'Time (s)')
+
+    return axes
