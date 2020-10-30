@@ -1,6 +1,5 @@
-=======================
-Raster plot, event plot
-=======================
+======================
+Raster and event plots
+======================
 
 .. automodule:: viziphant.rasterplot
-   :members:

@@ -1,6 +1,15 @@
 """
-Standard plot function for pairwise unitary event analysis results resembling the original publication.
+Standard plot function for pairwise unitary event analysis results resembling
+the original publication.
+
+.. autosummary::
+    :toctree: toctree/unitary_event_analysis/
+
+    plot_ue
+
 """
+# Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
 import numpy
 import quantities as pq

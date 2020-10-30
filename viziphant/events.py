@@ -1,3 +1,16 @@
+"""
+Adding time events to axes plot.
+
+.. autosummary::
+    :toctree: toctree/events/
+
+    add_event
+
+"""
+# Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
+
+
 import neo
 import numpy as np
 import quantities as pq

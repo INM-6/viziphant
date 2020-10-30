@@ -3,8 +3,11 @@ Function Reference by Module
 ****************************
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   reference/spike_train_correlation
    reference/rasterplot
+   reference/statistics
+   reference/spike_train_correlation
    reference/events
+   reference/spade
+   reference/unitary_event_analysis

@@ -1,6 +1,15 @@
 """
-Simple plotting functions for statistical measures of spike trains
+Simple plotting functions for statistical measures of spike trains.
+
+.. autosummary::
+    :toctree: toctree/statistics/
+
+    plot_isi
+    plot_time_histogram
+
 """
+# Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
 import matplotlib.pyplot as plt
 import neo

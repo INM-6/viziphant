@@ -1,5 +1,11 @@
 """
-Simple plotting function for spike train correlation measures
+Simple plotting function for spike train correlation measures.
+
+.. autosummary::
+    :toctree: toctree/spike_train_correlation/
+
+    plot_corrcoef
+
 """
 # Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.

@@ -1,8 +1,16 @@
 """
-Simple but highly configurable plotting functions for spiketrains in neo
-format. While building on the matplotlib library the functions lay an emphasis
-on clear, pleasant-to-look-at visualizations.
+Raster and event plots of spike times.
+
+.. autosummary::
+    :toctree: toctree/rasterplot/
+
+    eventplot
+    plot_raster
+    plot_raster_rates
+
 """
+# Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
 import matplotlib.pyplot as plt
 import numpy as np
