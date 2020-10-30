@@ -13,7 +13,7 @@ with open("README.md") as f:
 with open('requirements/requirements.txt') as fp:
     install_requires = fp.read()
 extras_require = {}
-for extra in ['docs', 'tests']:
+for extra in ['docs']:
     with open('requirements/requirements-{0}.txt'.format(extra)) as fp:
         extras_require[extra] = fp.read()
 
@@ -21,7 +21,7 @@ for extra in ['docs', 'tests']:
 setup(
     name="viziphant",
     version=version,
-    packages=['viziphant', 'viziphant.tests'],
+    packages=['viziphant'],
     include_package_data=True,
     install_requires=install_requires,
     extras_require=extras_require,
