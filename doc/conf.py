@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 project = 'Viziphant'
 authors = 'Elephant team'
-copyright = u"2019-{this_year}, {authors}".format(this_year=date.today().year,
+copyright = u"2017-{this_year}, {authors}".format(this_year=date.today().year,
                                                   authors=authors)
 
 
