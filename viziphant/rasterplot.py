@@ -1,5 +1,6 @@
 """
-Raster and event plots of spike times.
+Raster and event plots of spike times
+-------------------------------------
 
 .. autosummary::
     :toctree: toctree/rasterplot/

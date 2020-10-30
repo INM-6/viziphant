@@ -1,5 +1,6 @@
 """
-Simple plotting functions for statistical measures of spike trains.
+Spike train statistics plots
+----------------------------
 
 .. autosummary::
     :toctree: toctree/statistics/

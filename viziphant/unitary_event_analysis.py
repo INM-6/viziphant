@@ -1,4 +1,7 @@
 """
+Unitary Event Analysis (UEA) plots
+----------------------------------
+
 Standard plot function for pairwise unitary event analysis results resembling
 the original publication.
 

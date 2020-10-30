@@ -1,5 +1,6 @@
 """
-Simple plotting function for spike train correlation measures.
+Spike train correlation plots
+-----------------------------
 
 .. autosummary::
     :toctree: toctree/spike_train_correlation/

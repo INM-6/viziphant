@@ -1,5 +1,6 @@
 """
-Adding time events to axes plot.
+Adding time events to axes plot
+-------------------------------
 
 .. autosummary::
     :toctree: toctree/events/

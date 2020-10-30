@@ -1,5 +1,6 @@
 """
-Spike Pattern Detection and Evaluation (SPADE) plots.
+Spike Pattern Detection and Evaluation (SPADE) plots
+----------------------------------------------------
 
 .. autosummary::
     :toctree: toctree/spade/
@@ -52,6 +53,7 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
         import quantities as pq
         import matplotlib.pyplot as plt
         from elephant import spade
+        from viziphant.spade import plot_patterns_statistics
         np.random.seed(12)
 
         spiketrains = [neo.SpikeTrain((np.arange(20)+np.random.rand(20))*pq.s,
@@ -134,6 +136,7 @@ def plot_pattern(spiketrains, pattern):
         import quantities as pq
         import matplotlib.pyplot as plt
         from elephant import spade
+        from viziphant.spade import plot_pattern
         np.random.seed(12)
 
         spiketrains = [neo.SpikeTrain((np.arange(20)+np.random.rand(20))*pq.s,

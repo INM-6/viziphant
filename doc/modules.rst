@@ -2,12 +2,14 @@
 Function Reference by Module
 ****************************
 
-.. toctree::
-   :maxdepth: 2
+.. automodule:: viziphant.rasterplot
 
-   reference/rasterplot
-   reference/statistics
-   reference/spike_train_correlation
-   reference/events
-   reference/spade
-   reference/unitary_event_analysis
+.. automodule:: viziphant.statistics
+
+.. automodule:: viziphant.spike_train_correlation
+
+.. automodule:: viziphant.events
+
+.. automodule:: viziphant.spade
+
+.. automodule:: viziphant.unitary_event_analysis
