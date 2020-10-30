@@ -13,6 +13,7 @@ Raster and event plots of spike times
 # Copyright 2019-2020 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.
 
+import matplotlib.axes
 import matplotlib.pyplot as plt
 import numpy as np
 import quantities as pq
@@ -672,7 +673,7 @@ def eventplot(times, axes=None, histogram_bins=0, title='', **kwargs):
     title : str, optional
         The title of eventplot.
         Default: ''
-    kwargs
+    **kwargs
         Additional parameters, passed to matplotlib `eventplot` function.
 
     Returns

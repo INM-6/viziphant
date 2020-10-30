@@ -25,7 +25,7 @@ def plot_corrcoef(corrcoef_matrix, axes, correlation_minimum=-1.,
                   correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
                   color_bar_padding_fraction=.5, remove_diagonal=True):
     """
-    Plots the cross-correlation matrix returned by
+    Plots a cross-correlation matrix returned by
     :func:`elephant.spike_train_correlation.correlation_coefficient`
     function and adds a color bar.
 
@@ -102,13 +102,14 @@ def plot_cross_correlation_histogram(
         title='Cross-correlation histogram',
         xlabel=None, ylabel=''):
     """
-    Plot a cross correlation histogram, rescaled to seconds.
+    Plot a cross-correlation histogram returned by
+    :func:`elephant.spike_train_correlation.cross_correlation_histogram`,
+    rescaled to seconds.
 
     Parameters
     ----------
     cch : neo.AnalogSignal
-        A result of
-        :func:`elephant.spike_train_correlation.cross_correlation_histogram`
+        Cross-correlation histogram.
     surr_cchs : np.ndarray or neo.AnalogSignal, optional
         Contains cross-correlation histograms for each surrogate realization.
         If None, only the original `cch` is plotted.
@@ -153,9 +154,9 @@ def plot_cross_correlation_histogram(
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
         from elephant.conversion import BinnedSpikeTrain
-        from elephant.spike_train_correlation import
+        from elephant.spike_train_correlation import \
              cross_correlation_histogram
-        from viziphant.spike_train_correlation import
+        from viziphant.spike_train_correlation import \
              plot_cross_correlation_histogram
 
         spiketrain1 = homogeneous_poisson_process(rate=10*pq.Hz,

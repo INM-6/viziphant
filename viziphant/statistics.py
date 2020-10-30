@@ -22,8 +22,8 @@ from elephant import statistics
 
 def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
     """
-    This function creates a simple histogram plot to visualise an inter-spike
-    interval (ISI) distribution computed with `elephant.statistics.isi`.
+    Create a simple histogram plot to visualise an inter-spike interval (ISI)
+    distribution computed with :func:`elephant.statistics.isi`.
 
     Parameters
     ----------

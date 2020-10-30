@@ -2,6 +2,8 @@
 Spike Pattern Detection and Evaluation (SPADE) plots
 ----------------------------------------------------
 
+Visualizes output of :func:`elephant.spade.spade` analysis.
+
 .. autosummary::
     :toctree: toctree/spade/
 
@@ -25,7 +27,7 @@ from viziphant.rasterplot import plot_raster
 def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
     """
     This function creates a histogram plot to visualise patterns statistics
-    output of a SPADE analysis (:func:`elephant.spade.spade`).
+    output of a SPADE analysis.
 
     Parameters
     ----------
@@ -111,8 +113,8 @@ def plot_patterns_statistics(patterns, winlen, bin_size, n_neurons):
 
 def plot_pattern(spiketrains, pattern):
     """
-    Simple plot showing a rasterplot along with one chosen pattern with its
-    spikes represented in red
+    Simple plot showing a rasterplot along with one chosen SPADE pattern with
+    its spikes represented in red.
 
     Parameters
     ----------
