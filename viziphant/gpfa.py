@@ -11,6 +11,24 @@ from matplotlib.lines import Line2D
 from elephant.conversion import BinnedSpikeTrain
 import warnings
 import neo
+def plot_cumulative_explained_variance(loading_matrix):
+    eigenvalues = np.linalg.eigvals(np.dot(loading_matrix.transpose(),
+                                           loading_matrix))
+    total_variance = np.sum(eigenvalues)
+
+    # sort by decreasing variance explained
+    sorted_eigenvalues = np.sort(np.abs(eigenvalues))[-1::-1]
+    cumulative_variance = np.cumsum(sorted_eigenvalues / total_variance)
+
+    fig, ax = plt.subplots()
+    ax.plot(cumulative_variance, 'o-')
+
+    ax.grid()
+    ax.set_title('Eigenspectrum of estimated shared covariance matrix')
+    ax.set_xlabel('Latent Dimensionality')
+    ax.set_ylabel('Cumulative % of shared variance explained')
+
+    return ax
 
 
 def plot_dimension_vs_time(returned_data,
