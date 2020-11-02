@@ -131,6 +131,7 @@ def rasterplot_rates(spiketrains,
              the empty string '' can be placed at a different position in
              key_list.
         * 2: additional grouping by second key respectively
+
         The groups are separated by whitespace specified in the spacing
         parameter and optionally by a line specified by the the separatorargs.
     spacing: int or list of int
@@ -146,6 +147,7 @@ def rasterplot_rates(spiketrains,
         given, if not otherwise specified in key_list!
     pophist_mode: str
          * total: One population histogram for all drawn spike trains
+
          * color: Additionally to the total population histogram,
                   a histogram for each colored subset is drawn (see colorkey).
     pophistbins: int (default 100)
@@ -172,8 +174,9 @@ def rasterplot_rates(spiketrains,
                 key ('') when list of lists of spike trains are given.
         * '0+1': Two level labeling of 0 and 1
         * annotation-key: Labeling each spike train with its value for given
-          key
+                          key
         * None: No labeling
+
         Note that only groups (-> see groupingdepth) can be labeled as bulks.
         Alternatively you can color for an annotation key and show a legend.
     markerargs: dict
@@ -679,7 +682,7 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain or pq.Quantity
-        A list of `neo.SpikeTrain`s or quantity arrays with spike times.
+        A list of `neo.SpikeTrain` objects or quantity arrays with spike times.
     axes : matplotlib.axes.Axes or None, optional
         Matplotlib axes handle. If None, new axes are created and returned.
         Default: None
@@ -775,7 +778,7 @@ def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain or pq.Quantity
-        A list of `neo.SpikeTrain`s or quantity arrays with spike times.
+        A list of `neo.SpikeTrain` objects or quantity arrays with spike times.
     axes : matplotlib.axes.Axes or None
         Matplotlib axes handle. If None, new axes are created and returned.
         Default: None

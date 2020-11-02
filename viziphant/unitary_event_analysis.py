@@ -62,91 +62,124 @@ plot_params_default = {
 def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
             pattern_hash, plot_params_user):
     """
-    Plots the results of pairwise unitary event analysis as a column of six subplots,
-    comprised of raster plot, peri-stimulus time histogram, coincident event plot,
-    coincidence rate plot, significance plot and unitary event plot, respectively.
+    Plots the results of pairwise unitary event analysis as a column of six
+    subplots, comprised of raster plot, peri-stimulus time histogram,
+    coincident event plot, coincidence rate plot, significance plot and
+    unitary event plot, respectively.
 
     Parameters
     ----------
     data : list of list of neo.SpikeTrain
-        A nested list of trials, neurons and their neo.SpikeTrain objects, respectively.
-        This should be identical to the one used to generate Js_dict.
+        A nested list of trials, neurons and their neo.SpikeTrain objects,
+        respectively. This should be identical to the one used to generate
+        Js_dict.
     Js_dict : dict
-        The output of elephant.unitary_event_analysis.jointJ_window_analysis function.
-        The values of each key has the shape of
-             different pattern hash --> 0-axis
-             different window --> 1-axis
-        Js: list of float
+        The output of elephant.unitary_event_analysis.jointJ_window_analysis
+        function. The values of each key has the shape of:
+
+        * different pattern hash --> 0-axis;
+        * different window --> 1-axis.
+
+        Dictionary keys:
+
+        * 'Js': list of float
+
           JointSurprise of different given patterns within each window.
-        indices: list of list of int
+        * 'indices': list of list of int
+
           A list of indices of pattern within each window.
-        n_emp: list of int
+        * 'n_emp': list of int
+
           The empirical number of each observed pattern.
-        n_exp: list of float
+        * 'n_exp': list of float
+
           The expected number of each pattern.
-        rate_avg: list of float
+        * 'rate_avg': list of float
+
           The average firing rate of each neuron.
     sig_level : float
-        The significance threshold used to determine which coincident events are
-        classified as unitary events within a window.
+        The significance threshold used to determine which coincident events
+        are classified as unitary events within a window.
     binsize : quantities.Quantity
-        The size of bins for discretizing spike trains. This value should be identical
-        to the one used to generate Js_dict.
+        The size of bins for discretizing spike trains. This value should be
+        identical to the one used to generate Js_dict.
     winsize : quantities.Quantity
-        The size of the window of analysis. This value should be identical to the one
-        used to generate Js_dict.
-    winstep : quantities.Quantity
-        The size of the window step. This value should be identical to the one used to
-        generate Js_dict.
-    pattern_hash : list of int
-        List of interested patterns in hash values. This value should be identical to
+        The size of the window of analysis. This value should be identical to
         the one used to generate Js_dict.
+    winstep : quantities.Quantity
+        The size of the window step. This value should be identical to the one
+        used to generate Js_dict.
+    pattern_hash : list of int
+        List of interested patterns in hash values. This value should be
+        identical to the one used to generate Js_dict.
     plot_params_user : dict
         A dictionary of plotting parameters used to update the default plotting
-        parameter values.
-        events : list
-            Epochs to be marked on the time axis.
-        figsize : tuple of int
-            The dimensions for the figure size.
-        right : float
-            The size of the right margin.
-        top : float
-            The size of the top margin.
-        bottom : float
-            The size of the bottom margin.
-        left : float
-            The size of the left margin.
-        hspace : flaot
-            The size of the horizontal white space between subplots.
-        wspace : float
-            The width of the white space between subplots.
-        fsize : int
-            The size of the font.
-        unit_real_ids : list of int
-            The unit ids from the experimental recording.
-        lw : int
-            The default line width.
-        S_ylim : tuple of ints or floats
-            The y-axis limits for the joint surprise plot.
-        ms : int,
-            The marker size for the unitary events and coincidences.
+        parameter values. Dictionary keys:
+
+        * 'events' : list
+
+          Epochs to be marked on the time axis.
+        * 'figsize' : tuple of int
+
+          The dimensions for the figure size.
+        * 'right' : float
+
+          The size of the right margin.
+        * 'top' : float
+
+          The size of the top margin.
+        * 'bottom' : float
+
+          The size of the bottom margin.
+        * 'left' : float
+
+          The size of the left margin.
+        * 'hspace' : flaot
+
+          The size of the horizontal white space between subplots.
+        * 'wspace' : float
+
+          The width of the white space between subplots.
+        * 'fsize' : int
+
+          The size of the font.
+        * 'unit_real_ids' : list of int
+
+          The unit ids from the experimental recording.
+        * 'lw' : int
+
+          The default line width.
+        * 'S_ylim' : tuple of ints or floats
+
+          The y-axis limits for the joint surprise plot.
+        * 'ms' : int
+
+          The marker size for the unitary events and coincidences.
+
     Returns
     -------
     result : FigureUE
         The container for Axes objects generated by the function. Individual
         axes can be accessed using the following identifiers:
-        axes_spike_events : matplotlib.axes.Axes
-            Contains the elements of the spike events subplot.
-        axes_spike_rates : matplotlib.axes.Axes
-            Contains the elements of the spike rates subplot.
-        axes_coincident_events : matplotlib.axes.Axes
-            Contains the elements of the coincident events subplot.
-        axes_coincidence_rates : matplotlib.axes.Axes
-            Contains the elements of the coincidence rates subplot.
-        axes_significance : matplotlib.axes.Axes
-            Contains the elements of the statistical significance subplot.
-        axes_unitary_events : matplotlib.axes.Axes
-            Contains the elements of the unitary events subplot.
+
+        * axes_spike_events : matplotlib.axes.Axes
+
+          Contains the elements of the spike events subplot.
+        * axes_spike_rates : matplotlib.axes.Axes
+
+          Contains the elements of the spike rates subplot.
+        * axes_coincident_events : matplotlib.axes.Axes
+
+          Contains the elements of the coincident events subplot.
+        * axes_coincidence_rates : matplotlib.axes.Axes
+
+          Contains the elements of the coincidence rates subplot.
+        * axes_significance : matplotlib.axes.Axes
+
+          Contains the elements of the statistical significance subplot.
+        * axes_unitary_events : matplotlib.axes.Axes
+
+          Contains the elements of the unitary events subplot.
     """
 
     t_start = data[0][0].t_start
