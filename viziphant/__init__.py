@@ -6,8 +6,8 @@ based on Neo.
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
-from . import (spike_train_correlation, unitary_event_analysis, rasterplot,
-               statistics)
+from . import (events, rasterplot, spade, spike_train_correlation,
+               statistics, unitary_event_analysis)
 
 
 def _get_version():

@@ -21,34 +21,38 @@ import quantities as pq
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
-def plot_corrcoef(corrcoef_matrix, axes, correlation_minimum=-1.,
-                  correlation_maximum=1., colormap='bwr', color_bar_aspect=20,
-                  color_bar_padding_fraction=.5, remove_diagonal=True):
+def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
+                  colormap='bwr', colorbar_aspect=20,
+                  colorbar_padding_fraction=0.5, remove_diagonal=True):
     """
     Plots a cross-correlation matrix returned by
     :func:`elephant.spike_train_correlation.correlation_coefficient`
-    function and adds a color bar.
+    function with a color bar.
 
     Parameters
     ----------
     corrcoef_matrix : np.ndarray
         Pearson's correlation coefficient matrix
-    axes : matplotlib.axes.Axes
-        Matplotlib figure Axes
-    correlation_minimum : float
-        minimum correlation for colour mapping. Default: -1
-    correlation_maximum : float
-        maximum correlation for colour mapping. Default: 1
-    colormap : str
-        colormap. Default: 'bwr'
-    color_bar_aspect : float
-        aspect ratio of the color bar. Default: 20
-    color_bar_padding_fraction : float
-        padding between matrix plot and color bar relative to color bar width.
-        Default: .5
-    remove_diagonal : bool
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+    correlation_range : tuple of float, optional
+        Minimum and maximum correlations to consider.
+        Default: (-1, 1)
+    colormap : str, optional
+        Colormap. Default: 'bwr'
+    colorbar_aspect : float, optional
+        Aspect ratio of the color bar. Default: 20
+    colorbar_padding_fraction : float, optional
+        Padding between matrix plot and color bar relative to color bar width.
+        Default: 0.5
+    remove_diagonal : bool, optional
         If True, the values in the main diagonal are replaced with zeros.
         Default: True
+
+    Returns
+    -------
+    axes : matplotlib.axes.Axes
 
     Examples
     --------
@@ -79,21 +83,25 @@ def plot_corrcoef(corrcoef_matrix, axes, correlation_minimum=-1.,
         plt.show()
 
     """
+    if axes is None:
+        fig, axes = plt.subplots()
+
     if remove_diagonal:
         corrcoef_matrix = corrcoef_matrix.copy()
         np.fill_diagonal(corrcoef_matrix, val=0)
 
-    image = axes.imshow(corrcoef_matrix,
-                        vmin=correlation_minimum, vmax=correlation_maximum,
-                        cmap=colormap)
+    vmin, vmax = correlation_range
+    image = axes.imshow(corrcoef_matrix, vmin=vmin, vmax=vmax, cmap=colormap)
 
     # Initialise colour bar axis
     divider = make_axes_locatable(axes)
-    width = axes_size.AxesY(axes, aspect=1. / color_bar_aspect)
-    pad = axes_size.Fraction(color_bar_padding_fraction, width)
+    width = axes_size.AxesY(axes, aspect=1. / colorbar_aspect)
+    pad = axes_size.Fraction(colorbar_padding_fraction, width)
     cax = divider.append_axes("right", size=width, pad=pad)
 
     plt.colorbar(image, cax=cax)
+
+    return axes
 
 
 def plot_cross_correlation_histogram(

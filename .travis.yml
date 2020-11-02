@@ -30,4 +30,4 @@ install:
 
 
 script:
-  make html SPHINXOPTS="-W --keep-going -n"
+  cd doc && make html SPHINXOPTS="-W --keep-going -n"

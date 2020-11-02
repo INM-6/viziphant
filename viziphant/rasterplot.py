@@ -6,8 +6,8 @@ Raster and event plots of spike times
     :toctree: toctree/rasterplot/
 
     eventplot
-    plot_raster
-    plot_raster_rates
+    rasterplot
+    rasterplot_rates
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
@@ -22,6 +22,7 @@ import warnings
 from math import log10, floor
 
 from elephant.statistics import mean_firing_rate
+from viziphant.utils import check_same_units
 
 
 def _round_to_1(x):
@@ -73,30 +74,30 @@ def _get_attributes(spiketrains, key_list):
     return attribute_array
 
 
-def plot_raster_rates(spiketrains,
-                      key_list=[],
-                      groupingdepth=0,
-                      spacing=[8, 3],
-                      colorkey=0,
-                      pophist_mode='color',
-                      pophistbins=100,
-                      right_histogram=mean_firing_rate,
-                      righthist_barwidth=1.01,
-                      filter_function=None,
-                      histscale=.1,
-                      labelkey=None,
-                      markerargs={'markersize': 4, 'marker': '.'},
-                      separatorargs=[
-                          {'linewidth': 2, 'linestyle': '--', 'color': '0.8'},
-                          {'linewidth': 1, 'linestyle': '--', 'color': '0.8'}],
-                      legend=False,
-                      legendargs={'loc': (.98, 1.), 'markerscale': 1.5,
-                                  'handletextpad': 0},
-                      ax=None,
-                      style='ticks',
-                      palette=None,
-                      context=None,  # paper, poster, talk
-                      ):
+def rasterplot_rates(spiketrains,
+                     key_list=[],
+                     groupingdepth=0,
+                     spacing=[8, 3],
+                     colorkey=0,
+                     pophist_mode='color',
+                     pophistbins=100,
+                     right_histogram=mean_firing_rate,
+                     righthist_barwidth=1.01,
+                     filter_function=None,
+                     histscale=.1,
+                     labelkey=None,
+                     markerargs={'markersize': 4, 'marker': '.'},
+                     separatorargs=[
+                         {'linewidth': 2, 'linestyle': '--', 'color': '0.8'},
+                         {'linewidth': 1, 'linestyle': '--', 'color': '0.8'}],
+                     legend=False,
+                     legendargs={'loc': (.98, 1.), 'markerscale': 1.5,
+                                 'handletextpad': 0},
+                     ax=None,
+                     style='ticks',
+                     palette=None,
+                     context=None,  # paper, poster, talk
+                     ):
     """
     This function plots the dot display of spike trains alongside its
     population histogram and the mean firing rate (or a custom function).
@@ -213,48 +214,90 @@ def plot_raster_rates(spiketrains,
     axhisty : matplotlib.axes.Axes
         The handle of the histogram plot on the right hand side
 
+    See Also
+    --------
+    rasterplot : simplified raster plot
+    eventplot : plot spike times in vertical stripes
+
     Examples
     --------
-    *Basic Example:*
-    >>> from elephant.spike_train_generation import \
-    ... homogeneous_poisson_process as HPP, homogeneous_gamma_process as HGP
-    >>> from quantities import Hz
-    >>> import matplotlib.pyplot as plt
-    >>>
-    >>> st_list = [HPP(rate=10*Hz) for _ in range(100)]
-    >>> plot_raster_rates(st_list)
-    >>> plt.show()
+    1. Basic Example.
 
-    *Grouping Example:*
-    >>> st_list1 = [HPP(rate=10*Hz) for _ in range(100)]
-    >>> st_list2 = [HGP(a=3, b=10*Hz) for _ in range(100)]
-    >>>
-    >>> # plot visually separates the two lists
-    >>> plot_raster_rates([st_list1, st_list2])
-    >>>
-    >>> # add annotations to spike trains
-    >>> for i, (st1, st2) in enumerate(zip(st_list1, st_list2)):
-    >>>     if i.__mod__(2):
-    >>>         st1.annotations['parity'] = 'odd'
-    >>>         st2.annotations['parity'] = 'odd'
-    >>>     else:
-    >>>         st1.annotations['parity'] = 'even'
-    >>>         st2.annotations['parity'] = 'even'
-    >>>
-    >>> # plot separates the lists and the annotation values within each list
-    >>> plot_raster_rates([st_list1, st_list2], key_list=['parity'],
-    >>>            groupingdepth=2, labelkey='0+1')
-    >>>
-    >>> # '' key can change the priority of the list grouping
-    >>> plot_raster_rates([st_list1, st_list2], key_list=['parity', ''],
-    >>>            groupingdepth=2, labelkey='0+1')
-    >>>
-    >>> # groups can also be emphasized by an explicit color code
-    >>> plot_raster_rates([st_list1, st_list2], key_list=['', 'parity'],
-    >>>            groupingdepth=1, labelkey=0, colorkey='parity',
-    >>>            legend=True)
-    >>>
-    >>> plt.show()
+    .. plot::
+        :include-source:
+
+        from elephant.spike_train_generation import \
+            homogeneous_poisson_process, homogeneous_gamma_process
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from viziphant.rasterplot import rasterplot_rates
+
+        spiketrains = [homogeneous_poisson_process(rate=10 * pq.Hz)
+                       for _ in range(100)]
+        rasterplot_rates(spiketrains)
+        plt.show()
+
+    2. Plot visually separated realizations of different neurons.
+
+    .. plot::
+        :include-source:
+
+        from elephant.spike_train_generation import \
+            homogeneous_poisson_process, homogeneous_gamma_process
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from viziphant.rasterplot import rasterplot_rates
+
+        spiketrains1 = [homogeneous_poisson_process(rate=10 * pq.Hz)
+                        for _ in range(100)]
+        spiketrains2 = [homogeneous_gamma_process(a=3, b=10 * pq.Hz)
+                        for _ in range(100)]
+        rasterplot_rates([spiketrains1, spiketrains2])
+        plt.show()
+
+    3. Add annotations to spike trains.
+
+    .. plot::
+        :include-source:
+
+        from elephant.spike_train_generation import \
+            homogeneous_poisson_process, homogeneous_gamma_process
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from viziphant.rasterplot import rasterplot_rates
+
+        spiketrains1 = [homogeneous_poisson_process(rate=10 * pq.Hz)
+                        for _ in range(100)]
+        spiketrains2 = [homogeneous_gamma_process(a=3, b=10 * pq.Hz)
+                        for _ in range(100)]
+        for i, (st1, st2) in enumerate(zip(spiketrains1, spiketrains2)):
+            if i % 2 == 1:
+                st1.annotations['parity'] = 'odd'
+                st2.annotations['parity'] = 'odd'
+            else:
+                st1.annotations['parity'] = 'even'
+                st2.annotations['parity'] = 'even'
+
+        # plot separates the lists and the annotation values within each list
+        rasterplot_rates([spiketrains1, spiketrains2], key_list=['parity'],
+                          groupingdepth=2, labelkey='0+1')
+
+    ``''`` key change the priority of the list grouping:
+
+    .. code-block:: python
+
+        rasterplot_rates([spiketrains1, spiketrains2],
+                          key_list=['parity', ''],
+                          groupingdepth=2, labelkey='0+1')
+
+    Groups can also be emphasized by an explicit color mode:
+
+    .. code-block:: python
+
+        rasterplot_rates([spiketrains1, spiketrains2],
+                          key_list=['', 'parity'],
+                          groupingdepth=1, labelkey=0, colorkey='parity',
+                          legend=True)
 
     """
 
@@ -293,7 +336,7 @@ def plot_raster_rates(spiketrains,
         raise ValueError("Grouping is limited to two layers.")
     groupingdepth = int(groupingdepth)
 
-    list_key = "%$\@[#*&/!"  # unique key to be added to annotations to store
+    list_key = r"%$\@[#*&/!"  # unique key to be added to annotations to store
     # list ordering information.
 
     if type(key_list) == 'str':
@@ -390,8 +433,7 @@ def plot_raster_rates(spiketrains,
         attribute_array = _get_attributes(spiketrains, key_list)
     elif len(key_list) == 1:
         attribute_array = np.zeros((len(spiketrains), 2))
-        attribute_array[:, 0] = _get_attributes(spiketrains, key_list)[:,
-                                0]
+        attribute_array[:, 0] = _get_attributes(spiketrains, key_list)[:, 0]
     else:
         attribute_array = np.zeros((len(spiketrains), 1))
 
@@ -486,17 +528,17 @@ def plot_raster_rates(spiketrains,
 
         # Loop through lists of spike trains
         for count, slist in enumerate(SLIST):
-            nbr_of_drawn_sts = int(sum([len(sl) for SL in
-                                        spiketrains[:COUNT] for sl in SL]) \
-                                   + sum([len(sl) for sl in SLIST[:count]]))
+            nbr_of_drawn_sts = int(
+                sum(len(sl) for SL in spiketrains[:COUNT] for sl in SL) +
+                sum(len(sl) for sl in SLIST[:count]))
 
             # Calculate postition of next spike train to draw
             prev_spaces = np.sum([len(SLIST_it) - 1
                                   for SLIST_it in spiketrains[:COUNT]])
-            ypos = nbr_of_drawn_sts \
-                   + int(bool(groupingdepth)) * COUNT * spacing[0] \
-                   + groupingdepth / 2 * count * spacing[1] \
-                   + groupingdepth / 2 * prev_spaces * spacing[1]
+            ypos = nbr_of_drawn_sts + int(
+                bool(groupingdepth)) * COUNT * spacing[0] \
+                + groupingdepth / 2 * count * spacing[1] \
+                + groupingdepth / 2 * prev_spaces * spacing[1]
 
             # Separator depth 2
             if count and separatorargs is not None:
@@ -535,8 +577,7 @@ def plot_raster_rates(spiketrains,
                 yticks[-1] + ws_margin * yrange)
     axhistx.set_xlim(ax.get_xlim())
     axhisty.set_ylim(ax.get_ylim())
-    ax.set_xlabel(
-        f't ({spiketrains[0][0][0].units.dimensionality.string})')
+    ax.set_xlabel(f'Time ({spiketrains[0][0][0].units.dimensionality})')
     axhistx.get_xaxis().set_visible(False)
     axhisty.get_yaxis().set_visible(False)
 
@@ -615,6 +656,8 @@ def plot_raster_rates(spiketrains,
                             labelname += ['']
             ax.set_yticks(yticks)
             ax.set_yticklabels(labelname)
+    else:
+        ax.set_yticks([])
 
     # Draw legend
     if legend:
@@ -629,48 +672,98 @@ def plot_raster_rates(spiketrains,
     return ax, axhistx, axhisty
 
 
-def plot_raster(spiketrains, color='gray', **kwargs):
+def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     """
-    Simple raster plot of spike times.
+    Simple and fast raster plot of spike times.
 
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain or pq.Quantity
         A list of `neo.SpikeTrain`s or quantity arrays with spike times.
-    color : str, optional
-        Raster color.
-        Default : 'gray'
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+    histogram_bins : int, optional
+        Defines the number of histogram bins. If set to ``0``, no histogram
+        is shown.
+        Default: 0
+    title : str, optional
+        The axes title.
+        Default: ''
     **kwargs
-        Other parameters passed to matplotlib `axes.plot` function.
+        Additional parameters passed to matplotlib `scatter` function.
 
     Returns
     -------
     axes : matplotlib.Axes.axes
 
+    See Also
+    --------
+    rasterplot_rates : advanced raster plot
+    eventplot : plot spike times in vertical stripes
+
     Examples
     --------
+    1. Basic example.
+
     .. plot::
         :include-source:
 
         import numpy as np
-        import neo
         import quantities as pq
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
-        from viziphant.rasterplot import plot_raster
+        from viziphant.rasterplot import rasterplot
         np.random.seed(7)
         spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
                        t_stop=10*pq.s) for _ in range(10)]
-        plot_raster(spiketrains, markersize=2)
+        rasterplot(spiketrains, s=3, c='black')
+        plt.show()
+
+    2. Raster plot with a histogram and events.
+
+    .. plot::
+        :include-source:
+
+        import neo
+        import numpy as np
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.rasterplot import rasterplot
+        from viziphant.events import add_event
+
+        np.random.seed(7)
+        spiketrains = [homogeneous_poisson_process(rate=r * pq.Hz,
+                       t_stop=10 * pq.s) for r in range(1, 21)]
+        event = neo.Event([0.5, 2.8] * pq.s, labels=['Trig ON', 'Trig OFF'])
+
+        axes = rasterplot(spiketrains, histogram_bins=50, title='Title', s=0.5)
+        add_event(axes, event=event)
         plt.show()
 
     """
-    fig, axes = plt.subplots()
-    spiketrains = [st.rescale(pq.s).magnitude for st in spiketrains]
-    for neuron, spiketrain in enumerate(spiketrains):
-        axes.plot(spiketrain, [neuron] * len(spiketrain),
-                  'o', color=color, **kwargs)
-    axes.set_xlabel("Time (s)")
+    check_same_units(spiketrains)
+    units = spiketrains[0].units
+    spiketrains = [st.magnitude for st in spiketrains]
+    if axes is None:
+        nrows = 2 if histogram_bins else 1
+        fig, axes = plt.subplots(nrows=nrows, ncols=1)
+    axes = np.atleast_1d(axes)
+    times_concat = np.hstack(spiketrains)
+    ys = np.hstack([[i] * len(st) for i, st in enumerate(spiketrains)])
+    axes[0].scatter(times_concat, ys, **kwargs)
+    axes[0].set_yticks([0, len(spiketrains) - 1])
+    axes[0].set_title(title)
+
+    if histogram_bins:
+        axes[1].hist(times_concat, bins=histogram_bins)
+        axes[1].set_ylabel("Spike count")
+
+    axes[-1].set_xlabel(f"Time ({units.dimensionality})")
+
+    if len(axes) == 1:
+        axes = axes[0]
 
     return axes
 
@@ -684,22 +777,26 @@ def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     spiketrains : list of neo.SpikeTrain or pq.Quantity
         A list of `neo.SpikeTrain`s or quantity arrays with spike times.
     axes : matplotlib.axes.Axes or None
-        Matplotlib axes to use in the plot. If set to None, new axes are
-        created and returned.
+        Matplotlib axes handle. If None, new axes are created and returned.
         Default: None
     histogram_bins : int, optional
         Defines the number of histogram bins. If set to ``0``, no histogram
         is shown.
         Default: 0
     title : str, optional
-        The title of eventplot.
+        The axes title.
         Default: ''
     **kwargs
-        Additional parameters, passed to matplotlib `eventplot` function.
+        Additional parameters passed to matplotlib `eventplot` function.
 
     Returns
     -------
     axes : matplotlib.axes.Axes
+
+    See Also
+    --------
+    rasterplot : simplified raster plot
+    rasterplot_rates : advanced raster plot
 
     Examples
     --------
@@ -728,40 +825,46 @@ def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     .. plot::
         :include-source:
 
-        import numpy as np
         import neo
+        import numpy as np
         import quantities as pq
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
         from viziphant.rasterplot import eventplot
         from viziphant.events import add_event
         np.random.seed(12)
-        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+        spiketrains = [homogeneous_poisson_process(rate=5*pq.Hz,
                        t_stop=10*pq.s) for _ in range(20)]
 
         fig, axes = plt.subplots(2, 2, sharex=True, sharey='row')
         event = neo.Event([0.5, 8]*pq.s, labels=['trig0', 'trig1'])
         eventplot(spiketrains[:10], axes=axes[:, 0], histogram_bins=20,
-                  title="Neuron A")
+                  title="Neuron A", linelengths=0.75, linewidths=1)
         add_event(axes[:, 0], event)
         eventplot(spiketrains[10:], axes=axes[:, 1], histogram_bins=20,
-                  title="Neuron B")
+                  title="Neuron B", linelengths=0.75, linewidths=1)
         add_event(axes[:, 1], event)
         plt.show()
 
     """
-    spiketrains = [st.rescale(pq.s).magnitude for st in spiketrains]
+    check_same_units(spiketrains)
+    units = spiketrains[0].units
+    spiketrains = [st.magnitude for st in spiketrains]
     if axes is None:
         nrows = 2 if histogram_bins else 1
         fig, axes = plt.subplots(nrows=nrows, ncols=1)
     axes = np.atleast_1d(axes)
     axes[0].eventplot(spiketrains, **kwargs)
+    axes[0].set_yticks([0, len(spiketrains) - 1])
     axes[0].set_title(title)
 
     if histogram_bins:
         axes[1].hist(np.hstack(spiketrains), bins=histogram_bins)
-        axes[1].set_ylabel('Spike count')
+        axes[1].set_ylabel("Spike count")
 
-    axes[-1].set_xlabel(f'Time (s)')
+    axes[-1].set_xlabel(f"Time ({units.dimensionality})")
+
+    if len(axes) == 1:
+        axes = axes[0]
 
     return axes

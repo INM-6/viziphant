@@ -17,14 +17,21 @@ import numpy as np
 import quantities as pq
 
 
-def add_event(axes, event, key=None):
+def add_event(axes, event, key=None, rotation=40):
     """
     Add event(s) to axes plot.
 
+    If `axes` is a list of Axes, they are assumed to be top-down aligned, and
+    the annotation text will be displayed on the first (uppermost) axis.
+
+    Original input ``event.times`` units are used. If you want to use units
+    other than the inputs, e.g. milliseconds, rescale the event manually by
+    performing ``event = event.rescale('ms')``.
+
     Parameters
     ----------
-    axes : matplotlib.axes.Axes
-        Axes plot instance.
+    axes : matplotlib.axes.Axes or list
+        Matplotlib Axes handle or list of Axes.
     event : neo.Event
         A `neo.Event` instance that contains labels or `array_annotations` and
         time points when the event(s) is occurred.
@@ -33,6 +40,9 @@ def add_event(axes, event, key=None):
         ``event.array_annotations[key]``. Otherwise, event labels are extracted
         from ``event.labels``.
         Default: None
+    rotation : int, optional
+        Text label rotation in degrees.
+        Default : 40
 
     Examples
     --------
@@ -52,15 +62,14 @@ def add_event(axes, event, key=None):
 
     """
     axes = np.atleast_1d(axes)
-    for event_idx in range(len(event)):
-        time = event.times[event_idx].rescale(pq.s).item()
-        if key is not None:
-            label = event.array_annotations[key][event_idx]
-        else:
+    times = event.times.magnitude
+    for event_idx, time in enumerate(times):
+        if key is None:
             label = event.labels[event_idx]
+        else:
+            label = event.array_annotations[key][event_idx]
         for axis in axes:
-            axis.axvline(time, color='black')
             axis.axvline(time, color='black')
         axes[0].text(time, axes[0].get_ylim()[1], label,
                      horizontalalignment='left',
-                     verticalalignment='bottom', rotation=40)
+                     verticalalignment='bottom', rotation=rotation)

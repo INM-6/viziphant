@@ -5,7 +5,7 @@ Spike train statistics plots
 .. autosummary::
     :toctree: toctree/statistics/
 
-    plot_isi
+    plot_isi_histogram
     plot_time_histogram
 
 """
@@ -20,7 +20,8 @@ import quantities as pq
 from elephant import statistics
 
 
-def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
+def plot_isi_histogram(intervals, axes=None, label='', bin_size=3 * pq.ms,
+                       cutoff=None):
     """
     Create a simple histogram plot to visualise an inter-spike interval (ISI)
     distribution computed with :func:`elephant.statistics.isi`.
@@ -28,54 +29,85 @@ def plot_isi(intervals, label='', bin_size=2 * pq.ms, cutoff=250 * pq.ms):
     Parameters
     ----------
     intervals : neo.SpikeTrain or pq.Quantity
-        A spiketrain the ISI to be computed from or the direct output of
-        :func:`elephant.statistics.isi`.
+        A spiketrain the ISI to be computed from or the intervals themselves
+        returned by :func:`elephant.statistics.isi`.
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If set to None, new axes are created and
+        returned.
+        Default: None
     label : str, optional
-        The label of the ISI distribution. Default: ''
+        The label of the ISI distribution.
+        Default: ''
     bin_size : pq.Quantity, optional
-        The bin size for the histogram. Default: 2 ms
-    cutoff : pq.Quantity, optional
-        The largest ISI to consider. Default: 250 ms
+        The bin size for the histogram.
+        Default: 2 ms
+    cutoff : pq.Quantity or None, optional
+        The largest ISI to consider. Otherwise, if set to None, all range of
+        values are plotted. The typical cutoff value is ~250 ms.
+        Default: None
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
 
     Examples
     --------
+    1. Basic ISI histogram plot.
+
     .. plot::
         :include-source:
 
         import quantities as pq
         import matplotlib.pyplot as plt
         from elephant.spike_train_generation import homogeneous_poisson_process
-        from viziphant.statistics import plot_isi
+        from viziphant.statistics import plot_isi_histogram
         np.random.seed(12)
 
         spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=10*pq.s)
-        plot_isi(spiketrain)
+        plot_isi_histogram(spiketrain, cutoff=250*pq.ms)
+        plt.show()
+
+    2. Multiple ISI histograms are shown side by side.
+
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.statistics import plot_isi_histogram
+        np.random.seed(12)
+        spiketrain1 = homogeneous_poisson_process(rate=30*pq.Hz,t_stop=50*pq.s)
+        spiketrain2 = homogeneous_poisson_process(rate=10*pq.Hz,t_stop=50*pq.s)
+        fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
+        for i, spiketrain in enumerate([spiketrain1, spiketrain2]):
+            plot_isi_histogram(spiketrain, axes=axes[i],
+                               label=f"Neuron '{i}'", cutoff=250*pq.ms)
         plt.show()
 
     """
     if isinstance(intervals, neo.SpikeTrain):
         intervals = statistics.isi(spiketrain=intervals)
 
-    fig, ax = plt.subplots(figsize=(8, 3))
+    if axes is None:
+        fig, axes = plt.subplots()
 
-    bins = np.arange(0, cutoff.rescale(intervals.units).magnitude.item(),
-                     bin_size.rescale(intervals.units).magnitude.item())
+    if cutoff is None:
+        cutoff = intervals.max()
 
-    ax.hist(intervals, bins=bins)
-    ax.set_title(f'{label} ISI distribution')
-    ax.set_xlabel(f'Inter-spike interval ({intervals.dimensionality.string})')
-    ax.set_ylabel('Count')
+    bins = np.arange(0, cutoff.rescale(intervals.units).item(),
+                     bin_size.rescale(intervals.units).item())
 
-    return fig, ax
+    axes.hist(intervals, bins=bins)
+    axes.set_title(f'{label} ISI distribution')
+    axes.set_xlabel(f'Inter-spike interval '
+                    f'({intervals.dimensionality.string})')
+    axes.set_ylabel('Count')
+
+    return axes
 
 
-def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
-                        event_time=None, event_label=None, **kwargs):
+def plot_time_histogram(histogram, axes=None, units=None):
     """
     This function plots a time histogram, such as the result of
     :func:`elephant.statistics.time_histogram`.
@@ -84,35 +116,22 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
     ----------
     histogram : neo.AnalogSignal
         Object containing the histogram bins.
-    time_unit : pq.Quantity, optional
-        Desired unit for the plot time axis.
-        If None, the current unit of `histogram` is used.
-        Default: None
-    y_label : str, optional
-        Label for the Y axis.
-        Default: None
-    max_y : int or float, optional
-        Maximum value for the Y axis.
-        Default: None
-    event_time : pq.Quantity, optional
-        To draw a vertical line showing an event in the plot. The `event_time`
-        is provided with respect to the start of the histogram.
-        The histogram times will be centered at this time (i.e., the point at
-        `event_time` will be zero).
-        Default: None
-    event_label : str, optional
-        Label of the event.
-        If None, the label is not plotted.
-        If `event_time` is None, this parameter is ignored.
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If set to None, new axes are created and
+        returned.
+    units : pq.Quantity or str or None, optional
+        Desired time axis units.
+        If None, ``histogram.sampling_period`` units are used.
         Default: None
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
 
     Examples
     --------
+    1. Basic example of spike count histogram.
+
     .. plot::
         :include-source:
 
@@ -121,50 +140,63 @@ def plot_time_histogram(histogram, time_unit=None, y_label=None, max_y=None,
         from elephant.spike_train_generation import homogeneous_poisson_process
         from elephant import statistics
         from viziphant.statistics import plot_time_histogram
-        np.random.seed(13)
+        np.random.seed(14)
 
         spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
                        t_stop=10*pq.s) for _ in range(10)]
         histogram = statistics.time_histogram(spiketrains, bin_size=100*pq.ms)
 
-        plot_time_histogram(histogram, y_label='counts')
+        plot_time_histogram(histogram, units='s')
+        plt.show()
+
+    2. Multiple time histograms are shown side by side with a common event
+       point.
+
+    .. plot::
+        :include-source:
+
+        import neo
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant import statistics
+        from viziphant.statistics import plot_time_histogram
+        from viziphant.events import add_event
+        np.random.seed(11)
+
+        fig, axes = plt.subplots(2, 1, sharex=True, sharey=True)
+        event = neo.Event([2]*pq.s, labels=['Trigger ON'])
+        for axis in axes:
+            spiketrains = [homogeneous_poisson_process(rate=10 * pq.Hz,
+                           t_stop=10 * pq.s) for _ in range(10)]
+            histogram = statistics.time_histogram(spiketrains,
+                                                  bin_size=0.1 * pq.s,
+                                                  output='rate')
+            plot_time_histogram(histogram, axes=axis, units='s')
+        add_event(axes, event=event)
         plt.show()
 
     """
-    fig, ax = plt.subplots(**kwargs)
+    if axes is None:
+        fig, axes = plt.subplots()
 
     # Rescale the time axis if requested
-    if time_unit is None:
-        width = histogram.sampling_period.rescale(
-            histogram.times.units).magnitude
-        times = histogram.times.magnitude
-        time_unit = histogram.times.units.dimensionality
-    else:
-        width = histogram.sampling_period.rescale(time_unit).magnitude
-        times = histogram.times.rescale(time_unit).magnitude
-        time_unit = time_unit.units.dimensionality
-
-    # Shift times according to the event, if provided
-    if event_time is not None:
-        times = np.subtract(times, event_time.rescale(time_unit).magnitude)
+    if units is None:
+        units = histogram.sampling_period.units
+    elif isinstance(units, str):
+        units = pq.Quantity(1, units)
+    width = histogram.sampling_period.rescale(units).item()
+    times = histogram.times.rescale(units).magnitude
 
     # Create the plot
-    ax.bar(times, histogram.squeeze().magnitude, align='edge', width=width)
-    ax.set_xlabel(f"Time ({time_unit})")
+    axes.bar(times, histogram.squeeze().magnitude, align='edge', width=width)
+    axes.set_xlabel(f"Time ({units.dimensionality})")
 
-    # Define Y label and Y-axis limits
-    if max_y is not None:
-        ax.set_ylim([0, max_y])
+    # Human-readable description of the 'output' flag used in time_histogram
+    output_dict = dict(counts="Counts",
+                       mean="Counts per spike train",
+                       rate=f"Spike rate ({histogram.units.dimensionality})")
+    normalization = histogram.annotations.get('normalization')
+    axes.set_ylabel(output_dict.get(normalization))
 
-    if y_label is not None:
-        ax.set_ylabel(y_label)
-
-    # Add the event line and label, if provided
-    if event_time is not None:
-        ax.axvline(0, linewidth=1, linestyle='solid', color='black')
-        if event_label is not None:
-            ax.text(0, ax.get_ylim()[1], event_label,
-                    horizontalalignment='center',
-                    verticalalignment='bottom')
-
-    return fig, ax
+    return axes
