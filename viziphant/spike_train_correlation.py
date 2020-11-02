@@ -1,82 +1,215 @@
 """
-Simple plotting function for spike train correlation measures
+Spike train correlation plots
+-----------------------------
+
+.. autosummary::
+    :toctree: toctree/spike_train_correlation/
+
+    plot_corrcoef
+    plot_cross_correlation_histogram
+
 """
+# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# License: Modified BSD, see LICENSE.txt.txt for details.
 
-import numpy as np
-import seaborn as sns
+
+from __future__ import division, print_function, unicode_literals
+
 import matplotlib.pyplot as plt
+import numpy as np
+import quantities as pq
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
-from matplotlib.ticker import MaxNLocator
 
 
-def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
-                  cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8),
-                  remove_diagonal=True):
+def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
+                  colormap='bwr', colorbar_aspect=20,
+                  colorbar_padding_fraction=0.5, remove_diagonal=True):
     """
-    This function plots the cross-correlation matrix returned by
-    `elephant.spike_train_correlation.correlation_coefficient` and adds a
-    colour bar.
+    Plots a cross-correlation matrix returned by
+    :func:`elephant.spike_train_correlation.correlation_coefficient`
+    function with a color bar.
 
     Parameters
     ----------
-    cc : np.ndarray
-        The output of
-        `elephant.spike_train_correlation.correlation_coefficient`.
-    vmin : int or float, optional
-        The minimum correlation for colour mapping.
-        Default: -1
-    vmax : int or float, optional
-        The maximum correlation for colour mapping.
-        Default: 1
-    style: {'darkgrid', 'whitegrid', 'dark', 'white', 'ticks'} or dict,
-           optional
-        A seaborn style setting.
-        Default: 'ticks'
-    cmap : str, optional
-        The colour map.
-        Default: 'bwr'
-    cax_aspect : int or float, optional
-        The aspect ratio of the colour bar.
-        Default: 20
-    cax_pad_fraction : int or float, optional
-        The padding between matrix plot and colour bar relative to colour bar
-        width.
-        Default: .5
-    figsize : tuple of int, optional
-        The size of the figure.
-        Default: (8, 8)
-    remove_diagonal : bool
+    corrcoef_matrix : np.ndarray
+        Pearson's correlation coefficient matrix
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+    correlation_range : tuple of float, optional
+        Minimum and maximum correlations to consider.
+        Default: (-1, 1)
+    colormap : str, optional
+        Colormap. Default: 'bwr'
+    colorbar_aspect : float, optional
+        Aspect ratio of the color bar. Default: 20
+    colorbar_padding_fraction : float, optional
+        Padding between matrix plot and color bar relative to color bar width.
+        Default: 0.5
+    remove_diagonal : bool, optional
         If True, the values in the main diagonal are replaced with zeros.
         Default: True
 
     Returns
     -------
-    fig : matplotlib.figure.Figure
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
+
+    Examples
+    --------
+    Create 10 homogeneous random Poisson spike trains of rate `10Hz` and bin
+    the spikes into bins of `100ms` width, which is relatively large for such
+    a firing rate, so we expect non-zero correlations.
+
+    .. plot::
+       :include-source:
+
+        import quantities as pq
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_correlation import correlation_coefficient
+        from viziphant.spike_train_correlation import plot_corrcoef
+        np.random.seed(0)
+
+        spiketrains = [homogeneous_poisson_process(rate=10*pq.Hz,
+                       t_stop=10*pq.s) for _ in range(10)]
+        binned_spiketrains = BinnedSpikeTrain(spiketrains, bin_size=100*pq.ms)
+        corrcoef_matrix = correlation_coefficient(binned_spiketrains)
+
+        fig, axes = plt.subplots()
+        plot_corrcoef(corrcoef_matrix, axes=axes)
+        axes.set_xlabel('Neuron')
+        axes.set_ylabel('Neuron')
+        axes.set_title("Correlation coefficient matrix")
+        plt.show()
+
     """
+    if axes is None:
+        fig, axes = plt.subplots()
 
-    # Initialise plotting canvas
-    sns.set_style(style)
-
-    # Initialise figure and image axis
-    fig, ax = plt.subplots(1, 1, subplot_kw={'aspect': 'equal'},
-                           figsize=figsize)
-
-    # Remove the diagonal
     if remove_diagonal:
-        cc = cc.copy()
-        np.fill_diagonal(cc, val=0)
+        corrcoef_matrix = corrcoef_matrix.copy()
+        np.fill_diagonal(corrcoef_matrix, val=0)
 
-    im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    vmin, vmax = correlation_range
+    image = axes.imshow(corrcoef_matrix, vmin=vmin, vmax=vmax, cmap=colormap)
 
     # Initialise colour bar axis
-    divider = make_axes_locatable(ax)
-    width = axes_size.AxesY(ax, aspect=1./cax_aspect)
-    pad = axes_size.Fraction(cax_pad_fraction, width)
+    divider = make_axes_locatable(axes)
+    width = axes_size.AxesY(axes, aspect=1. / colorbar_aspect)
+    pad = axes_size.Fraction(colorbar_padding_fraction, width)
     cax = divider.append_axes("right", size=width, pad=pad)
 
-    plt.colorbar(im, cax=cax)
+    plt.colorbar(image, cax=cax)
 
+    return axes
+
+
+def plot_cross_correlation_histogram(
+        cch, surr_cchs=None, significance_threshold=3.0,
+        maxlag=None, figsize=None, legend=True, units=pq.s,
+        title='Cross-correlation histogram',
+        xlabel=None, ylabel=''):
+    """
+    Plot a cross-correlation histogram returned by
+    :func:`elephant.spike_train_correlation.cross_correlation_histogram`,
+    rescaled to seconds.
+
+    Parameters
+    ----------
+    cch : neo.AnalogSignal
+        Cross-correlation histogram.
+    surr_cchs : np.ndarray or neo.AnalogSignal, optional
+        Contains cross-correlation histograms for each surrogate realization.
+        If None, only the original `cch` is plotted.
+        Default: None
+    significance_threshold : float or None, optional
+        Number of standard deviations for significance threshold. If None,
+        don't plot the standard deviation.
+        Default: 3.0
+    maxlag : pq.Quantity or None, optional
+        Left and right borders of the plot.
+        Default: None
+    figsize : tuple or None, optional
+        Figure size
+        Default: None
+    legend : bool, optional
+        Whether to include the legend.
+        Default: True
+    units : pq.Quantity, optional
+        Unit in which to the CCH time lag
+        Default: pq.ms
+    title : str, optional
+        The plot title.
+        Default: 'Cross-correlation histogram'
+    xlabel : str or None, optional
+        Label X axis. If None, it'll be set to `'Time lag (units)'`.
+        Default: None
+    ylabel : str, optional
+        Label Y axis.
+        Default: ''
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_correlation import \
+             cross_correlation_histogram
+        from viziphant.spike_train_correlation import \
+             plot_cross_correlation_histogram
+
+        spiketrain1 = homogeneous_poisson_process(rate=10*pq.Hz,
+                                                  t_stop=10*pq.s)
+        spiketrain2 = homogeneous_poisson_process(rate=10*pq.Hz,
+                                                  t_stop=10*pq.s)
+        binned_spiketrain1 = BinnedSpikeTrain(spiketrain1, bin_size=100*pq.ms)
+        binned_spiketrain2 = BinnedSpikeTrain(spiketrain2, bin_size=100*pq.ms)
+        cch, lags = cross_correlation_histogram(binned_spiketrain1,
+                                                binned_spiketrain2)
+
+        plot_cross_correlation_histogram(cch)
+        plt.show()
+
+    """
+    fig, ax = plt.subplots(figsize=figsize)
+    # plot the CCH of the original data
+    cch_times = cch.times.rescale(units).magnitude
+    ax.plot(cch_times, cch.magnitude, color='C0',
+            label='raw CCH')
+
+    if surr_cchs is not None:
+        # Compute the mean CCH
+        cch_mean = surr_cchs.mean(axis=0)
+
+        # Plot the average from surrogates
+        ax.plot(cch_times, cch_mean, lw=2, color='C2',
+                label='mean surr. CCH')
+
+        # compute the standard deviation and plot the significance threshold
+        if significance_threshold is not None:
+            cch_threshold = cch_mean + significance_threshold * surr_cchs.std(
+                axis=0, ddof=1)
+
+            ax.plot(cch_times, cch_threshold, lw=2, color='C3',
+                    label='significance threshold')
+
+    ax.set_title(title)
+    if xlabel is None:
+        xlabel = f"Time lag ({units.dimensionality})"
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if maxlag is not None:
+        maxlag = maxlag.rescale(units).magnitude
+        ax.set_xlim(-maxlag, maxlag)
+    if legend:
+        ax.legend()
     return fig, ax
