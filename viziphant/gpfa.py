@@ -393,12 +393,15 @@ def plot_trajectories(returned_data,
                                 label=event_label,
                                 **plot_args_marker)
 
-        # fill buffer dictionary to handle averages of grouped trials
-        if plot_group_averages:
+    if plot_group_averages:
+        for trial_idx in range(num_trials):
+            dat = X[trial_idx][dimensions_to_plot, :]
+            trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
+
+            # fill buffer dictionary to handle averages of grouped trials
             if trial_type is not None:
                 data_buffer[trial_type] += dat
 
-    if plot_group_averages:
         for i_group, (trial_type,
                       group_data_buffer) in enumerate(data_buffer.items()):
 
