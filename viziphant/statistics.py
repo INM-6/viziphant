@@ -7,6 +7,7 @@ Spike train statistics plots
 
     plot_isi_histogram
     plot_time_histogram
+    plot_instantaneous_rates_colormesh
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
@@ -198,5 +199,77 @@ def plot_time_histogram(histogram, axes=None, units=None):
                        rate=f"Spike rate ({histogram.units.dimensionality})")
     normalization = histogram.annotations.get('normalization')
     axes.set_ylabel(output_dict.get(normalization))
+
+    return axes
+
+
+def plot_instantaneous_rates_colormesh(rates, axes=None, units=None, **kwargs):
+    """
+    Plots a colormesh of instantaneous firing rates. Each row represents a
+    spike train the instantaneous rate was computed from.
+
+    Parameters
+    ----------
+    rates : neo.AnalogSignal
+        `neo.AnalogSignal` matrix of shape ``(len(spiketrains), time)``
+        containing instantaneous rates obtained by
+        :func:`elephant.statistics.instantaneous_rate` function.
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If set to None, new axes are created and
+        returned.
+    units : pq.Quantity or str or None, optional
+        Desired time axis units.
+        If None, ``histogram.sampling_period`` units are used.
+        Default: None
+    **kwargs
+        Additional parameters passed to matplotlib `pcolormesh` function.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        from elephant import statistics, kernels
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.statistics import plot_instantaneous_rates_colormesh
+        np.random.seed(6)
+        spiketrains = [homogeneous_poisson_process(rate=10 * pq.Hz,
+                       t_stop=10 * pq.s) for _ in range(10)]
+        kernel = kernels.GaussianKernel(sigma=100 * pq.ms)
+        rates = statistics.instantaneous_rate(spiketrains,
+                                              sampling_period=10 * pq.ms,
+                                              kernel=kernel)
+        plot_instantaneous_rates_colormesh(rates)
+        plt.show()
+
+    """
+    if axes is None:
+        fig, axes = plt.subplots()
+
+    if units is None:
+        units = rates.sampling_period.units
+    elif isinstance(units, str):
+        units = pq.Quantity(1, units)
+    t_stop = rates.t_stop.rescale(units).item()
+    times = np.r_[rates.times.rescale(units).magnitude, t_stop]
+    neurons_range = range(rates.shape[1] + 1)
+
+    im = axes.pcolormesh(times, neurons_range, rates.magnitude.T, **kwargs)
+
+    # Add a colorbar
+    cbar = plt.colorbar(im, ax=axes)
+    cbar.set_label("Firing rate [Hz]")
+
+    axes.set_xlabel("Time (s)")
+    axes.set_ylabel("Neuron")
+    axes.set_yticks([rates.shape[1] - 0.5])
+    axes.set_yticklabels([rates.shape[1] - 1])
 
     return axes
