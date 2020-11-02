@@ -361,7 +361,7 @@ def plot_trajectories(returned_data,
                 ax.plot(dat[0], dat[1], dat[2], **plot_args_single)
 
             # plot single trial events
-            if block_with_cut_trials:
+            if block_with_cut_trials and relevant_events:
                 time_bins_with_relevant_event, relevant_event_labels = \
                     _get_event_times_and_labels(block_with_cut_trials,
                                                 trial_idx,
