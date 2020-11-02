@@ -57,7 +57,7 @@ def plot_loading_matrix(loading_matrix):
 def plot_dimension_vs_time(returned_data,
                            gpfa_instance,
                            orthonomalized_dimensions=True,
-                           num_trials_to_plot=20,
+                           n_trials_to_plot=20,
                            trial_grouping_dict=None,
                            colors=['grey'],
                            plot_single_trajectories=True,
@@ -124,7 +124,7 @@ def plot_dimension_vs_time(returned_data,
         orthonmalization, these dimensions reflect mixtures of timescales.
     plot_single_trajectories : bool
         If True, single trial trajectories are plotted.
-    num_trials_to_plot : int
+    n_trials_to_plot : int
         Number of single trial trajectories to plot.
     plot_group_averages : bool
         If True, trajectories of those trials belonging together specified
@@ -202,7 +202,7 @@ def plot_dimension_vs_time(returned_data,
     # round max value to next highest 1e-1
     X_max = np.ceil(10 * np.abs(X_3D).max()) / 10
 
-    T_max = gpfa_instance.transform_info['num_bins'].max()
+    T_max = gpfa_instance.transform_info['n_bins'].max()
 
     # prepare ticks
     x_axis_ticks_step = np.ceil(T_max / 25.) * 5
@@ -220,7 +220,7 @@ def plot_dimension_vs_time(returned_data,
     n_rows = int(np.ceil(X_3D.shape[1] / n_columns))
 
     # loop over trials
-    for n in range(min(X.shape[0], num_trials_to_plot)):
+    for n in range(min(X.shape[0], n_trials_to_plot)):
         dat = X[n]
         T = gpfa_instance.transform_info['num_bins'][n]
 
@@ -308,7 +308,7 @@ def plot_trajectories(returned_data,
                       relevant_events=None,
                       dimensions_to_plot=[0, 1, 2],
                       orthonomalized_dimensions=True,
-                      num_trials_to_plot=20,
+                      n_trials_to_plot=20,
                       trial_grouping_dict=None,
                       colors=['grey'],
                       plot_single_trajectories=True,
@@ -325,24 +325,24 @@ def plot_trajectories(returned_data,
         _check_dimensions(gpfa_instance, dimensions_to_plot)
     X = _check_input_data(returned_data, orthonomalized_dimensions)
     colors = _check_colors(colors, trial_grouping_dict)
-    num_trials = X.shape[0]
+    n_trials = X.shape[0]
 
     # Initialize figure and axis
     f = plt.figure()
     ax = f.gca(projection=projection, aspect='auto')
 
     # initialize buffer dictionary to handle averages of grouped trials
-    # infer num_time_bins from first trajectory
-    num_time_bins = gpfa_instance.transform_info['num_bins'][0]
+    # infer n_time_bins from first trajectory
+    n_time_bins = gpfa_instance.transform_info['num_bins'][0]
     if trial_grouping_dict:
         data_buffer = {}
         for i_group, (trial_type,
                       trial_ids) in enumerate(trial_grouping_dict.items()):
             data_buffer[trial_type] = np.zeros((dimensions,
-                                                num_time_bins))
+                                                n_time_bins))
 
     # loop over trials
-    for trial_idx in range(min(num_trials, num_trials_to_plot)):
+    for trial_idx in range(min(n_trials, n_trials_to_plot)):
         dat = X[trial_idx][dimensions_to_plot, :]
 
         trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
@@ -394,7 +394,7 @@ def plot_trajectories(returned_data,
                                 **plot_args_marker)
 
     if plot_group_averages:
-        for trial_idx in range(num_trials):
+        for trial_idx in range(n_trials):
             dat = X[trial_idx][dimensions_to_plot, :]
             trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
 
