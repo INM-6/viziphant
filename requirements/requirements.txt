@@ -1,5 +1,5 @@
-neo>=0.8.0,<0.9.0
-elephant>=0.6.4
+neo>=0.8.0
+elephant @ git+git://github.com/NeuralEnsemble/elephant.git#egg=elephant[extras]
 numpy>=1.10.1
 quantities>=0.12.1
 six>=1.10.0

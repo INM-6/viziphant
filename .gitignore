@@ -1,60 +1,84 @@
-.*
+#########################################
+# Editor temporary/working/backup files #
+.#*
+[#]*#
+*~
+*$
+*.bak
+.coverage
+*.kdev4
+*.komodoproject
+.mr.developer.cfg
+nosetests.xml
+*.orig
+.project
+.pydevproject
+.settings
+*.tmp*
+.idea/
+venv/
+env/
+.pytest_cache/
 
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-
-# C extensions
+# Compiled source #
+###################
+*.a
+*.com
+*.class
+*.dll
+*.exe
+*.mo
+*.o
+*.py[ocd]
 *.so
 
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
+# Python files #
+################
+# setup.py working directory
+build
+# other build directories
+bin
+parts
+var
+lib
+lib64
+# sphinx build directory
+doc/_build
+doc/**/toctree/
+*.h5
+# setup.py dist directory
+dist
+sdist
+# Egg metadata
+*.egg-info
 *.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
+*.EGG
+*.EGG-INFO
+eggs
+develop-eggs
+# tox testing tool
+.tox
+# Packages
+.installed.cfg
 pip-log.txt
-pip-delete-this-directory.txt
+# coverage
+cover
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
+# OS generated files #
+######################
+.directory
+.gdb_history
+.DS_Store
+ehthumbs.db
+Icon?
+Thumbs.db
 
-# Translations
-*.mo
-*.pot
+# Things specific to this project #
+###################################
+# ignored folder for fast prototyping
+ignored/
 
-# Django stuff:
-*.log
+.ipynb_checkpoints/
 
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
+# data
+*.nix
