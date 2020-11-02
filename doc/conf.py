@@ -33,7 +33,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
     'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
@@ -46,12 +45,6 @@ extensions = [
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
-# The suffix of source filenames.
-source_suffix = '.rst'
-
-# The master toctree document.
-master_doc = 'index'
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -107,9 +100,6 @@ numpydoc_show_class_members = False
 # typographically correct entities.
 html_use_smartypants = True
 
-# If false, no index is generated.
-html_use_index = True
-
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
 
@@ -119,65 +109,5 @@ html_show_copyright = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'viziphantdoc'
 
-
-# -- Options for LaTeX output --------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual])
-latex_documents = [
-    ('index', 'elephant.tex', u'Elephant Documentation',
-     authors, 'manual'),
-]
-
-
-# -- Options for manual page output --------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'elephant', u'Elephant Documentation',
-     [authors], 1)
-]
-
-
-# -- Options for Texinfo output ------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    ('index',
-     'Elephant',
-     u'Elephant Documentation',
-     authors,
-     'Elephant',
-     'Elephant is a package for the analysis of neurophysiology data.',
-     'Miscellaneous'),
-]
-
-
-# -- Options for Epub output ---------------------------------------------
-
-# Bibliographic Dublin Core info.
-epub_title = project
-epub_author = authors
-epub_publisher = authors
-epub_copyright = copyright
-
-
 # configuration for intersphinx: refer to Elephant
 intersphinx_mapping = {'elephant': ('https://elephant.readthedocs.io/en/latest/', None)}
-
-# Use more reliable mathjax source
-mathjax_path = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'
