@@ -36,7 +36,7 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range='auto',
     axes : matplotlib.axes.Axes or None, optional
         Matplotlib axes handle. If None, new axes are created and returned.
         Default: None
-    correlation_range : {'auto', 'full') or tuple of float, optional
+    correlation_range : {'auto', 'full'} or tuple of float, optional
         Minimum and maximum correlations to consider for color mapping.
         If tuple, the first element is the minimum and the second
         element is the maximum correlation.
