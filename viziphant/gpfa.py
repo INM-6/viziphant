@@ -202,7 +202,7 @@ def plot_dimension_vs_time(returned_data,
     # round max value to next highest 1e-1
     X_max = np.ceil(10 * np.abs(X_3D).max()) / 10
 
-    T_max = gpfa_instance.transform_info['n_bins'].max()
+    T_max = gpfa_instance.transform_info['num_bins'].max()
 
     # prepare ticks
     x_axis_ticks_step = np.ceil(T_max / 25.) * 5
