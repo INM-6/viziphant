@@ -27,7 +27,7 @@ def plot_corrcoef(cc, corr_limits='auto', style='ticks', cmap='bwr',
         element is the maximum correlation for color mapping.
         If 'auto', the maximum absolute value of the non-diagonal coefficients
         will be used symmetrically for color mapping.
-        If 'full', maximum correlation is set at 1.0 and mininum at -1.0.
+        If 'full', maximum correlation is set at 1.0 and minimum at -1.0.
         Default: 'auto'
     vmin : int or float, optional
         The minimum correlation for colour mapping.
