@@ -11,6 +11,9 @@ from matplotlib.lines import Line2D
 from elephant.conversion import BinnedSpikeTrain
 import warnings
 import neo
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+
 def plot_cumulative_explained_variance(loading_matrix):
     eigenvalues = np.linalg.eigvals(np.dot(loading_matrix.transpose(),
                                            loading_matrix))
@@ -27,6 +30,26 @@ def plot_cumulative_explained_variance(loading_matrix):
     ax.set_title('Eigenspectrum of estimated shared covariance matrix')
     ax.set_xlabel('Latent Dimensionality')
     ax.set_ylabel('Cumulative % of shared variance explained')
+
+    return ax
+
+
+def plot_loading_matrix(loading_matrix):
+
+    fig, ax = plt.subplots()
+
+    heatmap = ax.imshow(loading_matrix,
+                        aspect='auto',
+                        interpolation='none')
+
+    ax.set_title('Loading Matrix')
+    ax.set_ylabel('Neuron ID')
+    ax.set_xlabel('Latent Variable')
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1)
+    colorbar = plt.colorbar(heatmap, cax=cax)
+    colorbar.set_label('Latent Variable Weight')
 
     return ax
 
