@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 from matplotlib.ticker import MaxNLocator
 
 
-def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
+def plot_corrcoef(cc, corr_limits='auto', style='ticks', cmap='bwr',
                   cax_aspect=20, cax_pad_fraction=.5, figsize=(8, 8),
                   remove_diagonal=True):
     """
@@ -22,6 +22,13 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     cc : np.ndarray
         The output of
         `elephant.spike_train_correlation.correlation_coefficient`.
+    corr_limits : {'auto', 'full'} or list of float or tuple of float
+        If list or tuple, the first element is the minimum and the second
+        element is the maximum correlation for color mapping.
+        If 'auto', the maximum absolute value of the non-diagonal coefficients
+        will be used symmetrically for color mapping.
+        If 'full', maximum correlation is set at 1.0 and mininum at -1.0.
+        Default: 'auto'
     vmin : int or float, optional
         The minimum correlation for colour mapping.
         Default: -1
@@ -53,6 +60,11 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     -------
     fig : matplotlib.figure.Figure
     ax : matplotlib.axes.Axes
+
+    Raises
+    ------
+    ValueError
+        If `corr_limits` is not one of: tuple, list, 'auto' or 'full'.
     """
 
     # Initialise plotting canvas
@@ -66,6 +78,23 @@ def plot_corrcoef(cc, vmin=-1, vmax=1, style='ticks', cmap='bwr',
     if remove_diagonal:
         cc = cc.copy()
         np.fill_diagonal(cc, val=0)
+
+    # Get limits
+    if isinstance(corr_limits, str):
+        if corr_limits == 'full':
+            vmin = -1.0
+            vmax = 1.0
+        elif corr_limits == 'auto':
+            vmax = np.max(np.abs(np.triu(cc, k=1)))
+            vmin = -vmax
+        else:
+            raise ValueError("Invalid limit specification. String must be"
+                             "'full' or 'auto'.")
+    elif isinstance(corr_limits, (list, tuple)):
+        vmin, vmax = corr_limits
+    else:
+        raise ValueError("Invalid limit specification. Must be a list/tuple"
+                         "of values or 'auto'/'full'.")
 
     im = ax.imshow(cc, vmin=vmin, vmax=vmax, cmap=cmap)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
