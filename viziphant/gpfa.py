@@ -576,6 +576,7 @@ def _get_event_times_and_labels(block_with_cut_trials,
                                 relevant_events,
                                 gpfa_instance):
 
+    # TODO: maybe this is too specific to the R2G data
     trial_events = block_with_cut_trials.segments[trial_idx].filter(
         objects='Event',
         name='TrialEvents')[0]
