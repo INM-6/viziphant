@@ -22,7 +22,7 @@ import warnings
 from math import log10, floor
 
 from elephant.statistics import mean_firing_rate
-from viziphant.utils import check_same_units
+from elephant.utils import check_same_units
 
 
 def _round_to_1(x):

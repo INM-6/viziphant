@@ -19,33 +19,44 @@ import numpy as np
 import quantities as pq
 
 from elephant import statistics
+from elephant.utils import check_same_units
 
 
-def plot_isi_histogram(intervals, axes=None, label='', bin_size=3 * pq.ms,
-                       cutoff=None):
+def plot_isi_histogram(spiketrains, axes=None, bin_size=3 * pq.ms, cutoff=None,
+                       title='ISI distribution', legend=None, histtype='step'):
     """
     Create a simple histogram plot to visualise an inter-spike interval (ISI)
-    distribution computed with :func:`elephant.statistics.isi`.
+    distribution of spike trains.
+
+    Input spike trains are sorted in time prior to computing the ISI.
+
+    If the input is a list of list of spike trains, as in the Example 3, the
+    ISI of a population is concatenated from all neuron spike trains.
 
     Parameters
     ----------
-    intervals : neo.SpikeTrain or pq.Quantity
-        A spiketrain the ISI to be computed from or the intervals themselves
-        returned by :func:`elephant.statistics.isi`.
+    spiketrains : neo.SpikeTrain or pq.Quantity or list
+        A spike train or a list of spike trains the ISI to be computed from.
     axes : matplotlib.axes.Axes or None, optional
         Matplotlib axes handle. If set to None, new axes are created and
         returned.
         Default: None
-    label : str, optional
-        The label of the ISI distribution.
-        Default: ''
     bin_size : pq.Quantity, optional
         The bin size for the histogram.
-        Default: 2 ms
+        Default: 3 ms
     cutoff : pq.Quantity or None, optional
         The largest ISI to consider. Otherwise, if set to None, all range of
-        values are plotted. The typical cutoff value is ~250 ms.
+        values are plotted. Typical cutoff values are ~250 ms.
         Default: None
+    title : str, optional
+        The axes title.
+        Default: 'ISI distribution'
+    legend : str or list of str or None, optional
+        The axes legend labels.
+        Default: None
+    histtype : str
+        Histogram type passed to matplotlib `hist` function.
+        Default: 'step'
 
     Returns
     -------
@@ -64,11 +75,11 @@ def plot_isi_histogram(intervals, axes=None, label='', bin_size=3 * pq.ms,
         from viziphant.statistics import plot_isi_histogram
         np.random.seed(12)
 
-        spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=10*pq.s)
-        plot_isi_histogram(spiketrain, cutoff=250*pq.ms)
+        spiketrain = homogeneous_poisson_process(rate=10*pq.Hz, t_stop=50*pq.s)
+        plot_isi_histogram(spiketrain, cutoff=250*pq.ms, histtype='bar')
         plt.show()
 
-    2. Multiple ISI histograms are shown side by side.
+    2. ISI histogram of multiple spike trains.
 
     .. plot::
         :include-source:
@@ -78,32 +89,74 @@ def plot_isi_histogram(intervals, axes=None, label='', bin_size=3 * pq.ms,
         from elephant.spike_train_generation import homogeneous_poisson_process
         from viziphant.statistics import plot_isi_histogram
         np.random.seed(12)
-        spiketrain1 = homogeneous_poisson_process(rate=30*pq.Hz,t_stop=50*pq.s)
-        spiketrain2 = homogeneous_poisson_process(rate=10*pq.Hz,t_stop=50*pq.s)
-        fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
-        for i, spiketrain in enumerate([spiketrain1, spiketrain2]):
-            plot_isi_histogram(spiketrain, axes=axes[i],
-                               label=f"Neuron '{i}'", cutoff=250*pq.ms)
+        rates = [5, 10, 15] * pq.Hz
+        spiketrains = [homogeneous_poisson_process(rate=r,
+                       t_stop=100 * pq.s) for r in rates]
+        plot_isi_histogram(spiketrains, cutoff=250*pq.ms,
+                           legend=rates)
+        plt.show()
+
+    3. ISI histogram of multiple neuron populations.
+
+    .. plot::
+        :include-source:
+
+        import quantities as pq
+        import matplotlib.pyplot as plt
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.statistics import plot_isi_histogram
+
+        np.random.seed(12)
+        population1 = [homogeneous_poisson_process(rate=30 * pq.Hz,
+                       t_stop=50 * pq.s) for _ in range(10)]
+        population2 = [homogeneous_poisson_process(rate=r * pq.Hz,
+                       t_stop=50 * pq.s) for r in range(1, 20)]
+        plot_isi_histogram([population1, population2], cutoff=250 * pq.ms,
+                           legend=['population1', 'population2'])
         plt.show()
 
     """
-    if isinstance(intervals, neo.SpikeTrain):
-        intervals = statistics.isi(spiketrain=intervals)
+    def isi_population(spiketrain_list):
+        return [statistics.isi(np.sort(st.magnitude))
+                for st in spiketrain_list]
+
+    if isinstance(spiketrains, pq.Quantity):
+        spiketrains = [spiketrains]
+    if isinstance(spiketrains[0], (list, tuple)):
+        for sts in spiketrains:
+            check_same_units(sts)
+        check_same_units([sts[0] for sts in spiketrains])
+        intervals = [np.hstack(isi_population(sts)) for sts in spiketrains]
+        units = spiketrains[0][0].units
+    else:
+        check_same_units(spiketrains)
+        intervals = isi_population(spiketrains)
+        units = spiketrains[0].units
+
+    if legend is None:
+        legend = [None] * len(intervals)
+    elif isinstance(legend, str):
+        legend = [legend]
+    if len(legend) != len(intervals):
+        raise ValueError("The length of the input list and legend labels do "
+                         "not match.")
+
+    if cutoff is None:
+        cutoff = max(interval.max() for interval in intervals)
 
     if axes is None:
         fig, axes = plt.subplots()
 
-    if cutoff is None:
-        cutoff = intervals.max()
+    bins = np.arange(0, cutoff.rescale(units).item(),
+                     bin_size.rescale(units).item())
 
-    bins = np.arange(0, cutoff.rescale(intervals.units).item(),
-                     bin_size.rescale(intervals.units).item())
-
-    axes.hist(intervals, bins=bins)
-    axes.set_title(f'{label} ISI distribution')
-    axes.set_xlabel(f'Inter-spike interval '
-                    f'({intervals.dimensionality.string})')
+    for label, interval in zip(legend, intervals):
+        axes.hist(interval, bins=bins, histtype=histtype, label=label)
+    axes.set_title(title)
+    axes.set_xlabel(f'Inter-spike interval ({units.dimensionality})')
     axes.set_ylabel('Count')
+    if legend[0] is not None:
+        axes.legend()
 
     return axes
 

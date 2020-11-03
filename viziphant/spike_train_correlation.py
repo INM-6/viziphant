@@ -16,9 +16,12 @@ Spike train correlation plots
 from __future__ import division, print_function, unicode_literals
 
 import matplotlib.pyplot as plt
+import neo
 import numpy as np
 import quantities as pq
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
+
+from elephant.utils import check_neo_consistency
 
 
 def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range='auto',
@@ -125,11 +128,9 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range='auto',
     return axes
 
 
-def plot_cross_correlation_histogram(
-        cch, surr_cchs=None, significance_threshold=3.0,
-        maxlag=None, figsize=None, legend=True, units=pq.s,
-        title='Cross-correlation histogram',
-        xlabel=None, ylabel=''):
+def plot_cross_correlation_histogram(cch, axes=None, units=None, maxlag=None,
+                                     legend=None,
+                                     title='Cross-correlation histogram'):
     """
     Plot a cross-correlation histogram returned by
     :func:`elephant.spike_train_correlation.cross_correlation_histogram`,
@@ -137,37 +138,25 @@ def plot_cross_correlation_histogram(
 
     Parameters
     ----------
-    cch : neo.AnalogSignal
-        Cross-correlation histogram.
-    surr_cchs : np.ndarray or neo.AnalogSignal, optional
-        Contains cross-correlation histograms for each surrogate realization.
-        If None, only the original `cch` is plotted.
+    cch : neo.AnalogSignal or list of neo.AnalogSignal
+        Cross-correlation histogram or a list of such.
+    axes : matplotlib.axes.Axes or None, optional
+        Matplotlib axes handle. If set to None, new axes are created and
+        returned.
         Default: None
-    significance_threshold : float or None, optional
-        Number of standard deviations for significance threshold. If None,
-        don't plot the standard deviation.
-        Default: 3.0
+    units : pq.Quantity or str or None, optional
+        Desired time axis units.
+        If None, ``cch.sampling_period`` units are used.
+        Default: None
     maxlag : pq.Quantity or None, optional
         Left and right borders of the plot.
         Default: None
-    figsize : tuple or None, optional
-        Figure size
+    legend : str or list of str or None, optional
+        The axes legend labels.
         Default: None
-    legend : bool, optional
-        Whether to include the legend.
-        Default: True
-    units : pq.Quantity, optional
-        Unit in which to the CCH time lag
-        Default: pq.ms
     title : str, optional
-        The plot title.
+        The axes title.
         Default: 'Cross-correlation histogram'
-    xlabel : str or None, optional
-        Label X axis. If None, it'll be set to `'Time lag (units)'`.
-        Default: None
-    ylabel : str, optional
-        Label Y axis.
-        Default: ''
 
     Returns
     -------
@@ -201,36 +190,37 @@ def plot_cross_correlation_histogram(
         plt.show()
 
     """
-    fig, ax = plt.subplots(figsize=figsize)
-    # plot the CCH of the original data
-    cch_times = cch.times.rescale(units).magnitude
-    ax.plot(cch_times, cch.magnitude, color='C0',
-            label='raw CCH')
+    if axes is None:
+        fig, axes = plt.subplots()
 
-    if surr_cchs is not None:
-        # Compute the mean CCH
-        cch_mean = surr_cchs.mean(axis=0)
+    if isinstance(cch, neo.AnalogSignal):
+        cch = [cch]
 
-        # Plot the average from surrogates
-        ax.plot(cch_times, cch_mean, lw=2, color='C2',
-                label='mean surr. CCH')
+    check_neo_consistency(cch, object_type=neo.AnalogSignal)
+    if units is None:
+        units = cch[0].sampling_period.units
+    elif isinstance(units, str):
+        units = pq.Quantity(1, units)
 
-        # compute the standard deviation and plot the significance threshold
-        if significance_threshold is not None:
-            cch_threshold = cch_mean + significance_threshold * surr_cchs.std(
-                axis=0, ddof=1)
+    if legend is None:
+        legend = [None] * len(cch)
+    elif isinstance(legend, str):
+        legend = [legend]
+    if len(legend) != len(cch):
+        raise ValueError("The length of the input list and legend labels do "
+                         "not match.")
 
-            ax.plot(cch_times, cch_threshold, lw=2, color='C3',
-                    label='significance threshold')
+    for label, signal in zip(legend, cch):
+        cch_times = signal.times.rescale(units).magnitude
+        axes.plot(cch_times, signal.magnitude, label=label)
 
-    ax.set_title(title)
-    if xlabel is None:
-        xlabel = f"Time lag ({units.dimensionality})"
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    axes.set_ylabel(cch[0].annotations['cch_parameters']['normalization'])
+    axes.set_xlabel(f"Time lag ({units.dimensionality})")
+    axes.set_title(title)
     if maxlag is not None:
         maxlag = maxlag.rescale(units).magnitude
-        ax.set_xlim(-maxlag, maxlag)
-    if legend:
-        ax.legend()
-    return fig, ax
+        axes.set_xlim(-maxlag, maxlag)
+    if legend[0] is not None:
+        axes.legend()
+
+    return axes
