@@ -1,0 +1,9 @@
+recursive-include viziphant *.py
+include requirements/*
+include README.md
+include LICENSE.txt
+include viziphant/VERSION
+recursive-include doc *
+prune doc/_build
+prune doc/toctree
+recursive-exclude . *~
