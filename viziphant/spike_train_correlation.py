@@ -101,21 +101,16 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range='auto',
         np.fill_diagonal(corrcoef_matrix, val=0)
 
     # Get limits
-    if isinstance(correlation_range, str):
-        if correlation_range == 'full':
-            vmin = -1.0
-            vmax = 1.0
-        elif correlation_range == 'auto':
-            vmax = np.max(np.abs(np.triu(corrcoef_matrix, k=1)))
-            vmin = -vmax
-        else:
-            raise ValueError("Invalid limit specification. String must be"
-                             "'full' or 'auto'.")
-    elif isinstance(correlation_range, tuple):
+    if correlation_range == 'full':
+        vmin, vmax = -1, 1
+    elif correlation_range == 'auto':
+        vmax = np.max(np.abs(corrcoef_matrix))
+        vmin = -vmax
+    elif isinstance(correlation_range, (tuple, list)):
         vmin, vmax = correlation_range
     else:
-        raise ValueError("Invalid limit specification. Must be a tuple"
-                         "of float values or 'auto'/'full'.")
+        raise ValueError(f"Invalid 'correlation_range' ({correlation_range}). "
+                         f"Must be a tuple of float values or 'auto'/'full'.")
 
     image = axes.imshow(corrcoef_matrix, vmin=vmin, vmax=vmax, cmap=colormap)
 
