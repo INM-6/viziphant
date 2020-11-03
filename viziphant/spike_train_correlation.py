@@ -21,7 +21,7 @@ import quantities as pq
 from mpl_toolkits.axes_grid1 import make_axes_locatable, axes_size
 
 
-def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
+def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range='auto',
                   colormap='bwr', colorbar_aspect=20,
                   colorbar_padding_fraction=0.5, remove_diagonal=True):
     """
@@ -36,9 +36,14 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
     axes : matplotlib.axes.Axes or None, optional
         Matplotlib axes handle. If None, new axes are created and returned.
         Default: None
-    correlation_range : tuple of float, optional
-        Minimum and maximum correlations to consider.
-        Default: (-1, 1)
+    correlation_range : {'auto', 'full'} or tuple of float, optional
+        Minimum and maximum correlations to consider for color mapping.
+        If tuple, the first element is the minimum and the second
+        element is the maximum correlation.
+        If 'auto', the maximum absolute value of the non-diagonal coefficients
+        will be used symmetrically as minimum and maximum.
+        If 'full', maximum correlation is set at 1.0 and minimum at -1.0.
+        Default: 'auto'
     colormap : str, optional
         Colormap. Default: 'bwr'
     colorbar_aspect : float, optional
@@ -53,6 +58,11 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
     Returns
     -------
     axes : matplotlib.axes.Axes
+
+    Raises
+    ------
+    ValueError
+        If `correlation_range` is not tuple or 'auto' or 'full'.
 
     Examples
     --------
@@ -90,7 +100,18 @@ def plot_corrcoef(corrcoef_matrix, axes=None, correlation_range=(-1, 1),
         corrcoef_matrix = corrcoef_matrix.copy()
         np.fill_diagonal(corrcoef_matrix, val=0)
 
-    vmin, vmax = correlation_range
+    # Get limits
+    if correlation_range == 'full':
+        vmin, vmax = -1, 1
+    elif correlation_range == 'auto':
+        vmax = np.max(np.abs(corrcoef_matrix))
+        vmin = -vmax
+    elif isinstance(correlation_range, (tuple, list)):
+        vmin, vmax = correlation_range
+    else:
+        raise ValueError(f"Invalid 'correlation_range' ({correlation_range}). "
+                         f"Must be a tuple of float values or 'auto'/'full'.")
+
     image = axes.imshow(corrcoef_matrix, vmin=vmin, vmax=vmax, cmap=colormap)
 
     # Initialise colour bar axis
