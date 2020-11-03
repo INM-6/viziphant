@@ -320,7 +320,7 @@ def plot_instantaneous_rates_colormesh(rates, axes=None, units=None, **kwargs):
     cbar = plt.colorbar(im, ax=axes)
     cbar.set_label("Firing rate [Hz]")
 
-    axes.set_xlabel("Time (s)")
+    axes.set_xlabel(f"Time ({units.dimensionality})")
     axes.set_ylabel("Neuron")
     axes.set_yticks([rates.shape[1] - 0.5])
     axes.set_yticklabels([rates.shape[1] - 1])
