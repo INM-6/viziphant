@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/INM-6/viziphant.svg?branch=master)](https://travis-ci.org/INM-6/viziphant)
 [![Documentation Status](https://readthedocs.org/projects/viziphant/badge/?version=latest)](https://viziphant.readthedocs.io/en/latest/?badge=latest)
 
-A Python module for easy visualization of Neo objects and Elephant results.
+A Python module for easy visualization of [Neo](https://github.com/NeuralEnsemble/python-neo) objects and [Elephant](https://github.com/NeuralEnsemble/elephant) results.
 
 Viziphant provides a high-level API to easily generate plots and interactive visualizations of neuroscientific data and analysis results. This API uses and extends the same structure as in Elephant to ensure intuitive usage for scientists that are used to Elephant. 
 
