@@ -345,9 +345,6 @@ def plot_trajectories(returned_data,
     # loop over trials
     for trial_idx in range(min(n_trials, n_trials_to_plot)):
         dat = X[trial_idx][dimensions_to_plot, :]
-
-        trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
-
         # plot single trial trajectories
         plot_args_single = _set_plot_arguments(trial_grouping_dict,
                                                trial_idx,
@@ -394,7 +391,7 @@ def plot_trajectories(returned_data,
                                 label=event_label,
                                 **plot_args_marker)
 
-    if plot_group_averages:
+    if plot_group_averages and trial_grouping_dict:
         for trial_idx in range(n_trials):
             dat = X[trial_idx][dimensions_to_plot, :]
             trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
