@@ -208,8 +208,6 @@ def plot_dimension_vs_time(returned_data,
     # prepare ticks
     x_axis_ticks_step = np.ceil(T_max / 25.) * 5
 
-    print(T_max, x_axis_ticks_step)
-
     x_axis_ticks = np.arange(1, T_max + 1, x_axis_ticks_step)
 
     x_axis_ticks_lengths = np.arange(0, (T_max * gpfa_instance.bin_size).rescale(pq.ms).magnitude,
