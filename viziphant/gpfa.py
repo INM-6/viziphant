@@ -8,6 +8,7 @@ import itertools
 import quantities as pq
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from mpl_toolkits.mplot3d import Axes3D
 from elephant.conversion import BinnedSpikeTrain
 import warnings
 import neo
