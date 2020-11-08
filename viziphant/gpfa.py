@@ -3,16 +3,18 @@ Simple plotting functions visualizing the output of the Gaussian process
 factor analysis.
 """
 
-import numpy as np
+import neo
 import itertools
+import warnings
+from collections import defaultdict
+import numpy as np
 import quantities as pq
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D
-from elephant.conversion import BinnedSpikeTrain
-import warnings
-import neo
+import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from elephant.conversion import BinnedSpikeTrain
 
 
 def plot_cumulative_explained_variance(loading_matrix):
@@ -55,6 +57,101 @@ def plot_loading_matrix(loading_matrix):
     return ax
 
 
+def plot_single_dimension_vs_time(returned_data,
+                                  gpfa_instance,
+                                  dimension_index=0,
+                                  orthonomalized_dimensions=True,
+                                  n_trials_to_plot=20,
+                                  trial_grouping_dict=None,
+                                  colors=['grey'],
+                                  plot_single_trajectories=True,
+                                  plot_group_averages=False,
+                                  ax=None,
+                                  plot_args_single={'linewidth': 0.3,
+                                                    'alpha': 0.4,
+                                                    'linestyle': '-'},
+                                  plot_args_average={'linewidth': 2,
+                                                     'alpha': 1,
+                                                     'linestyle': 'dashdot'},
+                                  **extraOpts):
+
+    single_plot = False
+    if ax is None:
+        single_plot = True
+        fig, ax = plt.subplots()
+
+    data = _check_input_data(returned_data, orthonomalized_dimensions)
+    colors = _check_colors(colors, trial_grouping_dict)
+    # infer n_trial from shape of the data
+    n_trials = data.shape[0]
+    # infer n_time_bins from maximal number of bins
+    n_time_bins = gpfa_instance.transform_info['num_bins'].max()
+
+    # initialize buffer dictionary to handle averages of grouped trials
+    if trial_grouping_dict:
+        data_buffer = defaultdict(list)
+
+    # loop over trials
+    for trial_idx in range(min(n_trials, n_trials_to_plot)):
+        dat = data[trial_idx]
+
+        trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
+        color = colors[list(trial_grouping_dict.keys()).index(trial_type)]
+
+        # plot single trial trajectories
+        if plot_single_trajectories:
+            ax.plot(np.arange(1, n_time_bins + 1),
+                    dat[dimension_index, :],
+                    color=color,
+                    label=trial_type,
+                    **plot_args_single)
+
+    if plot_group_averages and trial_grouping_dict:
+        for trial_idx in range(n_trials):
+            dat = data[trial_idx]
+            trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
+
+            # fill buffer dictionary to handle averages of grouped trials
+            if trial_type is not None:
+                data_buffer[trial_type].append(dat)
+
+        for i_group, (trial_type,
+                      group_data_buffer) in enumerate(data_buffer.items()):
+
+            group_average = np.mean(group_data_buffer, axis=0)
+
+            ax.plot(np.arange(1, n_time_bins + 1),
+                    group_average[dimension_index],
+                    color=colors[i_group],
+                    label=trial_type,
+                    **plot_args_average)
+
+    _set_title_dimensions_vs_time(ax,
+                                  dimension_index,
+                                  orthonomalized_dimensions,
+                                  data,
+                                  gpfa_instance)
+
+    x_axis_ticks, x_axis_ticks_lengths, y_axis_ticks = \
+        _get_axis_limits_and_ticks(data, gpfa_instance, n_time_bins)
+
+    ax.set_xticks(x_axis_ticks)
+    ax.set_xticklabels(x_axis_ticks_lengths)
+    ax.set_yticks(y_axis_ticks)
+    ax.set_yticklabels(y_axis_ticks)
+    ax.set_xlabel('Time (ms)')
+
+    if single_plot:
+        # only plot unique labels
+        handles, labels = plt.gca().get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax.legend(by_label.values(), by_label.keys())
+
+    plt.tight_layout()
+
+    return ax
+
+
 def plot_dimension_vs_time(returned_data,
                            gpfa_instance,
                            orthonomalized_dimensions=True,
@@ -64,7 +161,14 @@ def plot_dimension_vs_time(returned_data,
                            plot_single_trajectories=True,
                            plot_group_averages=False,
                            n_columns=4,
-                           **extraOpts):
+                           plot_args_single={'linewidth': 0.3,
+                                             'alpha': 0.4,
+                                             'linestyle': '-'},
+                           plot_args_average={'linewidth': 2,
+                                              'alpha': 1,
+                                              'linestyle': 'dashdot'},
+                           figure_args={'figsize': (10, 10)},
+                           gridspec_args={}):
 
     """
     This function plots each latent space state dimension versus time
@@ -184,126 +288,46 @@ def plot_dimension_vs_time(returned_data,
 
     """
 
-    # TODO: remove hardcoded parameters
-    # TODO: modularize -> function for single dimension -> compose within gridspec
-    # TODO: pep8
-    # TODO: use unique axes objects to remove the following warning
-    """
-    MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance
-    """
-
-    f = plt.figure(figsize=(10, 10))
-
-    X = _check_input_data(returned_data, orthonomalized_dimensions)
-    colors = _check_colors(colors, trial_grouping_dict)
-
-    # convert array of 2d arrays into 3d array
-    X_3D = np.stack(X)
-
-    # round max value to next highest 1e-1
-    X_max = np.ceil(10 * np.abs(X_3D).max()) / 10
-
-    T_max = gpfa_instance.transform_info['num_bins'].max()
-
-    # prepare ticks
-    x_axis_ticks_step = np.ceil(T_max / 25.) * 5
-
-    x_axis_ticks = np.arange(1, T_max + 1, x_axis_ticks_step)
-
-    x_axis_ticks_lengths = np.arange(0, (T_max * gpfa_instance.bin_size).rescale(pq.ms).magnitude,
-                                     (x_axis_ticks_step * gpfa_instance.bin_size).rescale(pq.ms).magnitude,
-                                     dtype=np.int)
-    y_axis_ticks = [-X_max, 0, X_max]
+    f = plt.figure(**figure_args)
 
     # deduce n_rows from n_columns
-    n_rows = int(np.ceil(X_3D.shape[1] / n_columns))
+    n_dimensions = gpfa_instance.x_dim
+    n_rows = int(np.ceil(n_dimensions / n_columns))
 
-    # loop over trials
-    for n in range(min(X.shape[0], n_trials_to_plot)):
-        dat = X[n]
-        T = gpfa_instance.transform_info['num_bins'][n]
+    grid_specification = gridspec.GridSpec(n_rows,
+                                           n_columns, **gridspec_args)
 
-        # loop over latent variables
-        for k in range(dat.shape[0]):
-
-            # initalize subplot
-            ax = plt.subplot(n_rows, n_columns, k + 1)
-
-            if trial_grouping_dict:
-                for i_group, (trial_type, trial_ids) in enumerate(trial_grouping_dict.items()):
-                    if n in trial_ids:
-                        col = colors[i_group]
-                        lw = 0.5
-                        if plot_group_averages:
-                            alpha = 0.1
-                        else:
-                            alpha = 0.8
-                        break
-            else:
-                col = 'gray'
-                lw = 0.5
-                alpha = 0.8
-                trial_type = None
-
-            if plot_single_trajectories:
-                plt.plot(np.arange(1, T + 1),
-                         dat[k, :],
-                         linewidth=lw,
-                         color=col,
-                         alpha=alpha, label=trial_type)
-
-    if plot_group_averages and trial_grouping_dict:
-        for i_group, (trial_type, trial_ids) in enumerate(trial_grouping_dict.items()):
-            data_buffer = []
-            for trial_id in trial_ids:
-                data_buffer.append(X[trial_id])
-
-            group_average = np.mean(data_buffer, axis=0)
-            # group_std = np.std(data_buffer, axis=0)
-
-            # loop over latent variables
-            for k in range(dat.shape[0]):
-                ax = plt.subplot(n_rows, n_columns, k + 1)
-                plt.plot(np.arange(1, T + 1), group_average[k],
-                         linewidth=1, color=colors[i_group], label=trial_type)
-
-    # loop over latent variables
-    for k in range(dat.shape[0]):
-        ax = plt.subplot(n_rows, n_columns, k + 1)
-        plt.axis([1, T_max, 1.1 * min(y_axis_ticks), 1.1 * max(y_axis_ticks)])
-
-        # by default returned_data is an array containing the orthonormalized posterior mean of latent variable
-        if isinstance(returned_data, np.ndarray):
-            legend_string = r'$\tilde{{\mathbf{{x}}}}_{{{},:}}$'.format(k)
-        elif isinstance(returned_data, dict):
-            if orthonomalized_dimensions:
-                legend_string = r'$\tilde{{\mathbf{{x}}}}_{{{},:}}$'.format(k)
-            else:
-                if 'xsm' in returned_data.keys():
-                    legend_string = r"${{\mathbf{{x}}}}_{{{},:}}$".format(k)
-
-        plt.title(legend_string, fontsize=16)
-
-        plt.xticks(x_axis_ticks, x_axis_ticks_lengths)
-        plt.yticks(y_axis_ticks, y_axis_ticks)
-        plt.xlabel('Time (ms)')
+    for k, gs in zip(range(n_dimensions), grid_specification):
+        ax = plot_single_dimension_vs_time(
+            returned_data,
+            gpfa_instance,
+            dimension_index=k,
+            orthonomalized_dimensions=orthonomalized_dimensions,
+            n_trials_to_plot=n_trials_to_plot,
+            trial_grouping_dict=trial_grouping_dict,
+            colors=colors,
+            plot_single_trajectories=plot_single_trajectories,
+            plot_group_averages=plot_group_averages,
+            ax=plt.subplot(gs),
+            plot_args_single=plot_args_single,
+            plot_args_average=plot_args_average)
 
         # plot legend only for first subplot
         if k == 0:
             # only plot unique labels
-            handles, labels = plt.gca().get_legend_handles_labels()
+            handles, labels = f.gca().get_legend_handles_labels()
             by_label = dict(zip(labels, handles))
             plt.legend(by_label.values(), by_label.keys())
 
-    plt.tight_layout()
+    grid_specification.tight_layout(f)
+
+    return f
 
 
-# TODO: remove hardcoded linewidths etc...
-# TODO: consistent namings with plot_dimension_vs_time
-# TODO: document
 def plot_trajectories(returned_data,
                       gpfa_instance,
                       block_with_cut_trials=None,
+                      neo_event_name=None,
                       relevant_events=None,
                       dimensions_to_plot=[0, 1, 2],
                       orthonomalized_dimensions=True,
@@ -312,11 +336,112 @@ def plot_trajectories(returned_data,
                       colors=['grey'],
                       plot_single_trajectories=True,
                       plot_group_averages=False,
-                      **extraOpts):
+                      plot_args_single={'linewidth': 0.3,
+                                        'alpha': 0.4,
+                                        'linestyle': '-'},
+                      plot_args_marker={'alpha': 0.4,
+                                        'markersize': 5},
+                      plot_args_average={'linewidth': 2,
+                                         'alpha': 1,
+                                         'linestyle': 'dashdot'},
+                      plot_args_marker_start={'marker': 'p',
+                                              'markersize': 10,
+                                              'label': 'trial_start'}):
 
     """
-    adapted from plot3D @ 2009 Byron Yu -- byronyu@stanford.edu
-    # TODO: remove hardcoded linewidths etc...
+    This function allows for 2D and 3D visualization of the latent space
+    variables identified by the GPFA.
+
+    Optional visual aids are offered such as sorting, grouping and color coding
+    on the basis of the arrangement in list of spike trains and spike train
+    annotations.
+    Changes to optics of the dot marker, the separators and the legend can be
+    applied by providing a dict with the respective parameters. Changes and
+    additions to the dot display itself or the two histograms are best realized
+    by using the returned axis handles.
+
+    This function was adapted from the original MATLAB implementation of the
+    plotEachDimVsTime by Byron Yu which was published with his
+    paper Yu et al., J Neurophysiol, 2009.
+
+
+    Parameters
+    ----------
+    returned_data : np.ndarray or dict
+        When the length of `returned_data` is one, a single np.ndarray,
+        containing the requested data (the first entry in `returned_data`
+        keys list), is returned. Otherwise, a dict of multiple np.ndarrays
+        with the keys identical to the data names in `returned_data` is
+        returned.
+
+        N-th entry of each np.ndarray is a np.ndarray of the following
+        shape, specific to each data type, containing the corresponding
+        data for the n-th trial:
+
+            `xorth`: (#latent_vars, #bins) np.ndarray
+
+            `xsm`:  (#latent_vars, #bins) np.ndarray
+
+            `y`:  (#units, #bins) np.ndarray
+
+            `Vsm`:  (#latent_vars, #latent_vars, #bins) np.ndarray
+
+            `VsmGP`:  (#bins, #bins, #latent_vars) np.ndarray
+
+        Note that the num. of bins (#bins) can vary across trials,
+        reflecting the trial durations in the given `spiketrains` data.
+    gpfa_instance : class
+        Instance of the GPFA() class in elephant, which was used to obtain
+        returned_data.
+    block_with_cut_trials : neo.Block
+        The neo.Block should contain each single trial as a separate
+        neo.Segments including the neo.Event with a specified
+        'neo_event_name'.
+    neo_event_name : str
+        A string specifying the name of the neo.Event which should be used
+        to identify the event times and labels of the 'relevant_events'.
+    relevant_events : list of str
+        List of names of the event labels that should be plotted onto each
+        single trial trajectory.
+
+    orthonomalized_dimensions : bool
+        Boolean which specifies whether to plot the orthonomalized latent
+        state space dimensions corresponding to the entry 'xorth'
+        in returned data (True) or the unconstrained dimension corresponding
+        to the entry 'xsm' (False).
+        Beware that the unconstrained state space dimensions 'xsm' are not
+        ordered by their explained variance. These dimensions each represent
+        one Gaussian process timescale.
+        On the contrary, the orthonomalized dimensions 'xorth' are ordered by
+        decreasing explained variance, allowing a similar intuitive
+        interpretation to the dimensions obtained in a PCA. Due to the
+        orthonmalization, these dimensions reflect mixtures of timescales.
+    plot_single_trajectories : bool
+        If True, single trial trajectories are plotted.
+    n_trials_to_plot : int
+        Number of single trial trajectories to plot.
+    plot_group_averages : bool
+        If True, trajectories of those trials belonging together specified
+        in the trial_grouping_dict are averaged and plotted.
+    trial_grouping_dict : dict
+        Dictionary which specifies the groups of trials which belong together
+        (e.g. due to same trial type). Each item specifies one group: its
+        key defines the groups name (which appears in the legend) and the
+        corresponding value is a list or np.ndarray of trial IDs.
+    colors : list
+        List of strings specifying the colors of the different trial groups.
+        The length of this list should correspond to the number of items
+        in trial_grouping_dict.
+        Default: ['grey']
+    n_columns : int
+        Specifies the number of columns to plot the dimensions in.
+
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+
     """
 
     # prepare the input
@@ -324,15 +449,18 @@ def plot_trajectories(returned_data,
         _check_dimensions(gpfa_instance, dimensions_to_plot)
     X = _check_input_data(returned_data, orthonomalized_dimensions)
     colors = _check_colors(colors, trial_grouping_dict)
+
+    # infer n_trial from shape of the data
     n_trials = X.shape[0]
 
-    # Initialize figure and axis
+    # infer n_time_bins from maximal number of bins
+    n_time_bins = gpfa_instance.transform_info['num_bins'].max()
+
+    # initialize figure and axis
     f = plt.figure()
     ax = f.gca(projection=projection, aspect='auto')
 
     # initialize buffer dictionary to handle averages of grouped trials
-    # infer n_time_bins from first trajectory
-    n_time_bins = gpfa_instance.transform_info['num_bins'][0]
     if trial_grouping_dict:
         data_buffer = {}
         for i_group, (trial_type,
@@ -343,32 +471,29 @@ def plot_trajectories(returned_data,
     # loop over trials
     for trial_idx in range(min(n_trials, n_trials_to_plot)):
         dat = X[trial_idx][dimensions_to_plot, :]
-        # plot single trial trajectories
-        plot_args_single = _set_plot_arguments(trial_grouping_dict,
-                                               trial_idx,
-                                               colors,
-                                               plot_group_averages,
-                                               plot='single_trajectories')
+        trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
+        color = colors[list(trial_grouping_dict.keys()).index(trial_type)]
 
         if plot_single_trajectories:
             if dimensions == 2:
-                ax.plot(dat[0], dat[1], **plot_args_single)
+                ax.plot(dat[0], dat[1],
+                        color=color,
+                        label=trial_type,
+                        **plot_args_single)
             elif dimensions == 3:
-                ax.plot(dat[0], dat[1], dat[2], **plot_args_single)
+                ax.plot(dat[0], dat[1], dat[2],
+                        color=color,
+                        label=trial_type,
+                        **plot_args_single)
 
             # plot single trial events
-            if block_with_cut_trials and relevant_events:
+            if block_with_cut_trials and neo_event_name and relevant_events:
                 time_bins_with_relevant_event, relevant_event_labels = \
                     _get_event_times_and_labels(block_with_cut_trials,
                                                 trial_idx,
+                                                neo_event_name,
                                                 relevant_events,
                                                 gpfa_instance)
-
-                plot_args_marker = _set_plot_arguments(trial_grouping_dict,
-                                                       trial_idx,
-                                                       colors,
-                                                       plot_group_averages,
-                                                       plot='event_markers')
 
                 marker = itertools.cycle(Line2D.filled_markers)
                 for event_id, (event_time,
@@ -380,6 +505,7 @@ def plot_trajectories(returned_data,
                                 [dat[1][event_time]],
                                 marker=next(marker),
                                 label=event_label,
+                                color=color,
                                 **plot_args_marker)
                     elif dimensions == 3:
                         ax.plot([dat[0][event_time]],
@@ -387,6 +513,7 @@ def plot_trajectories(returned_data,
                                 [dat[2][event_time]],
                                 marker=next(marker),
                                 label=event_label,
+                                color=color,
                                 **plot_args_marker)
 
     if plot_group_averages and trial_grouping_dict:
@@ -403,13 +530,6 @@ def plot_trajectories(returned_data,
 
             group_average = group_data_buffer / \
                 len(trial_grouping_dict[trial_type])
-
-            plot_args_average = _set_plot_arguments(
-                trial_grouping_dict,
-                trial_idx,
-                colors,
-                plot_group_averages,
-                plot='average_trajectories')
 
             if dimensions == 2:
                 ax.plot(group_average[0],
@@ -433,12 +553,12 @@ def plot_trajectories(returned_data,
                 ax.plot([group_average[0][0]],
                         [group_average[1][0]],
                         [group_average[2][0]],
-                        'p',
-                        markersize=10,
                         color=colors[i_group],
-                        label='trial_start')
+                        **plot_args_marker_start)
 
-    _set_axis_labels(ax, orthonomalized_dimensions, dimensions_to_plot)
+    _set_axis_labels_trajectories(ax,
+                                  orthonomalized_dimensions,
+                                  dimensions_to_plot)
 
     # only plot unique labels
     handles, labels = plt.gca().get_legend_handles_labels()
@@ -446,6 +566,8 @@ def plot_trajectories(returned_data,
     plt.legend(by_label.values(), by_label.keys())
 
     plt.tight_layout()
+
+    return f, ax
 
 
 def _check_input_data(returned_data, orthonomalized_dimensions):
@@ -505,49 +627,61 @@ def _get_trial_type(trial_grouping_dict,
             return trial_type
 
 
-def _set_plot_arguments(trial_grouping_dict,
-                        trial_idx,
-                        colors,
-                        plot_group_averages,
-                        plot):
+def _get_axis_limits_and_ticks(data, gpfa_instance, n_time_bins):
 
-    if trial_grouping_dict:
-        for i_group, (trial_type,
-                      trial_ids) in enumerate(trial_grouping_dict.items()):
-            if trial_idx in trial_ids:
-                col = colors[i_group]
-                lw = 0.3
-                if plot_group_averages:
-                    alpha = 0.4
-                else:
-                    alpha = 0.8
-                break
+    # stack list of arrays
+    data_stacked = np.stack(data)
+
+    # prepare ticks
+    x_axis_ticks_step = np.ceil(n_time_bins / 25.) * 5
+
+    x_axis_ticks = np.arange(1, n_time_bins + 1, x_axis_ticks_step)
+
+    x_axis_ticks_lengths = np.arange(
+        0, (n_time_bins * gpfa_instance.bin_size).rescale(pq.ms).magnitude,
+        (x_axis_ticks_step * gpfa_instance.bin_size).rescale(pq.ms).magnitude,
+        dtype=np.int)
+
+    # round max value to next highest 1e-1
+    y_max = np.ceil(10 * np.abs(data_stacked).max()) / 10
+
+    y_axis_ticks = [-y_max, 0, y_max]
+
+    return x_axis_ticks, x_axis_ticks_lengths, y_axis_ticks
+
+
+def _set_title_dimensions_vs_time(ax,
+                                  latent_variable_idx,
+                                  orthonomalized_dimensions,
+                                  data,
+                                  gpfa_instance):
+    if orthonomalized_dimensions:
+        str = r'$\tilde{{\mathbf{{x}}}}_{{{},:}}$'.format(latent_variable_idx)
+
+        # percentage of variance of the dimensionality reduced data
+        # that is explained by this latent variable
+        variances = [np.var(np.hstack(data)[i, :]) for
+                     i in range(gpfa_instance.x_dim)]
+        total_variance = np.sum(variances)
+        explained_variance = np.round(
+            variances[latent_variable_idx]/total_variance*100, 2)
+
+        title = str + f'% exp. var.: {explained_variance} %'
     else:
-        col = 'gray'
-        lw = 0.3
-        trial_type = None
-        alpha = 0.8
+        str = r"${{\mathbf{{x}}}}_{{{},:}}$".format(latent_variable_idx)
 
-    if plot == 'single_trajectories':
-        plot_args = {'color': col,
-                     'linewidth': lw,
-                     'alpha': alpha,
-                     'label': trial_type,
-                     'linestyle': '-'}
+        # time scale of the gaussian process associated to this latent variable
+        GP_time_scale = np.round(gpfa_instance.bin_size / \
+                                 np.sqrt(gpfa_instance.params_estimated['gamma'][latent_variable_idx]), 2)
 
-    elif plot == 'event_markers':
-        plot_args = {'color': col,
-                     'alpha': alpha,
-                     'markersize': 5}
+        title = str + rf'$\tau$: {GP_time_scale}'
 
-    elif plot == 'average_trajectories':
-        plot_args = {'linewidth': 1.5,
-                     'alpha': 1,
-                     'linestyle': 'dashdot'}
-    return plot_args
+    ax.set_title(title, fontsize=16)
 
 
-def _set_axis_labels(ax, orthonomalized_dimensions, dimensions_to_plot):
+def _set_axis_labels_trajectories(ax,
+                                  orthonomalized_dimensions,
+                                  dimensions_to_plot):
     if orthonomalized_dimensions:
         str1 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(
             dimensions_to_plot[0])
@@ -569,13 +703,13 @@ def _set_axis_labels(ax, orthonomalized_dimensions, dimensions_to_plot):
 
 def _get_event_times_and_labels(block_with_cut_trials,
                                 trial_idx,
+                                neo_event_name,
                                 relevant_events,
                                 gpfa_instance):
 
-    # TODO: maybe this is too specific to the R2G data
     trial_events = block_with_cut_trials.segments[trial_idx].filter(
         objects='Event',
-        name='TrialEvents')[0]
+        name=neo_event_name)[0]
 
     # get mask for the relevant events
     mask = np.zeros(trial_events.array_annotations['trial_event_labels'].shape,
