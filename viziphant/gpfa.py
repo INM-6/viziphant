@@ -250,6 +250,7 @@ def plot_single_dimension_vs_time(returned_data,
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
     # infer n_time_bins from maximal number of bins
+    # TODO: deal with varying number of bins over trials?
     n_time_bins = gpfa_instance.transform_info['num_bins'].max()
 
     # initialize buffer dictionary to handle averages of grouped trials
