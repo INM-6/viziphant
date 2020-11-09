@@ -911,8 +911,8 @@ def _set_title_dimensions_vs_time(ax,
         str = r"${{\mathbf{{x}}}}_{{{},:}}$".format(latent_variable_idx)
 
         # time scale of the gaussian process associated to this latent variable
-        GP_time_scale = np.round(gpfa_instance.bin_size / \
-                                 np.sqrt(gpfa_instance.params_estimated['gamma'][latent_variable_idx]), 2)
+        gamma = gpfa_instance.params_estimated['gamma'][latent_variable_idx]
+        GP_time_scale = np.round(gpfa_instance.bin_size / np.sqrt(gamma), 2)
 
         title = str + rf'$\tau$: {GP_time_scale}'
 
