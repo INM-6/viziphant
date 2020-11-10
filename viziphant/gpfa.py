@@ -1,19 +1,20 @@
 """
 Simple plotting functions visualizing the output of the Gaussian process
-factor analysis.
+factor analysis :class:`elephant.gpfa.GPFA`.
 """
 
-import neo
-import itertools
-import warnings
 from collections import defaultdict
+
+import itertools
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import neo
 import numpy as np
 import quantities as pq
-import matplotlib.pyplot as plt
+import warnings
 from matplotlib.lines import Line2D
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from elephant.conversion import BinnedSpikeTrain
 
 
@@ -29,12 +30,12 @@ def plot_cumulative_explained_variance(loading_matrix):
     loading_matrix : np.ndarray
         The loading matrix defines the mapping between neural space and
         latent state space. It is obtained by fitting a GPFA model and
-        stored in the class GPFA.params_estimated['C'] or if orthonomalized
-        GPFA.params_estimated['Corth']
+        stored in ``GPFA.params_estimated['C']`` or if orthonormalized
+        ``GPFA.params_estimated['Corth']``.
 
     Returns
     -------
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
 
     """
     eigenvalues = np.linalg.eigvals(np.dot(loading_matrix.transpose(),
@@ -45,15 +46,15 @@ def plot_cumulative_explained_variance(loading_matrix):
     sorted_eigenvalues = np.sort(np.abs(eigenvalues))[-1::-1]
     cumulative_variance = np.cumsum(sorted_eigenvalues / total_variance)
 
-    fig, ax = plt.subplots()
-    ax.plot(cumulative_variance, 'o-')
+    fig, axes = plt.subplots()
+    axes.plot(cumulative_variance, 'o-')
 
-    ax.grid()
-    ax.set_title('Eigenspectrum of estimated shared covariance matrix')
-    ax.set_xlabel('Latent Dimensionality')
-    ax.set_ylabel('Cumulative % of shared variance explained')
+    axes.grid()
+    axes.set_title('Eigenspectrum of estimated shared covariance matrix')
+    axes.set_xlabel('Latent Dimensionality')
+    axes.set_ylabel('Cumulative % of shared variance explained')
 
-    return ax
+    return axes
 
 
 def plot_loading_matrix(loading_matrix):
@@ -65,43 +66,43 @@ def plot_loading_matrix(loading_matrix):
     loading_matrix : np.ndarray
         The loading matrix defines the mapping between neural space and
         latent state space. It is obtained by fitting a GPFA model and
-        stored in the class GPFA.params_estimated['C'] or if orthonomalized
-        GPFA.params_estimated['Corth']
+        stored in ``GPFA.params_estimated['C']`` or if orthonormalized
+        ``GPFA.params_estimated['Corth']``.
 
     Returns
     -------
-    ax : matplotlib.axes.Axes
+    axes : matplotlib.axes.Axes
 
     """
 
-    fig, ax = plt.subplots()
+    fig, axes = plt.subplots()
 
-    heatmap = ax.imshow(loading_matrix,
-                        aspect='auto',
-                        interpolation='none')
+    heatmap = axes.imshow(loading_matrix,
+                          aspect='auto',
+                          interpolation='none')
 
-    ax.set_title('Loading Matrix')
-    ax.set_ylabel('Neuron ID')
-    ax.set_xlabel('Latent Variable')
+    axes.set_title('Loading Matrix')
+    axes.set_ylabel('Neuron ID')
+    axes.set_xlabel('Latent Variable')
 
-    divider = make_axes_locatable(ax)
+    divider = make_axes_locatable(axes)
     cax = divider.append_axes("right", size="5%", pad=0.1)
     colorbar = plt.colorbar(heatmap, cax=cax)
     colorbar.set_label('Latent Variable Weight')
 
-    return ax
+    return axes
 
 
 def plot_single_dimension_vs_time(returned_data,
                                   gpfa_instance,
                                   dimension_index=0,
-                                  orthonomalized_dimensions=True,
+                                  orthonormalized_dimensions=True,
                                   n_trials_to_plot=20,
-                                  trial_grouping_dict=None,
+                                  trial_grouping_dict={},
                                   colors=['grey'],
                                   plot_single_trajectories=True,
                                   plot_group_averages=False,
-                                  ax=None,
+                                  axes=None,
                                   plot_args_single={'linewidth': 0.3,
                                                     'alpha': 0.4,
                                                     'linestyle': '-'},
@@ -151,15 +152,15 @@ def plot_single_dimension_vs_time(returned_data,
         `returned_data`.
     dimension_index : int
         Index of the dimension to plot (0 < dimension_index < dimensionality).
-    orthonomalized_dimensions : bool
-        Boolean which specifies whether to plot the orthonomalized latent
+    orthonormalized_dimensions : bool
+        Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'xorth'
         in returned data (True) or the unconstrained dimension corresponding
         to the entry 'xsm' (False).
         Beware that the unconstrained state space dimensions 'xsm' are not
         ordered by their explained variance. These dimensions each represent
         one Gaussian process timescale $\tau$.
-        On the contrary, the orthonomalized dimensions 'xorth' are ordered by
+        On the contrary, the orthonormalized dimensions 'xorth' are ordered by
         decreasing explained variance, allowing a similar intuitive
         interpretation to the dimensions obtained in a PCA. Due to the
         orthonmalization, these dimensions reflect mixtures of timescales.
@@ -183,7 +184,7 @@ def plot_single_dimension_vs_time(returned_data,
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
         Default: False
-    ax : matplotlib axis or None (default)
+    axes : matplotlib axis or None (default)
         The axis onto which to plot. If None a new figure is created.
         When an axis is given, the function can't handle the figure settings.
         Therefore it is recommended to call seaborn.set() with your preferred
@@ -202,7 +203,7 @@ def plot_single_dimension_vs_time(returned_data,
     -------
     In the following example, we calculate the neural trajectories of 20
     independent Poisson spike trains recorded in 50 trials with randomized
-    rates up to 100 Hz and plot the resulting orthonomalized latent state
+    rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
     >>> import numpy as np
@@ -229,11 +230,11 @@ def plot_single_dimension_vs_time(returned_data,
     ...                                            trial_id_lists):
     >>>     trial_grouping_dict[trial_group_name] = trial_id_list
     ...
-    >>> gpfa_plots.plot_single_dimension_vs_time(
+    >>> plot_single_dimension_vs_time(
     ...     returned_data=results,
     ...     gpfa_instance=gpfa,
     ...     dimension_index=0,
-    ...     orthonomalized_dimensions=False,
+    ...     orthonormalized_dimensions=False,
     ...     trial_grouping_dict=trial_grouping_dict,
     ...     colors=[f'C{i}' for i in range(len(trial_grouping_dict))],
     ...     n_trials_to_plot=50)
@@ -241,11 +242,11 @@ def plot_single_dimension_vs_time(returned_data,
     """
 
     single_plot = False
-    if ax is None:
+    if axes is None:
         single_plot = True
-        fig, ax = plt.subplots()
+        fig, axes = plt.subplots()
 
-    data = _check_input_data(returned_data, orthonomalized_dimensions)
+    data = _check_input_data(returned_data, orthonormalized_dimensions)
     colors = _check_colors(colors, trial_grouping_dict)
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
@@ -253,74 +254,55 @@ def plot_single_dimension_vs_time(returned_data,
     # TODO: deal with varying number of bins over trials?
     n_time_bins = gpfa_instance.transform_info['num_bins'].max()
 
-    # initialize buffer dictionary to handle averages of grouped trials
-    if trial_grouping_dict:
-        data_buffer = defaultdict(list)
+    if plot_single_trajectories:
+        for trial_idx in range(min(n_trials, n_trials_to_plot)):
+            dat = data[trial_idx]
 
-    # loop over trials
-    for trial_idx in range(min(n_trials, n_trials_to_plot)):
-        dat = data[trial_idx]
+            key_id, trial_type = _get_trial_type(trial_grouping_dict,
+                                                 trial_idx)
 
-        trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
-        color = colors[list(trial_grouping_dict.keys()).index(trial_type)]
-
-        # plot single trial trajectories
-        if plot_single_trajectories:
-            ax.plot(np.arange(1, n_time_bins + 1),
-                    dat[dimension_index, :],
-                    color=color,
-                    label=trial_type,
-                    **plot_args_single)
+            # plot single trial trajectories
+            axes.plot(np.arange(1, n_time_bins + 1),
+                      dat[dimension_index, :],
+                      color=colors[key_id],
+                      label=trial_type,
+                      **plot_args_single)
 
     if plot_group_averages and trial_grouping_dict:
-        for trial_idx in range(n_trials):
-            dat = data[trial_idx]
-            trial_type = _get_trial_type(trial_grouping_dict, trial_idx)
+        for color, trial_type in zip(colors, trial_grouping_dict.keys()):
+            group_average = data[trial_grouping_dict[trial_type]].mean()
+            axes.plot(np.arange(1, n_time_bins + 1),
+                      group_average[dimension_index],
+                      color=color,
+                      label=trial_type,
+                      **plot_args_average)
 
-            # fill buffer dictionary to handle averages of grouped trials
-            if trial_type is not None:
-                data_buffer[trial_type].append(dat)
+    _set_title_dimensions_vs_time(
+        ax=axes,
+        latent_variable_idx=dimension_index,
+        orthonormalized_dimensions=orthonormalized_dimensions,
+        data=data,
+        gpfa_instance=gpfa_instance)
 
-        for i_group, (trial_type,
-                      group_data_buffer) in enumerate(data_buffer.items()):
-
-            group_average = np.mean(group_data_buffer, axis=0)
-
-            ax.plot(np.arange(1, n_time_bins + 1),
-                    group_average[dimension_index],
-                    color=colors[i_group],
-                    label=trial_type,
-                    **plot_args_average)
-
-    _set_title_dimensions_vs_time(ax,
-                                  dimension_index,
-                                  orthonomalized_dimensions,
-                                  data,
-                                  gpfa_instance)
-
-    x_axis_ticks, x_axis_ticks_lengths, y_axis_ticks = \
-        _get_axis_limits_and_ticks(data, gpfa_instance, n_time_bins)
-
-    ax.set_xticks(x_axis_ticks)
-    ax.set_xticklabels(x_axis_ticks_lengths)
-    ax.set_yticks(y_axis_ticks)
-    ax.set_yticklabels(y_axis_ticks)
-    ax.set_xlabel('Time (ms)')
+    _set_axis_limits_and_ticks(axes=axes,
+                               data=data,
+                               gpfa_instance=gpfa_instance,
+                               n_time_bins=n_time_bins)
 
     if single_plot:
         # only plot unique labels
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
-        ax.legend(by_label.values(), by_label.keys())
+        axes.legend(by_label.values(), by_label.keys())
 
     plt.tight_layout()
 
-    return ax
+    return axes
 
 
 def plot_dimension_vs_time(returned_data,
                            gpfa_instance,
-                           orthonomalized_dimensions=True,
+                           orthonormalized_dimensions=True,
                            n_trials_to_plot=20,
                            trial_grouping_dict=None,
                            colors=['grey'],
@@ -378,17 +360,15 @@ def plot_dimension_vs_time(returned_data,
     gpfa_instance : class
         Instance of the GPFA() class in elephant, which was used to obtain
         `returned_data`.
-    dimension_index : int
-        Index of the dimension to plot (0 < dimension_index < dimensionality).
-    orthonomalized_dimensions : bool
-        Boolean which specifies whether to plot the orthonomalized latent
+    orthonormalized_dimensions : bool
+        Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'xorth'
         in returned data (True) or the unconstrained dimension corresponding
         to the entry 'xsm' (False).
         Beware that the unconstrained state space dimensions 'xsm' are not
         ordered by their explained variance. These dimensions each represent
         one Gaussian process timescale $\tau$.
-        On the contrary, the orthonomalized dimensions 'xorth' are ordered by
+        On the contrary, the orthonormalized dimensions 'xorth' are ordered by
         decreasing explained variance, allowing a similar intuitive
         interpretation to the dimensions obtained in a PCA. Due to the
         orthonmalization, these dimensions reflect mixtures of timescales.
@@ -416,12 +396,6 @@ def plot_dimension_vs_time(returned_data,
         Number of columns of the grid onto which the single plots are placed.
         The number of rows are deduced from the number of dimensions
         to be plotted.
-    ax : matplotlib axis or None (default)
-        The axis onto which to plot. If None a new figure is created.
-        When an axis is given, the function can't handle the figure settings.
-        Therefore it is recommended to call seaborn.set() with your preferred
-        settings before creating your matplotlib figure in order to control
-        your plotting layout.
     plot_args_single : dict
         Arguments dictionary passed to ax.plot() of the single trajectories.
     plot_args_average : dict
@@ -440,7 +414,7 @@ def plot_dimension_vs_time(returned_data,
     -------
     In the following example, we calculate the neural trajectories of 20
     independent Poisson spike trains recorded in 50 trials with randomized
-    rates up to 100 Hz and plot the resulting orthonomalized latent state
+    rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
     >>> import numpy as np
@@ -470,7 +444,7 @@ def plot_dimension_vs_time(returned_data,
     >>> gpfa_plots.plot_dimension_vs_time(
     ...     returned_data=results,
     ...     gpfa_instance=gpfa,
-    ...     orthonomalized_dimensions=True,
+    ...     orthonormalized_dimensions=True,
     ...     trial_grouping_dict=trial_grouping_dict,
     ...     colors=[f'C{i}' for i in range(len(trial_grouping_dict))],
     ...     n_columns=3,
@@ -478,7 +452,7 @@ def plot_dimension_vs_time(returned_data,
 
     """
 
-    f = plt.figure(**figure_args)
+    fig = plt.figure(**figure_args)
 
     # deduce n_rows from n_columns
     n_dimensions = gpfa_instance.x_dim
@@ -492,26 +466,26 @@ def plot_dimension_vs_time(returned_data,
             returned_data,
             gpfa_instance,
             dimension_index=k,
-            orthonomalized_dimensions=orthonomalized_dimensions,
+            orthonormalized_dimensions=orthonormalized_dimensions,
             n_trials_to_plot=n_trials_to_plot,
             trial_grouping_dict=trial_grouping_dict,
             colors=colors,
             plot_single_trajectories=plot_single_trajectories,
             plot_group_averages=plot_group_averages,
-            ax=plt.subplot(gs),
+            axes=plt.subplot(gs),
             plot_args_single=plot_args_single,
             plot_args_average=plot_args_average)
 
         # plot legend only for first subplot
         if k == 0:
             # only plot unique labels
-            handles, labels = f.gca().get_legend_handles_labels()
+            handles, labels = fig.gca().get_legend_handles_labels()
             by_label = dict(zip(labels, handles))
             plt.legend(by_label.values(), by_label.keys())
 
-    grid_specification.tight_layout(f)
+    grid_specification.tight_layout(fig)
 
-    return f
+    return fig
 
 
 def plot_trajectories(returned_data,
@@ -520,7 +494,7 @@ def plot_trajectories(returned_data,
                       neo_event_name=None,
                       relevant_events=None,
                       dimensions_to_plot=[0, 1, 2],
-                      orthonomalized_dimensions=True,
+                      orthonormalized_dimensions=True,
                       n_trials_to_plot=20,
                       trial_grouping_dict=None,
                       colors=['grey'],
@@ -592,15 +566,15 @@ def plot_trajectories(returned_data,
     dimensions_to_plot : list
         List specifying the indices of the dimensions to use for the
         2D or 3D plot.
-    orthonomalized_dimensions : bool
-        Boolean which specifies whether to plot the orthonomalized latent
+    orthonormalized_dimensions : bool
+        Boolean which specifies whether to plot the orthonormalized latent
         state space dimensions corresponding to the entry 'xorth'
         in returned data (True) or the unconstrained dimension corresponding
         to the entry 'xsm' (False).
         Beware that the unconstrained state space dimensions 'xsm' are not
         ordered by their explained variance. These dimensions each represent
         one Gaussian process timescale.
-        On the contrary, the orthonomalized dimensions 'xorth' are ordered by
+        On the contrary, the orthonormalized dimensions 'xorth' are ordered by
         decreasing explained variance, allowing a similar intuitive
         interpretation to the dimensions obtained in a PCA. Due to the
         orthonmalization, these dimensions reflect mixtures of timescales.
@@ -644,7 +618,7 @@ def plot_trajectories(returned_data,
     -------
     In the following example, we calculate the neural trajectories of 20
     independent Poisson spike trains recorded in 50 trials with randomized
-    rates up to 100 Hz and plot the resulting orthonomalized latent state
+    rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
     >>> import numpy as np
@@ -688,7 +662,7 @@ def plot_trajectories(returned_data,
     # prepare the input
     projection, dimensions = \
         _check_dimensions(gpfa_instance, dimensions_to_plot)
-    X = _check_input_data(returned_data, orthonomalized_dimensions)
+    X = _check_input_data(returned_data, orthonormalized_dimensions)
     colors = _check_colors(colors, trial_grouping_dict)
 
     # infer n_trial from shape of the data
@@ -798,7 +772,7 @@ def plot_trajectories(returned_data,
                         **plot_args_marker_start)
 
     _set_axis_labels_trajectories(ax,
-                                  orthonomalized_dimensions,
+                                  orthonormalized_dimensions,
                                   dimensions_to_plot)
 
     # only plot unique labels
@@ -811,65 +785,53 @@ def plot_trajectories(returned_data,
     return f, ax
 
 
-def _check_input_data(returned_data, orthonomalized_dimensions):
-
+def _check_input_data(returned_data, orthonormalized_dimensions):
     # by default returned_data is an array containing the
     # orthonormalized posterior mean of latent variable
     if isinstance(returned_data, np.ndarray):
-        X = returned_data
-    elif isinstance(returned_data, dict):
-        if orthonomalized_dimensions:
-            X = returned_data['xorth']
-        else:
-            if 'xsm' in returned_data.keys():
-                X = returned_data['xsm']
-            else:
-                raise ValueError("The latent variables before"
-                                 "orthonomalization 'xsm' are not in"
-                                 "returned data")
-
-    return X
+        return returned_data
+    if isinstance(returned_data, dict):
+        if orthonormalized_dimensions:
+            return returned_data['xorth']
+        if 'xsm' in returned_data.keys():
+            return returned_data['xsm']
+    raise ValueError("The latent variables before"
+                     "orthonomalization 'xsm' are not in"
+                     "returned data")
 
 
 def _check_colors(colors, trial_grouping_dict):
     if trial_grouping_dict:
-        if not len(colors) == len(trial_grouping_dict):
+        if len(colors) != len(trial_grouping_dict):
             warnings.warn("Colors per trial group were not specified! "
                           "Employing default matplotlib colors.")
             colors = [f'C{i}' for i in range(len(trial_grouping_dict))]
+    elif isinstance(colors, str):
+        colors = [colors] * len(trial_grouping_dict)
     return colors
 
 
 def _check_dimensions(gpfa_instance, dimensions_to_plot):
-    # check if enough dimensions are available
-    if gpfa_instance.x_dim < len(dimensions_to_plot):
-        print("ERROR: Trajectories have less than 3 dimensions.\n")
-        return
-
-    # check if enough dimensions are available
-    if len(dimensions_to_plot) > 3:
-        print("ERROR: Unfortunately it is difficult to visualize "
-              "more than 3 dimensions.\n")
-        return
-
-    if len(dimensions_to_plot) == 2:
-        projection = None
-        dimensions = 2
-    elif len(dimensions_to_plot) == 3:
-        projection = '3d'
-        dimensions = 3
+    dimensions = len(dimensions_to_plot)
+    if gpfa_instance.x_dim < dimensions:
+        raise ValueError(f"GPFA trajectories dimensionality "
+                         f"({gpfa_instance.x_dim}) is lower than the "
+                         f"requested ({dimensions})")
+    if dimensions not in (2, 3):
+        raise ValueError("Pick only 2 or 3 dimensions to visualize.")
+    projection = None if dimensions == 2 else '3d'
     return projection, dimensions
 
 
-def _get_trial_type(trial_grouping_dict,
-                    trial_idx):
-    for (trial_type, trial_ids) in trial_grouping_dict.items():
+def _get_trial_type(trial_grouping_dict, trial_idx):
+    for key_id, (trial_type, trial_ids) in enumerate(
+            trial_grouping_dict.items()):
         if trial_idx in trial_ids:
-            return trial_type
+            return key_id, trial_type
+    return 0, None
 
 
-def _get_axis_limits_and_ticks(data, gpfa_instance, n_time_bins):
-
+def _set_axis_limits_and_ticks(axes, data, gpfa_instance, n_time_bins):
     # stack list of arrays
     data_stacked = np.stack(data)
 
@@ -888,16 +850,21 @@ def _get_axis_limits_and_ticks(data, gpfa_instance, n_time_bins):
 
     y_axis_ticks = [-y_max, 0, y_max]
 
-    return x_axis_ticks, x_axis_ticks_lengths, y_axis_ticks
+    axes.set_xticks(x_axis_ticks)
+    axes.set_xticklabels(x_axis_ticks_lengths)
+    axes.set_yticks(y_axis_ticks)
+    axes.set_yticklabels(y_axis_ticks)
+    axes.set_xlabel('Time (ms)')
 
 
 def _set_title_dimensions_vs_time(ax,
                                   latent_variable_idx,
-                                  orthonomalized_dimensions,
+                                  orthonormalized_dimensions,
                                   data,
                                   gpfa_instance):
-    if orthonomalized_dimensions:
-        str = r'$\tilde{{\mathbf{{x}}}}_{{{},:}}$'.format(latent_variable_idx)
+    if orthonormalized_dimensions:
+        title = r'$\tilde{{\mathbf{{x}}}}_{{{},:}}$'.format(
+            latent_variable_idx)
 
         # percentage of variance of the dimensionality reduced data
         # that is explained by this latent variable
@@ -907,23 +874,23 @@ def _set_title_dimensions_vs_time(ax,
         explained_variance = np.round(
             variances[latent_variable_idx]/total_variance*100, 2)
 
-        title = str + f'% exp. var.: {explained_variance} %'
+        title = title + f'% exp. var.: {explained_variance} %'
     else:
-        str = r"${{\mathbf{{x}}}}_{{{},:}}$".format(latent_variable_idx)
+        title = r"${{\mathbf{{x}}}}_{{{},:}}$".format(latent_variable_idx)
 
         # time scale of the gaussian process associated to this latent variable
         gamma = gpfa_instance.params_estimated['gamma'][latent_variable_idx]
         GP_time_scale = np.round(gpfa_instance.bin_size / np.sqrt(gamma), 2)
 
-        title = str + rf'$\tau$: {GP_time_scale}'
+        title = title + rf'$\tau$: {GP_time_scale}'
 
     ax.set_title(title, fontsize=16)
 
 
 def _set_axis_labels_trajectories(ax,
-                                  orthonomalized_dimensions,
+                                  orthonormalized_dimensions,
                                   dimensions_to_plot):
-    if orthonomalized_dimensions:
+    if orthonormalized_dimensions:
         str1 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(
             dimensions_to_plot[0])
         str2 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(
@@ -977,3 +944,51 @@ def _get_event_times_and_labels(block_with_cut_trials,
         trial_events.array_annotations['trial_event_labels'][[mask]]
 
     return time_bins_with_relevant_event, relevant_event_labels
+
+
+if __name__ == '__main__':
+    import numpy as np
+    import quantities as pq
+    from elephant.gpfa import GPFA
+    from elephant.spike_train_generation import homogeneous_poisson_process
+    np.random.seed(24)
+
+    from pathlib import Path
+    import pickle
+    fpath = Path("/home/ulianych/PycharmProjects/elephant/ignored/gpfa.pkl")
+
+    if not fpath.exists():
+        data = []
+        for trial in range(50):
+            n_channels = 20
+            firing_rates = np.random.randint(low=1, high=100,
+                                             size=n_channels) * pq.Hz
+            spike_times = [homogeneous_poisson_process(rate=rate)
+                           for rate in firing_rates]
+            data.append(spike_times)
+        gpfa = GPFA(bin_size=20 * pq.ms, x_dim=8, verbose=False)
+        gpfa.fit(data)
+        results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
+        with open(fpath, 'wb') as f:
+            pickle.dump((gpfa, data, results), f)
+
+    with open(fpath, 'rb') as f:
+        gpfa, data, results = pickle.load(f)
+
+    trial_id_lists = np.arange(50).reshape(5, 10)
+    trial_group_names = ['A', 'B', 'C', 'D', 'E']
+    trial_grouping_dict = {}
+    for trial_group_name, trial_id_list in zip(trial_group_names,
+                                               trial_id_lists):
+        trial_grouping_dict[trial_group_name] = trial_id_list
+
+    plot_single_dimension_vs_time(
+        returned_data=results,
+        gpfa_instance=gpfa,
+        dimension_index=0,
+        orthonormalized_dimensions=False,
+        trial_grouping_dict=trial_grouping_dict,
+        colors=[f'C{i}' for i in range(len(trial_grouping_dict))],
+        plot_group_averages=True,
+        n_trials_to_plot=50)
+    plt.show()
