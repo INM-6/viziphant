@@ -1,17 +1,24 @@
 """
-Simple plotting functions visualizing the output of the Gaussian process
-factor analysis :class:`elephant.gpfa.GPFA`.
+Gaussian Process Factor Analysis plots
+--------------------------------------
+
+Visualizes the transformed trajectories output from
+:class:`elephant.gpfa.gpfa.GPFA`
+
+.. autosummary::
+    :toctree: toctree/gpfa/
+
+    plot_dimension_vs_time
+    plot_trajectories
+    plot_cumulative_explained_variance
+    plot_loading_matrix
 """
 
-from collections import defaultdict
-
 import itertools
-import matplotlib.gridspec as gridspec
+import math
 import matplotlib.pyplot as plt
 import neo
-import math
 import numpy as np
-import quantities as pq
 import warnings
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -209,45 +216,43 @@ def plot_dimension_vs_time(returned_data,
     fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
 
-    Example
-    -------
+    Examples
+    --------
     In the following example, we calculate the neural trajectories of 20
     independent Poisson spike trains recorded in 50 trials with randomized
     rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
-    >>> import numpy as np
-    >>> import quantities as pq
-    >>> from elephant.gpfa import GPFA
-    >>> from elephant.spike_train_generation import homogeneous_poisson_process
-    >>> data = []
-    >>> for trial in range(50):
-    >>>     n_channels = 20
-    >>>     firing_rates = np.random.randint(low=1, high=100,
-    ...                                      size=n_channels) * pq.Hz
-    >>>     spike_times = [homogeneous_poisson_process(rate=rate)
-    ...                    for rate in firing_rates]
-    >>>     data.append((trial, spike_times))
-    ...
-    >>> gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
-    >>> gpfa.fit(data)
-    >>> results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
+    .. plot::
+        :include-source:
 
-    >>> trial_id_lists = np.arange(50).reshape(5,10)
-    >>> trial_group_names = ['A', 'B', 'C', 'D', 'E']
-    >>> trial_grouping_dict = {}
-    >>> for trial_group_name, trial_id_list in zip(trial_group_names,
-    ...                                            trial_id_lists):
-    >>>     trial_grouping_dict[trial_group_name] = trial_id_list
-    ...
-    >>> gpfa_plots.plot_dimension_vs_time(
-    ...     returned_data=results,
-    ...     gpfa_instance=gpfa,
-    ...     orthonormalized_dimensions=True,
-    ...     trial_grouping_dict=trial_grouping_dict,
-    ...     colors=[f'C{i}' for i in range(len(trial_grouping_dict))],
-    ...     n_columns=3,
-    ...     n_trials_to_plot=50)
+        import numpy as np
+        import quantities as pq
+        from elephant.gpfa import GPFA
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from viziphant.gpfa import plot_dimension_vs_time
+        np.random.seed(24)
+        n_trials = 10
+        n_channels = 5
+
+        data = []
+        for trial in range(n_trials):
+            firing_rates = np.random.randint(low=1, high=100,
+                                             size=n_channels) * pq.Hz
+            spike_times = [homogeneous_poisson_process(rate=rate)
+                           for rate in firing_rates]
+            data.append(spike_times)
+        gpfa = GPFA(bin_size=20 * pq.ms, x_dim=3, verbose=False)
+        gpfa.fit(data)
+        results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
+
+        plot_dimension_vs_time(
+            returned_data=results,
+            gpfa_instance=gpfa,
+            dimensions=[0, 2],
+            orthonormalized_dimensions=True,
+            n_columns=1)
+        plt.show()
 
     """
     if dimensions == 'all':
@@ -446,8 +451,8 @@ def plot_trajectories(returned_data,
     fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
 
-    Example
-    -------
+    Examples
+    --------
     In the following example, we calculate the neural trajectories of 20
     independent Poisson spike trains recorded in 50 trials with randomized
     rates up to 100 Hz and plot the resulting orthonormalized latent state
@@ -703,49 +708,3 @@ def _show_unique_legend(axes):
         return
     by_label = dict(zip(labels, handles))
     axes.legend(by_label.values(), by_label.keys())
-
-
-if __name__ == '__main__':
-    import numpy as np
-    import quantities as pq
-    from elephant.gpfa import GPFA
-    from elephant.spike_train_generation import homogeneous_poisson_process
-    np.random.seed(24)
-
-    from pathlib import Path
-    import pickle
-    fpath = Path("/home/ulianych/PycharmProjects/elephant/ignored/gpfa.pkl")
-
-    if not fpath.exists():
-        data = []
-        for trial in range(50):
-            n_channels = 20
-            firing_rates = np.random.randint(low=1, high=100,
-                                             size=n_channels) * pq.Hz
-            spike_times = [homogeneous_poisson_process(rate=rate)
-                           for rate in firing_rates]
-            data.append(spike_times)
-        gpfa = GPFA(bin_size=20 * pq.ms, x_dim=8, verbose=False)
-        gpfa.fit(data)
-        results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
-        with open(fpath, 'wb') as f:
-            pickle.dump((gpfa, data, results), f)
-
-    with open(fpath, 'rb') as f:
-        gpfa, data, results = pickle.load(f)
-
-    trial_id_lists = np.arange(50).reshape(5, 10)
-    trial_group_names = ['A', 'B', 'C', 'D', 'E']
-    trial_grouping_dict = {}
-    for trial_group_name, trial_id_list in zip(trial_group_names,
-                                               trial_id_lists):
-        trial_grouping_dict[trial_group_name] = trial_id_list
-
-    plot_dimension_vs_time(
-        returned_data=results,
-        gpfa_instance=gpfa,
-        dimensions=[0, 1],
-        orthonormalized_dimensions=False,
-        plot_group_averages=True,
-        n_trials_to_plot=50)
-    plt.show()
