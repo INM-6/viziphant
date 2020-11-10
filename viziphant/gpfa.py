@@ -100,7 +100,7 @@ def plot_dimension_vs_time(returned_data,
                            orthonormalized_dimensions=True,
                            n_trials_to_plot=20,
                            trial_grouping_dict=None,
-                           colors=['grey'],
+                           colors='grey',
                            plot_single_trajectories=True,
                            plot_group_averages=False,
                            n_columns=2,
@@ -154,10 +154,10 @@ def plot_dimension_vs_time(returned_data,
     gpfa_instance : GPFA
         Instance of the GPFA() class in elephant, which was used to obtain
         `returned_data`.
-    dimensions : 'all' or int or list of int
+    dimensions : 'all' or int or list of int, optional
         Dimensions to plot.
         Default: 'all'
-    orthonormalized_dimensions : bool
+    orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'xorth'
         in returned data (True) or the unconstrained dimension corresponding
@@ -169,41 +169,45 @@ def plot_dimension_vs_time(returned_data,
         decreasing explained variance, allowing a similar intuitive
         interpretation to the dimensions obtained in a PCA. Due to the
         orthonmalization, these dimensions reflect mixtures of timescales.
-    n_trials_to_plot : int
+        Default: True
+    n_trials_to_plot : int, optional
         Number of single trial trajectories to plot.
         Default: 20
-    trial_grouping_dict : dict
+    trial_grouping_dict : dict or None
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
         key defines the group name (which appears in the legend) and the
         corresponding value is a list or np.ndarray of trial IDs.
-    colors : list
+        Default: None
+    colors : str or list of str, optional
         List of strings specifying the colors of the different trial groups.
         The length of this list should correspond to the number of items
         in trial_grouping_dict.
-        Default: ['grey']
-    plot_single_trajectories : bool
+        Default: 'grey'
+    plot_single_trajectories : bool, optional
         If True, single trial trajectories are plotted.
         Default: True
-    plot_group_averages : bool
+    plot_group_averages : bool, optional
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
         Default: False
-    n_columns : int
+    n_columns : int, optional
         Number of columns of the grid onto which the single plots are placed.
         The number of rows are deduced from the number of dimensions
         to be plotted.
-    plot_args_single : dict
+        Default: 2
+    plot_args_single : dict, optional
         Arguments dictionary passed to ax.plot() of the single trajectories.
-    plot_args_average : dict
+    plot_args_average : dict, optional
         Arguments dictionary passed to ax.plot() of the average trajectories.
-    figure_args : dict
+    figure_args : dict, optional
         Arguments dictionary passed to matplotlib.pyplot.figure(),
         if ax is None.
 
     Returns
     -------
-    ax : matplotlib.axes.Axes
+    fig : matplotlib.figure.Figure
+    axes : matplotlib.axes.Axes
 
     Example
     -------
@@ -261,7 +265,9 @@ def plot_dimension_vs_time(returned_data,
     axes = np.atleast_2d(axes)
 
     data = _check_input_data(returned_data, orthonormalized_dimensions)
-    colors = _check_colors(colors, trial_grouping_dict)
+    if trial_grouping_dict is None:
+        trial_grouping_dict = {}
+    colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
     # infer n_time_bins from maximal number of bins
@@ -317,7 +323,7 @@ def plot_trajectories(returned_data,
                       orthonormalized_dimensions=True,
                       n_trials_to_plot=20,
                       trial_grouping_dict=None,
-                      colors=['grey'],
+                      colors='grey',
                       plot_single_trajectories=True,
                       plot_group_averages=False,
                       plot_args_single={'linewidth': 0.3,
@@ -373,20 +379,24 @@ def plot_trajectories(returned_data,
     gpfa_instance : GPFA
         Instance of the GPFA() class in elephant, which was used to obtain
         returned_data.
-    dimensions : list of int
+    dimensions : list of int, optional
         List specifying the indices of the dimensions to use for the
         2D or 3D plot.
-    block_with_cut_trials : neo.Block
+        Default: [0, 1]
+    block_with_cut_trials : neo.Block or None, optional
         The neo.Block should contain each single trial as a separate
         neo.Segment including the neo.Event with a specified
         `neo_event_name`.
-    neo_event_name : str
+        Default: None
+    neo_event_name : str or None, optional
         A string specifying the name of the neo.Event which should be used
         to identify the event times and labels of the `relevant_events`.
-    relevant_events : list of str
+        Default: None
+    relevant_events : list of str or None, optional
         List of names of the event labels that should be plotted onto each
         single trial trajectory.
-    orthonormalized_dimensions : bool
+        Default: None
+    orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimensions corresponding to the entry 'xorth'
         in returned data (True) or the unconstrained dimension corresponding
@@ -398,34 +408,36 @@ def plot_trajectories(returned_data,
         decreasing explained variance, allowing a similar intuitive
         interpretation to the dimensions obtained in a PCA. Due to the
         orthonmalization, these dimensions reflect mixtures of timescales.
-    n_trials_to_plot : int
+        Default: True
+    n_trials_to_plot : int, optional
         Number of single trial trajectories to plot.
         Default: 20
-    trial_grouping_dict : dict
+    trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
         key defines the group name (which appears in the legend) and the
         corresponding value is a list or np.ndarray of trial IDs.
-    colors : list
+        Default: None
+    colors : str or list of str, optional
         List of strings specifying the colors of the different trial groups.
         The length of this list should correspond to the number of items
         in trial_grouping_dict.
-        Default: ['grey']
-    plot_single_trajectories : bool
+        Default: 'grey'
+    plot_single_trajectories : bool, optional
         If True, single trial trajectories are plotted.
         Default: True
-    plot_group_averages : bool
+    plot_group_averages : bool, optional
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
         Default: False
-    plot_args_single : dict
+    plot_args_single : dict, optional
         Arguments dictionary passed to ax.plot() of the single trajectories.
-    plot_args_marker : dict
+    plot_args_marker : dict, optional
         Arguments dictionary passed to ax.plot() for the single trial events.
-    plot_args_average : dict
+    plot_args_average : dict, optional
         Arguments dictionary passed to ax.plot() of the average trajectories.
         if ax is None.
-    plot_args_marker_start : dict
+    plot_args_marker_start : dict, optional
         Arguments dictionary passed to ax.plot() for the marker of the
         average trajectory start.
 
@@ -482,7 +494,9 @@ def plot_trajectories(returned_data,
     # prepare the input
     projection, n_dimensions = _check_dimensions(gpfa_instance, dimensions)
     data = _check_input_data(returned_data, orthonormalized_dimensions)
-    colors = _check_colors(colors, trial_grouping_dict)
+    if trial_grouping_dict is None:
+        trial_grouping_dict = {}
+    colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
@@ -564,14 +578,14 @@ def _check_input_data(returned_data, orthonormalized_dimensions):
                      "returned data")
 
 
-def _check_colors(colors, trial_grouping_dict):
+def _check_colors(colors, trial_grouping_dict, n_trials):
     if trial_grouping_dict:
         if len(colors) != len(trial_grouping_dict):
             warnings.warn("Colors per trial group were not specified! "
                           "Employing default matplotlib colors.")
             colors = [f'C{i}' for i in range(len(trial_grouping_dict))]
     elif isinstance(colors, str):
-        colors = [colors] * len(trial_grouping_dict)
+        colors = [colors] * n_trials
     return colors
 
 
@@ -684,6 +698,9 @@ def _get_event_times_and_labels(block_with_cut_trials,
 def _show_unique_legend(axes):
     # only plot unique labels
     handles, labels = axes.get_legend_handles_labels()
+    if len(handles) == 0:
+        # no labels have been provided
+        return
     by_label = dict(zip(labels, handles))
     axes.legend(by_label.values(), by_label.keys())
 
@@ -724,13 +741,11 @@ if __name__ == '__main__':
                                                trial_id_lists):
         trial_grouping_dict[trial_group_name] = trial_id_list
 
-    plot_trajectories(
+    plot_dimension_vs_time(
         returned_data=results,
         gpfa_instance=gpfa,
         dimensions=[0, 1],
         orthonormalized_dimensions=False,
-        trial_grouping_dict=trial_grouping_dict,
-        colors=[f'C{i}' for i in range(len(trial_grouping_dict))],
         plot_group_averages=True,
         n_trials_to_plot=50)
     plt.show()
