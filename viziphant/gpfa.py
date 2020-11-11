@@ -43,6 +43,7 @@ def plot_cumulative_explained_variance(loading_matrix):
 
     Returns
     -------
+    fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
 
     """
@@ -62,7 +63,7 @@ def plot_cumulative_explained_variance(loading_matrix):
     axes.set_xlabel('Latent Dimensionality')
     axes.set_ylabel('Cumulative % of shared variance explained')
 
-    return axes
+    return fig, axes
 
 
 def plot_transform_matrix(loading_matrix):
@@ -79,6 +80,7 @@ def plot_transform_matrix(loading_matrix):
 
     Returns
     -------
+    fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
 
     """
@@ -98,7 +100,7 @@ def plot_transform_matrix(loading_matrix):
     colorbar = plt.colorbar(heatmap, cax=cax)
     colorbar.set_label('Latent Variable Weight')
 
-    return axes
+    return fig, axes
 
 
 def plot_dimensions_vs_time(returned_data,
@@ -117,7 +119,7 @@ def plot_dimensions_vs_time(returned_data,
                             plot_args_average={'linewidth': 2,
                                                'alpha': 1,
                                                'linestyle': 'dashdot'},
-                            figure_args={}):
+                            figure_args=dict(figsize=(10, 10))):
 
     """
     This function plots all latent space state dimensions versus time.
@@ -268,6 +270,9 @@ def plot_dimensions_vs_time(returned_data,
     fig, axes = plt.subplots(nrows=n_rows, ncols=n_columns,
                              sharex=True, sharey=True, **figure_args)
     axes = np.atleast_2d(axes)
+    if axes.shape[0] == 1:
+        # (1, n) -> (n, 1)
+        axes = axes.T
 
     data = _check_input_data(returned_data, orthonormalized_dimensions)
     if trial_grouping_dict is None:
@@ -584,13 +589,13 @@ def _check_input_data(returned_data, orthonormalized_dimensions):
 
 
 def _check_colors(colors, trial_grouping_dict, n_trials):
+    if isinstance(colors, str):
+        colors = [colors] * n_trials
     if trial_grouping_dict:
         if len(colors) != len(trial_grouping_dict):
             warnings.warn("Colors per trial group were not specified! "
                           "Employing default matplotlib colors.")
             colors = [f'C{i}' for i in range(len(trial_grouping_dict))]
-    elif isinstance(colors, str):
-        colors = [colors] * n_trials
     return colors
 
 
