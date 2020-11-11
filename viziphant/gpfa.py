@@ -2,7 +2,7 @@
 Gaussian Process Factor Analysis plots
 --------------------------------------
 
-Visualizes the transformed trajectories output from
+Visualizes transformed trajectories output from
 :class:`elephant.gpfa.gpfa.GPFA`
 
 .. autosummary::
@@ -19,7 +19,6 @@ import math
 import matplotlib.pyplot as plt
 import neo
 import numpy as np
-import warnings
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -191,7 +190,10 @@ def plot_dimensions_vs_time(returned_data,
     colors : str or list of str, optional
         List of strings specifying the colors of the different trial groups.
         The length of this list should correspond to the number of items
-        in trial_grouping_dict.
+        in trial_grouping_dict. In case a string is given, all trials will
+        share the same color unless `trial_grouping_dict` is specified, in
+        which case colors will be set automatically to correspond to individual
+        groups.
         Default: 'grey'
     plot_single_trajectories : bool, optional
         If True, single trial trajectories are plotted.
@@ -431,7 +433,10 @@ def plot_trajectories(returned_data,
     colors : str or list of str, optional
         List of strings specifying the colors of the different trial groups.
         The length of this list should correspond to the number of items
-        in trial_grouping_dict.
+        in trial_grouping_dict. In case a string is given, all trials will
+        share the same color unless `trial_grouping_dict` is specified, in
+        which case colors will be set automatically to correspond to individual
+        groups.
         Default: 'grey'
     plot_single_trajectories : bool, optional
         If True, single trial trajectories are plotted.
@@ -583,19 +588,17 @@ def _check_input_data(returned_data, orthonormalized_dimensions):
             return returned_data['xorth']
         if 'xsm' in returned_data.keys():
             return returned_data['xsm']
-    raise ValueError("The latent variables before"
-                     "orthonomalization 'xsm' are not in"
+    raise ValueError("The latent variables before "
+                     "orthonormalization 'xsm' are not in the "
                      "returned data")
 
 
 def _check_colors(colors, trial_grouping_dict, n_trials):
-    if isinstance(colors, str):
-        colors = [colors] * n_trials
     if trial_grouping_dict:
-        if len(colors) != len(trial_grouping_dict):
-            warnings.warn("Colors per trial group were not specified! "
-                          "Employing default matplotlib colors.")
+        if isinstance(colors, str) or len(colors) != len(trial_grouping_dict):
             colors = [f'C{i}' for i in range(len(trial_grouping_dict))]
+    elif isinstance(colors, str):
+        colors = [colors] * n_trials
     return colors
 
 
