@@ -25,9 +25,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from elephant.conversion import BinnedSpikeTrain
 
 
-def plot_cumulative_explained_variance(loading_matrix):
+def plot_cumulative_shared_covariance(loading_matrix):
     """
-    This function plots the cumulative explained variance. It allows
+    This function plots the cumulative shared covariance. It allows
     to visually identify an appropriate number of dimensions which is
     small on the one hand, but explains a substantial part of the variance
     in the data on the other hand.
@@ -65,7 +65,7 @@ def plot_cumulative_explained_variance(loading_matrix):
     return fig, axes
 
 
-def plot_transform_matrix(loading_matrix):
+def plot_transform_matrix(loading_matrix, cmap='RdYlGn'):
     """
     This function visualizes the loading matrix as a heatmap.
 
@@ -76,6 +76,9 @@ def plot_transform_matrix(loading_matrix):
         latent state space. It is obtained by fitting a GPFA model and
         stored in ``GPFA.params_estimated['C']`` or if orthonormalized
         ``GPFA.params_estimated['Corth']``.
+    cmap : str, optional
+        Matplotlib imshow colormap.
+        Default: 'RdYlGn'
 
     Returns
     -------
@@ -86,9 +89,13 @@ def plot_transform_matrix(loading_matrix):
 
     fig, axes = plt.subplots()
 
+    vmax = np.max(np.abs(loading_matrix))
+    vmin = -vmax
+
     heatmap = axes.imshow(loading_matrix,
+                          vmin=vmin, vmax=vmax,
                           aspect='auto',
-                          interpolation='none')
+                          interpolation='none', cmap=cmap)
 
     axes.set_title('Loading Matrix')
     axes.set_ylabel('Neuron ID')
@@ -348,7 +355,7 @@ def plot_trajectories(returned_data,
                                          'linestyle': 'dashdot'},
                       plot_args_marker_start={'marker': 'p',
                                               'markersize': 10,
-                                              'label': 'trial_start'}):
+                                              'label': 'start'}):
 
     """
     This function allows for 2D and 3D visualization of the latent space
@@ -556,9 +563,8 @@ def plot_trajectories(returned_data,
 
     if plot_group_averages:
         for color, trial_type in zip(colors, trial_grouping_dict.keys()):
-            group_average = data[trial_grouping_dict[trial_type]].sum()
+            group_average = data[trial_grouping_dict[trial_type]].mean()
             group_average = group_average[dimensions, :]
-            group_average /= len(trial_grouping_dict[trial_type])
 
             axes.plot(*group_average,
                       color=color,
