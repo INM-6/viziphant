@@ -12,4 +12,6 @@ Function Reference by Module
 
 .. automodule:: viziphant.spade
 
+.. automodule:: viziphant.gpfa
+
 .. automodule:: viziphant.unitary_event_analysis
