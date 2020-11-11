@@ -154,9 +154,9 @@ def plot_dimensions_vs_time(returned_data,
         shape, specific to each data type, containing the corresponding
         data for the n-th trial:
 
-            `xorth`: (#latent_vars, #bins) np.ndarray
+            `latent_variable_orth`: (#latent_vars, #bins) np.ndarray
 
-            `xsm`:  (#latent_vars, #bins) np.ndarray
+            `latent_variable`:  (#latent_vars, #bins) np.ndarray
 
             `y`:  (#units, #bins) np.ndarray
 
@@ -174,16 +174,17 @@ def plot_dimensions_vs_time(returned_data,
         Default: 'all'
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
-        state space dimension corresponding to the entry 'xorth'
+        state space dimension corresponding to the entry 'latent_variable_orth'
         in returned data (True) or the unconstrained dimension corresponding
-        to the entry 'xsm' (False).
-        Beware that the unconstrained state space dimensions 'xsm' are not
-        ordered by their explained variance. These dimensions each represent
-        one Gaussian process timescale $\tau$.
-        On the contrary, the orthonormalized dimensions 'xorth' are ordered by
-        decreasing explained variance, allowing a similar intuitive
-        interpretation to the dimensions obtained in a PCA. Due to the
-        orthonmalization, these dimensions reflect mixtures of timescales.
+        to the entry 'latent_variable' (False).
+        Beware that the unconstrained state space dimensions 'latent_variable'
+        are not ordered by their explained variance. These dimensions each
+        represent one Gaussian process timescale $\tau$.
+        On the contrary, the orthonormalized dimensions 'latent_variable_orth'
+        are ordered by decreasing explained variance, allowing a similar
+        intuitive interpretation to the dimensions obtained in a PCA. Due to
+        the orthonormalization, these dimensions reflect mixtures of
+        timescales.
         Default: True
     n_trials_to_plot : int, optional
         Number of single trial trajectories to plot.
@@ -255,7 +256,8 @@ def plot_dimensions_vs_time(returned_data,
             data.append(spike_times)
         gpfa = GPFA(bin_size=20 * pq.ms, x_dim=3, verbose=False)
         gpfa.fit(data)
-        results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
+        results = gpfa.transform(data, returned_data=['latent_variable_orth',
+                                                      'latent_variable'])
 
         plot_dimensions_vs_time(
             returned_data=results,
@@ -383,9 +385,9 @@ def plot_trajectories(returned_data,
         shape, specific to each data type, containing the corresponding
         data for the n-th trial:
 
-            `xorth`: (#latent_vars, #bins) np.ndarray
+            `latent_variable_orth`: (#latent_vars, #bins) np.ndarray
 
-            `xsm`:  (#latent_vars, #bins) np.ndarray
+            `latent_variable`:  (#latent_vars, #bins) np.ndarray
 
             `y`:  (#units, #bins) np.ndarray
 
@@ -417,16 +419,17 @@ def plot_trajectories(returned_data,
         Default: None
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
-        state space dimensions corresponding to the entry 'xorth'
+        state space dimension corresponding to the entry 'latent_variable_orth'
         in returned data (True) or the unconstrained dimension corresponding
-        to the entry 'xsm' (False).
-        Beware that the unconstrained state space dimensions 'xsm' are not
-        ordered by their explained variance. These dimensions each represent
-        one Gaussian process timescale.
-        On the contrary, the orthonormalized dimensions 'xorth' are ordered by
-        decreasing explained variance, allowing a similar intuitive
-        interpretation to the dimensions obtained in a PCA. Due to the
-        orthonmalization, these dimensions reflect mixtures of timescales.
+        to the entry 'latent_variable' (False).
+        Beware that the unconstrained state space dimensions 'latent_variable'
+        are not ordered by their explained variance. These dimensions each
+        represent one Gaussian process timescale $\tau$.
+        On the contrary, the orthonormalized dimensions 'latent_variable_orth'
+        are ordered by decreasing explained variance, allowing a similar
+        intuitive interpretation to the dimensions obtained in a PCA. Due to
+        the orthonormalization, these dimensions reflect mixtures of
+        timescales.
         Default: True
     n_trials_to_plot : int, optional
         Number of single trial trajectories to plot.
@@ -490,7 +493,8 @@ def plot_trajectories(returned_data,
     ...
     >>> gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
     >>> gpfa.fit(data)
-    >>> results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
+    >>> results = gpfa.transform(data, returned_data=['latent_variable_orth',
+    ...                                               'latent_variable'])
 
     >>> trial_id_lists = np.arange(50).reshape(5,10)
     >>> trial_group_names = ['A', 'B', 'C', 'D', 'E']
@@ -591,11 +595,11 @@ def _check_input_data(returned_data, orthonormalized_dimensions):
         return returned_data
     if isinstance(returned_data, dict):
         if orthonormalized_dimensions:
-            return returned_data['xorth']
-        if 'xsm' in returned_data.keys():
-            return returned_data['xsm']
+            return returned_data['latent_variable_orth']
+        if 'latent_variable' in returned_data.keys():
+            return returned_data['latent_variable']
     raise ValueError("The latent variables before "
-                     "orthonormalization 'xsm' are not in the "
+                     "orthonormalization 'latent_variable' are not in the "
                      "returned data")
 
 
