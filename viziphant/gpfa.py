@@ -8,10 +8,10 @@ Visualizes the transformed trajectories output from
 .. autosummary::
     :toctree: toctree/gpfa/
 
-    plot_dimension_vs_time
+    plot_dimensions_vs_time
     plot_trajectories
     plot_cumulative_explained_variance
-    plot_loading_matrix
+    plot_transform_matrix
 """
 
 import itertools
@@ -65,7 +65,7 @@ def plot_cumulative_explained_variance(loading_matrix):
     return axes
 
 
-def plot_loading_matrix(loading_matrix):
+def plot_transform_matrix(loading_matrix):
     """
     This function visualizes the loading matrix as a heatmap.
 
@@ -101,23 +101,23 @@ def plot_loading_matrix(loading_matrix):
     return axes
 
 
-def plot_dimension_vs_time(returned_data,
-                           gpfa_instance,
-                           dimensions='all',
-                           orthonormalized_dimensions=True,
-                           n_trials_to_plot=20,
-                           trial_grouping_dict=None,
-                           colors='grey',
-                           plot_single_trajectories=True,
-                           plot_group_averages=False,
-                           n_columns=2,
-                           plot_args_single={'linewidth': 0.3,
-                                             'alpha': 0.4,
-                                             'linestyle': '-'},
-                           plot_args_average={'linewidth': 2,
-                                              'alpha': 1,
-                                              'linestyle': 'dashdot'},
-                           figure_args={}):
+def plot_dimensions_vs_time(returned_data,
+                            gpfa_instance,
+                            dimensions='all',
+                            orthonormalized_dimensions=True,
+                            n_trials_to_plot=20,
+                            trial_grouping_dict=None,
+                            colors='grey',
+                            plot_single_trajectories=True,
+                            plot_group_averages=False,
+                            n_columns=2,
+                            plot_args_single={'linewidth': 0.3,
+                                              'alpha': 0.4,
+                                              'linestyle': '-'},
+                            plot_args_average={'linewidth': 2,
+                                               'alpha': 1,
+                                               'linestyle': 'dashdot'},
+                            figure_args={}):
 
     """
     This function plots all latent space state dimensions versus time.
@@ -230,7 +230,7 @@ def plot_dimension_vs_time(returned_data,
         import quantities as pq
         from elephant.gpfa import GPFA
         from elephant.spike_train_generation import homogeneous_poisson_process
-        from viziphant.gpfa import plot_dimension_vs_time
+        from viziphant.gpfa import plot_dimensions_vs_time
         np.random.seed(24)
         n_trials = 10
         n_channels = 5
@@ -246,7 +246,7 @@ def plot_dimension_vs_time(returned_data,
         gpfa.fit(data)
         results = gpfa.transform(data, returned_data=['xorth', 'xsm'])
 
-        plot_dimension_vs_time(
+        plot_dimensions_vs_time(
             returned_data=results,
             gpfa_instance=gpfa,
             dimensions=[0, 2],
