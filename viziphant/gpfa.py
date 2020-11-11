@@ -1,6 +1,6 @@
 """
-Gaussian Process Factor Analysis plots
---------------------------------------
+Gaussian Process Factor Analysis (GPFA) plots
+---------------------------------------------
 
 Visualizes transformed trajectories output from
 :class:`elephant.gpfa.gpfa.GPFA`
@@ -295,6 +295,8 @@ def plot_dimensions_vs_time(returned_data,
     # TODO: deal with varying number of bins over trials?
     n_time_bins = gpfa_instance.transform_info['num_bins'].max()
 
+    times = np.arange(1, n_time_bins + 1) * gpfa_instance.bin_size
+
     for dimension_index, axis in zip(dimensions, np.ravel(axes)):
         if plot_single_trajectories:
             for trial_idx in range(min(n_trials, n_trials_to_plot)):
@@ -304,7 +306,7 @@ def plot_dimensions_vs_time(returned_data,
                                                      trial_idx)
 
                 # plot single trial trajectories
-                axis.plot(np.arange(1, n_time_bins + 1),
+                axis.plot(times.magnitude,
                           dat[dimension_index, :],
                           color=colors[key_id],
                           label=trial_type,
@@ -313,7 +315,7 @@ def plot_dimensions_vs_time(returned_data,
         if plot_group_averages:
             for color, trial_type in zip(colors, trial_grouping_dict.keys()):
                 group_average = data[trial_grouping_dict[trial_type]].mean()
-                axis.plot(np.arange(1, n_time_bins + 1),
+                axis.plot(times.magnitude,
                           group_average[dimension_index],
                           color=color,
                           label=trial_type,
@@ -330,7 +332,7 @@ def plot_dimensions_vs_time(returned_data,
     plt.tight_layout()
 
     for axis in axes[-1, :]:
-        axis.set_xlabel('Time (ms)')
+        axis.set_xlabel(f'Time ({times.dimensionality})')
 
     return fig, axes
 
