@@ -10,7 +10,7 @@ Visualizes transformed trajectories output from
 
     plot_dimensions_vs_time
     plot_trajectories
-    plot_cumulative_explained_variance
+    plot_cumulative_shared_covariance
     plot_transform_matrix
 """
 
