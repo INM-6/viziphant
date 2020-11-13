@@ -1,7 +1,7 @@
-neo>=0.8.0
-elephant @ git+git://github.com/NeuralEnsemble/elephant.git#egg=elephant[extras]
-numpy>=1.10.1
+neo>=0.9.0
+elephant[extras]>=0.9.0
+numpy>=1.18.1
 quantities>=0.12.1
 six>=1.10.0
-matplotlib>=3.0.3
+matplotlib>=3.3.2
 seaborn>=0.9.0
