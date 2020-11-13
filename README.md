@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/INM-6/viziphant.svg?branch=master)](https://travis-ci.org/INM-6/viziphant)
 [![Documentation Status](https://readthedocs.org/projects/viziphant/badge/?version=latest)](https://viziphant.readthedocs.io/en/latest/?badge=latest)
+[![![PyPi]](https://img.shields.io/pypi/v/viziphant)](https://pypi.org/project/viziphant/)
 
 A Python module for easy visualization of [Neo](https://github.com/NeuralEnsemble/python-neo) objects and [Elephant](https://github.com/NeuralEnsemble/elephant) results.
 
