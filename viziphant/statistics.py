@@ -142,13 +142,14 @@ def plot_isi_histogram(spiketrains, axes=None, bin_size=3 * pq.ms, cutoff=None,
                          "not match.")
 
     if cutoff is None:
-        cutoff = max(interval.max() for interval in intervals)
+        cutoff = max(interval.max() for interval in intervals) * units
 
     if axes is None:
         fig, axes = plt.subplots()
 
-    bins = np.arange(0, cutoff.rescale(units).item(),
-                     bin_size.rescale(units).item())
+    bins = np.arange(start=0,
+                     stop=(cutoff + bin_size).rescale(units).item(),
+                     step=bin_size.rescale(units).item())
 
     for label, interval in zip(legend, intervals):
         axes.hist(interval, bins=bins, histtype=histtype, label=label)
