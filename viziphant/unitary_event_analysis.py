@@ -158,19 +158,17 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     Refer to https://elephant.readthedocs.io/en/latest/tutorials/
     unitary_event_analysis.html.
     """
-
-    t_start = spiketrains[0][0].t_start
-    t_stop = spiketrains[0][0].t_stop
-
+    n_trials = len(spiketrains)
     n_neurons = len(spiketrains[0])
 
+    t_start = Js_dict['input_parameters']['t_start']
+    t_stop = Js_dict['input_parameters']['t_stop']
     bin_size = Js_dict['input_parameters']['bin_size']
     win_size = Js_dict['input_parameters']['win_size']
     win_step = Js_dict['input_parameters']['win_step']
 
     t_winpos = ue._winpos(t_start, t_stop, win_size, win_step)
     Js_sig = ue.jointJ(significance_level)
-    n_trials = len(spiketrains)
 
     # figure format
     plot_params = plot_params_default.copy()
@@ -180,14 +178,125 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                          'equal to number of neurons!')
     plt.rcParams.update({'font.size': plot_params['fsize']})
     plt.rc('legend', fontsize=plot_params['fsize'])
-
-    num_row, num_col = 6, 1
     ls = '-'
     alpha = 0.5
-    plt.figure(1, figsize=plot_params['figsize'])
+
+    fig, axes = plt.subplots(nrows=6, sharex=True,
+                             figsize=plot_params['figsize'])
+    axes[5].get_shared_y_axes().join(axes[0], axes[2], axes[5])
+
+    for ax in (axes[0], axes[2], axes[5]):
+        for n in range(n_neurons):
+            for tr, data_tr in enumerate(spiketrains):
+                ax.plot(data_tr[n].rescale('ms').magnitude,
+                        np.full_like(data_tr[n].magnitude,
+                                     fill_value=n * n_trials + tr),
+                        '.', markersize=0.5, color='k')
+        for n in range(1, n_neurons):
+            ax.axhline(n * n_trials, lw=plot_params['lw'], color='k')
+        ax.set_yticks([n_trials, 2 * n_trials])
+        ax.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
+        ax.set_ylabel('Trial', fontsize=plot_params['fsize'])
+
+    for i, ax in enumerate(axes):
+        ax.text(-0.05, 1.1, string.ascii_uppercase[i],
+                transform=ax.transAxes, size=plot_params['fsize'] + 5,
+                weight='bold')
+        for key in plot_params['events'].keys():
+            for event_time in plot_params['events'][key]:
+                ax.axvline(event_time, ls=ls, color='r', lw=plot_params['lw'],
+                           alpha=alpha)
+
+    axes[0].set_title('Spike Events')
+    axes[0].text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][1]}",
+                 fontsize=plot_params['fsize'] // 2,
+                 horizontalalignment='right',
+                 verticalalignment='bottom',
+                 transform=axes[0].transAxes)
+    axes[0].text(1.0, 0, f"Unit {plot_params['unit_real_ids'][0]}",
+                 fontsize=plot_params['fsize'] // 2,
+                 horizontalalignment='right',
+                 verticalalignment='top',
+                 transform=axes[0].transAxes)
+
+    axes[1].set_title('Spike Rates')
+    for n in range(n_neurons):
+        axes[1].plot(t_winpos + win_size / 2.,
+                     Js_dict['rate_avg'][:, n].rescale('Hz'),
+                     label=f"Unit {plot_params['unit_real_ids'][n]}",
+                     lw=plot_params['lw'])
+    axes[1].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+    axes[1].legend(fontsize=plot_params['fsize'] // 2)
+
+    axes[2].set_title('Coincident Events')
+    for n in range(n_neurons):
+        for tr, data_tr in enumerate(spiketrains):
+            indices = np.unique(Js_dict['indices'][f'trial{tr}'])
+            axes[2].plot(indices * bin_size,
+                         np.full_like(indices, fill_value=n * n_trials + tr),
+                         ls='', ms=plot_params['ms'], marker='s',
+                         markerfacecolor='none',
+                         markeredgecolor='c')
+    axes[2].set_ylabel('Trial', fontsize=plot_params['fsize'])
+
+    axes[3].set_title('Coincidence Rates')
+    axes[3].plot(t_winpos + win_size / 2.,
+                 Js_dict['n_emp'] / (
+                             win_size.rescale('s').magnitude * n_trials),
+                 label='Empirical', lw=plot_params['lw'], color='c')
+    axes[3].plot(t_winpos + win_size / 2.,
+                 Js_dict['n_exp'] / (
+                             win_size.rescale('s').magnitude * n_trials),
+                 label='Expected', lw=plot_params['lw'], color='m')
+    axes[3].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+    axes[3].legend(fontsize=plot_params['fsize'] // 2)
+    yticks_ax3 = axes[3].get_ylim()
+    axes[3].set_yticks([0, yticks_ax3[1] / 2, yticks_ax3[1]])
+
+    axes[4].set_title('Statistical Significance')
+    axes[4].plot(t_winpos + win_size / 2., Js_dict['Js'], lw=plot_params['lw'],
+                 color='k')
+    axes[4].axhline(Js_sig, ls='-', color='r')
+    axes[4].axhline(-Js_sig, ls='-', color='g')
+    axes[4].text(t_winpos[30], Js_sig + 0.3, r'$\alpha +$', color='r')
+    axes[4].text(t_winpos[30], -Js_sig - 0.5, r'$\alpha -$', color='g')
+    axes[4].set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
+    axes[4].set_yticklabels([0.99, 0.5, 0.01])
+
+    axes[4].set_ylim(plot_params['S_ylim'])
+
+    mask_nonnan = ~np.isnan(Js_dict['Js'])
+    significant_win_idx = np.nonzero(Js_dict['Js'][mask_nonnan] >= Js_sig)[0]
+    t_winpos_significant = t_winpos[mask_nonnan][significant_win_idx]
+    axes[5].set_title('Unitary Events')
+    if len(t_winpos_significant) > 0:
+        for n in range(n_neurons):
+            for tr, data_tr in enumerate(spiketrains):
+                indices = np.unique(Js_dict['indices'][f'trial{tr}'])
+                indices_significant = []
+                for t_sig in t_winpos_significant:
+                    mask = (indices * bin_size >= t_sig
+                            ) & (indices * bin_size < t_sig + win_size)
+                    indices_significant.append(indices[mask])
+                indices_significant = np.hstack(indices_significant)
+                indices_significant = np.unique(indices_significant)
+                # does nothing if indices_significant is empty
+                axes[5].plot(indices_significant * bin_size,
+                             np.full_like(indices_significant,
+                                          fill_value=n * n_trials + tr),
+                             ms=plot_params['ms'], marker='s', ls='',
+                             mfc='none', mec='r')
+    axes[5].set_xlabel(f'Time ({t_start.dimensionality.string})',
+                       fontsize=plot_params['fsize'])
+    for key in plot_params['events'].keys():
+        for event_time in plot_params['events'][key]:
+            axes[5].text(event_time - 10 * pq.ms,
+                         plot_params['S_ylim'][0] - 35, key,
+                         fontsize=plot_params['fsize'], color='r')
+
     if 'suptitle' in plot_params.keys():
-        plt.suptitle("Trial aligned on " +
-                     plot_params['suptitle'], fontsize=20)
+        plt.suptitle(f"Trial aligned on {plot_params['suptitle']}",
+                     fontsize=20)
     plt.subplots_adjust(top=plot_params['top'],
                         right=plot_params['right'],
                         left=plot_params['left'],
@@ -195,169 +304,5 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                         hspace=plot_params['hspace'],
                         wspace=plot_params['wspace'])
 
-    print('plotting raster plot ...')
-    ax0 = plt.subplot(num_row, 1, 1)
-    ax0.set_title('Spike Events')
-    for n in range(n_neurons):
-        for tr, data_tr in enumerate(spiketrains):
-            ax0.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (n_trials + 1) + 1,
-                     '.', markersize=0.5, color='k')
-        if n < n_neurons - 1:
-            ax0.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax0.set_yticks([n_trials + 1, 2*n_trials + 1])
-    ax0.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
-    ax0.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax0.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax0.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-    Xlim = ax0.get_xlim()
-    ax0.text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][1]}",
-               fontsize=plot_params['fsize']//2,
-               horizontalalignment='right',
-               verticalalignment='bottom',
-               transform=ax0.transAxes)
-    ax0.text(1.0, 0, f"Unit {plot_params['unit_real_ids'][0]}",
-               fontsize=plot_params['fsize']//2,
-               horizontalalignment='right',
-               verticalalignment='top',
-               transform=ax0.transAxes)
-
-    print('plotting Spike Rates ...')
-    ax1 = plt.subplot(num_row, 1, 2, sharex=ax0)
-    ax1.set_title('Spike Rates')
-    for n in range(n_neurons):
-        ax1.plot(t_winpos + win_size / 2.,
-                 Js_dict['rate_avg'][:, n].rescale('Hz'),
-                 label='Unit ' + str(plot_params['unit_real_ids'][n]),
-                 lw=plot_params['lw'])
-    ax1.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax1.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax1.legend(fontsize=plot_params['fsize']//2)
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax1.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting Raw Coincidences ...')
-    ax2 = plt.subplot(num_row, 1, 3, sharex=ax0)
-    ax2.set_title('Coincident Events')
-    for n in range(n_neurons):
-        for tr, data_tr in enumerate(spiketrains):
-            ax2.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (n_trials + 1) + 1,
-                     '.', markersize=0.5, color='k')
-            ax2.plot(
-                np.unique(Js_dict['indices']['trial' + str(tr)]) *
-                bin_size,
-                np.ones_like(np.unique(Js_dict['indices'][
-                    'trial' + str(tr)])) * tr + n * (n_trials + 1) + 1,
-                ls='', ms=plot_params['ms'], marker='s',
-                markerfacecolor='none',
-                markeredgecolor='c')
-        if n < n_neurons - 1:
-            ax2.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax2.set_yticks([n_trials + 1, 2*n_trials + 1])
-    ax2.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
-    ax2.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax2.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax2.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting emp. and exp. coincidences rate ...')
-    ax3 = plt.subplot(num_row, 1, 4, sharex=ax0)
-    ax3.set_title('Coincidence Rates')
-    ax3.plot(t_winpos + win_size / 2.,
-             Js_dict['n_emp'] / (win_size.rescale('s').magnitude * n_trials),
-             label='Empirical', lw=plot_params['lw'], color='c')
-    ax3.plot(t_winpos + win_size / 2.,
-             Js_dict['n_exp'] / (win_size.rescale('s').magnitude * n_trials),
-             label='Expected', lw=plot_params['lw'], color='m')
-    ax3.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax3.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax3.legend(fontsize=plot_params['fsize']//2)
-    YTicks = ax3.get_ylim()
-    ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax3.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting Surprise ...')
-    ax4 = plt.subplot(num_row, 1, 5, sharex=ax0)
-    ax4.set_title('Statistical Significance')
-    ax4.plot(t_winpos + win_size / 2., Js_dict['Js'], lw=plot_params['lw'],
-             color='k')
-    ax4.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax4.axhline(Js_sig, ls='-', color='r')
-    ax4.axhline(-Js_sig, ls='-', color='g')
-    ax4.text(t_winpos[30], Js_sig + 0.3, '$\\alpha +$', color='r')
-    ax4.text(t_winpos[30], -Js_sig - 0.5, '$\\alpha -$', color='g')
-    ax4.set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
-    ax4.set_yticklabels([0.99, 0.5, 0.01])
-
-    ax4.set_ylim(plot_params['S_ylim'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax4.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting UEs ...')
-    ax5 = plt.subplot(num_row, 1, 6, sharex=ax0)
-    ax5.set_title('Unitary Events')
-    for n in range(n_neurons):
-        for tr, data_tr in enumerate(spiketrains):
-            ax5.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (n_trials + 1) + 1, '.',
-                     markersize=0.5, color='k')
-            js_nonnan = Js_dict['Js'][~np.isnan(Js_dict['Js'])]
-            sig_idx_win = np.where(js_nonnan >= Js_sig)[0]
-            if len(sig_idx_win) > 0:
-                x = np.unique(Js_dict['indices']['trial' + str(tr)])
-                if len(x) > 0:
-                    xx = []
-                    for j in sig_idx_win:
-                        xx = np.append(xx, x[np.where(
-                            (x * bin_size >= t_winpos[j]) &
-                            (x * bin_size < t_winpos[j] + win_size))])
-                    ax5.plot(
-                        np.unique(
-                            xx) * bin_size,
-                        np.ones_like(np.unique(xx)) *
-                        tr + n * (n_trials + 1) + 1,
-                        ms=plot_params['ms'], marker='s', ls='', mfc='none',
-                        mec='r')
-        if n < n_neurons - 1:
-            ax5.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax5.set_yticks([n_trials + 1, 2*n_trials + 1])
-    ax5.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
-    ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax5.set_xlim(0, (max(t_winpos) + win_size).rescale('ms').magnitude)
-    ax5.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    ax5.set_xlabel(f'Time ({t_start.dimensionality.string})',
-                   fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax5.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-            ax5.text(e_val - 10 * pq.ms,
-                     plot_params['S_ylim'][0] - 35, key,
-                     fontsize=plot_params['fsize'], color='r')
-
-    for i in range(num_row):
-        ax = locals()['ax' + str(i)]
-        ax.text(-0.05, 1.1, string.ascii_uppercase[i],
-                transform=ax.transAxes, size=plot_params['fsize'] + 5,
-                weight='bold')
-
-    result = FigureUE(ax0, ax1, ax2, ax3, ax4, ax5)
-    return result
+    axes = FigureUE(*axes)
+    return axes
