@@ -49,9 +49,9 @@ plot_params_default = {
     # font size
     'fsize': 12,
     # the actual unit ids from the experimental recording
-    'unit_real_ids': ['not specified', 'not specified'],
+    'unit_real_ids': None,
     # line width
-    'lw': 2,
+    'lw': 0.5,
     # y limit for the surprise
     'S_ylim': (-3, 3),
     # marker size for the UEs and coincidences
@@ -161,11 +161,21 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     n_trials = len(spiketrains)
     n_neurons = len(spiketrains[0])
 
-    t_start = Js_dict['input_parameters']['t_start']
-    t_stop = Js_dict['input_parameters']['t_stop']
-    bin_size = Js_dict['input_parameters']['bin_size']
-    win_size = Js_dict['input_parameters']['win_size']
-    win_step = Js_dict['input_parameters']['win_step']
+    input_parameters = Js_dict['input_parameters']
+    t_start = input_parameters['t_start']
+    t_stop = input_parameters['t_stop']
+    bin_size = input_parameters['bin_size']
+    win_size = input_parameters['win_size']
+    win_step = input_parameters['win_step']
+    pattern_hash = input_parameters['pattern_hash']
+    if len(pattern_hash) > 1:
+        raise ValueError(f"To not clutter the plots, only one pattern hash is "
+                         f"required; got {pattern_hash}. You can call this "
+                         f"function multiple times for each hash at a time.")
+    for key in ['Js', 'n_emp', 'n_exp', 'rate_avg']:
+        Js_dict[key] = Js_dict[key].squeeze()
+    neurons_participated = ue.inverse_hash_from_pattern(pattern_hash,
+                                                        N=n_neurons).squeeze()
 
     t_winpos = ue._winpos(t_start, t_stop, win_size, win_step)
     Js_sig = ue.jointJ(significance_level)
@@ -173,6 +183,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     # figure format
     plot_params = plot_params_default.copy()
     plot_params.update(plot_params_user)
+    if plot_params['unit_real_ids'] is None:
+        plot_params['unit_real_ids'] = ['not specified'] * n_neurons
     if len(plot_params['unit_real_ids']) != n_neurons:
         raise ValueError('length of unit_ids should be' +
                          'equal to number of neurons!')
@@ -193,8 +205,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                                      fill_value=n * n_trials + tr),
                         '.', markersize=0.5, color='k')
         for n in range(1, n_neurons):
-            ax.axhline(n * n_trials, lw=plot_params['lw'], color='k')
-        ax.set_yticks([n_trials, 2 * n_trials])
+            ax.axhline(n * n_trials - 0.5, lw=plot_params['lw'], color='k')
+        ax.set_yticks([n_trials - 0.5, 2 * n_trials - 0.5])
         ax.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
         ax.set_ylabel('Trial', fontsize=plot_params['fsize'])
 
@@ -208,7 +220,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                            alpha=alpha)
 
     axes[0].set_title('Spike Events')
-    axes[0].text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][1]}",
+    axes[0].text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][-1]}",
                  fontsize=plot_params['fsize'] // 2,
                  horizontalalignment='right',
                  verticalalignment='bottom',
@@ -230,6 +242,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
 
     axes[2].set_title('Coincident Events')
     for n in range(n_neurons):
+        if not neurons_participated[n]:
+            continue
         for tr, data_tr in enumerate(spiketrains):
             indices = np.unique(Js_dict['indices'][f'trial{tr}'])
             axes[2].plot(indices * bin_size,
@@ -271,6 +285,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     axes[5].set_title('Unitary Events')
     if len(t_winpos_significant) > 0:
         for n in range(n_neurons):
+            if not neurons_participated[n]:
+                continue
             for tr, data_tr in enumerate(spiketrains):
                 indices = np.unique(Js_dict['indices'][f'trial{tr}'])
                 indices_significant = []
