@@ -273,8 +273,9 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                      Js_dict['rate_avg'][:, n].rescale('Hz'),
                      label=f"Unit {plot_params['unit_real_ids'][n]}",
                      lw=plot_params['lw'])
-    axes[1].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+    axes[1].set_ylabel('Hz', fontsize=plot_params['fsize'])
     axes[1].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
+    axes[1].locator_params(axis='y', tight=True, nbins=3)
 
     axes[2].set_title('Coincident Events')
     for n in range(n_neurons):
@@ -298,10 +299,9 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                  Js_dict['n_exp'] / (
                              win_size.rescale('s').magnitude * n_trials),
                  label='Expected', lw=plot_params['lw'], color='m')
-    axes[3].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
+    axes[3].set_ylabel('Hz', fontsize=plot_params['fsize'])
     axes[3].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
-    yticks_ax3 = axes[3].get_ylim()
-    axes[3].set_yticks([0, yticks_ax3[1] / 2, yticks_ax3[1]])
+    axes[3].locator_params(axis='y', tight=True, nbins=3)
 
     axes[4].set_title('Statistical Significance')
     axes[4].plot(t_winpos + win_size / 2., Js_dict['Js'], lw=plot_params['lw'],
@@ -354,7 +354,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                                           fill_value=n * n_trials + tr),
                              ms=plot_params['ms'], marker='s', ls='',
                              mfc='none', mec='r')
-    axes[5].set_xlabel(f'Time ({t_start.dimensionality.string})',
+    axes[5].set_xlabel(f'Time ({t_winpos.dimensionality})',
                        fontsize=plot_params['fsize'])
     for key in plot_params['events'].keys():
         for event_time in plot_params['events'][key]:
