@@ -247,6 +247,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         ax.set_ylabel('Trial', fontsize=plot_params['fsize'])
 
     for i, ax in enumerate(axes):
+        ax.set_xlim([t_winpos[0], t_winpos[-1] + win_size])
         ax.text(-0.05, 1.1, string.ascii_uppercase[i],
                 transform=ax.transAxes, size=plot_params['fsize'] + 5,
                 weight='bold')
