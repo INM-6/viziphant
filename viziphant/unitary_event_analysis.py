@@ -60,7 +60,7 @@ plot_params_default = {
 
 
 def plot_ue(spiketrains, Js_dict, significance_level=0.05,
-            **plot_params_user):
+            **plot_params):
     """
     Plots the results of pairwise unitary event analysis as a column of six
     subplots, comprised of raster plot, peri-stimulus time histogram,
@@ -78,8 +78,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         :func:`elephant.unitary_event_analysis.jointJ_window_analysis`
         function. The values of each key has the shape of:
 
-          * different pattern hash --> 0-axis;
-          * different window --> 1-axis.
+          * different window --> 0-axis.
+          * different pattern hash --> 1-axis;
 
         Dictionary keys:
 
@@ -97,7 +97,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     significance_level : float
         The significance threshold used to determine which coincident events
         are classified as unitary events within a window.
-    **plot_params_user
+    **plot_params
         User-defined plotting parameters used to update the default plotting
         parameter values. The valid keys:
 
@@ -214,6 +214,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     Js_sig = ue.jointJ(significance_level)
 
     # figure format
+    plot_params_user = plot_params
     plot_params = plot_params_default.copy()
     plot_params.update(plot_params_user)
     if plot_params['unit_real_ids'] is None:
