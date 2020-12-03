@@ -51,7 +51,7 @@ plot_params_default = {
     # the actual unit ids from the experimental recording
     'unit_real_ids': None,
     # line width
-    'lw': 0.5,
+    'lw': 2,
     # marker size for the UEs and coincidences
     'ms': 5,
     # figure title
@@ -239,7 +239,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         for n in range(1, n_neurons):
             # subtract 0.5 to separate the raster plots;
             # otherwise, the line crosses the raster spikes
-            ax.axhline(n * n_trials - 0.5, lw=plot_params['lw'], color='k')
+            ax.axhline(n * n_trials - 0.5, lw=0.5, color='k')
         ymax = max(ax.get_ylim()[1], 2 * n_trials - 0.5)
         ax.set_ylim([-0.5, ymax])
         ax.set_yticks([n_trials - 0.5, 2 * n_trials - 0.5])
