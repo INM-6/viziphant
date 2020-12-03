@@ -52,10 +52,10 @@ plot_params_default = {
     'unit_real_ids': None,
     # line width
     'lw': 0.5,
-    # y limit for the surprise
-    'S_ylim': (-3, 3),
     # marker size for the UEs and coincidences
     'ms': 5,
+    # figure title
+    'suptitle': None,
 }
 
 
@@ -123,8 +123,6 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
           The unit ids from the experimental recording.
         'lw' : int
           The default line width.
-        'S_ylim' : tuple of ints or floats
-          The y-axis limits for the joint surprise plot.
         'ms' : int
           The marker size for the unitary events and coincidences.
 
@@ -155,8 +153,42 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
 
     Examples
     --------
-    Refer to https://elephant.readthedocs.io/en/latest/tutorials/
-    unitary_event_analysis.html.
+    Unitary Events of homogenous Poisson random processes.
+
+    Since we don't expect to find significant correlations in random processes,
+    we show non-significant events (``significance_level=0.34``). Typically,
+    in your analyses, the significant level threshold is ~0.05.
+
+    .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import quantities as pq
+
+        import viziphant
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.unitary_event_analysis import jointJ_window_analysis
+
+        np.random.seed(10)
+
+        spiketrains1 = [homogeneous_poisson_process(rate=20 * pq.Hz,
+                        t_stop=2 * pq.s) for _ in range(5)]
+        spiketrains2 = [homogeneous_poisson_process(rate=50 * pq.Hz,
+                        t_stop=2 * pq.s) for _ in range(5)]
+
+        spiketrains = np.stack((spiketrains1, spiketrains2), axis=1)
+        ue_dict = jointJ_window_analysis(spiketrains,
+                                         bin_size=5 * pq.ms,
+                                         win_size=100 * pq.ms,
+                                         win_step=10 * pq.ms)
+        viziphant.unitary_event_analysis.plot_ue(spiketrains, Js_dict=ue_dict,
+                                                 significance_level=0.34,
+                                                 unit_real_ids=['1', '2'])
+        plt.show()
+
+    Refer to `UEA Tutorial <https://elephant.readthedocs.io/en/latest/
+    tutorials/unitary_event_analysis.html>`_ for real-case scenario.
     """
     n_trials = len(spiketrains)
     n_neurons = len(spiketrains[0])
@@ -177,7 +209,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     neurons_participated = ue.inverse_hash_from_pattern(pattern_hash,
                                                         N=n_neurons).squeeze()
 
-    t_winpos = ue._winpos(t_start, t_stop, win_size, win_step)
+    t_winpos = ue._winpos(t_start=t_start, t_stop=t_stop, win_size=win_size,
+                          win_step=win_step)
     Js_sig = ue.jointJ(significance_level)
 
     # figure format
@@ -189,7 +222,6 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         raise ValueError('length of unit_ids should be' +
                          'equal to number of neurons!')
     plt.rcParams.update({'font.size': plot_params['fsize']})
-    plt.rc('legend', fontsize=plot_params['fsize'])
     ls = '-'
     alpha = 0.5
 
@@ -205,7 +237,11 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                                      fill_value=n * n_trials + tr),
                         '.', markersize=0.5, color='k')
         for n in range(1, n_neurons):
+            # subtract 0.5 to separate the raster plots;
+            # otherwise, the line crosses the raster spikes
             ax.axhline(n * n_trials - 0.5, lw=plot_params['lw'], color='k')
+        ymax = max(ax.get_ylim()[1], 2 * n_trials - 0.5)
+        ax.set_ylim([-0.5, ymax])
         ax.set_yticks([n_trials - 0.5, 2 * n_trials - 0.5])
         ax.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
         ax.set_ylabel('Trial', fontsize=plot_params['fsize'])
@@ -238,7 +274,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                      label=f"Unit {plot_params['unit_real_ids'][n]}",
                      lw=plot_params['lw'])
     axes[1].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    axes[1].legend(fontsize=plot_params['fsize'] // 2)
+    axes[1].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
 
     axes[2].set_title('Coincident Events')
     for n in range(n_neurons):
@@ -263,7 +299,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                              win_size.rescale('s').magnitude * n_trials),
                  label='Expected', lw=plot_params['lw'], color='m')
     axes[3].set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    axes[3].legend(fontsize=plot_params['fsize'] // 2)
+    axes[3].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
     yticks_ax3 = axes[3].get_ylim()
     axes[3].set_yticks([0, yticks_ax3[1] / 2, yticks_ax3[1]])
 
@@ -272,12 +308,28 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
                  color='k')
     axes[4].axhline(Js_sig, ls='-', color='r')
     axes[4].axhline(-Js_sig, ls='-', color='g')
-    axes[4].text(t_winpos[30], Js_sig + 0.3, r'$\alpha +$', color='r')
-    axes[4].text(t_winpos[30], -Js_sig - 0.5, r'$\alpha -$', color='g')
-    axes[4].set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
-    axes[4].set_yticklabels([0.99, 0.5, 0.01])
+    xlim_ax4 = axes[4].get_xlim()[1]
+    alpha_pos_text = axes[4].text(xlim_ax4, Js_sig, r'$\alpha +$', color='r',
+                                  horizontalalignment='right',
+                                  verticalalignment='bottom')
+    alpha_neg_text = axes[4].text(xlim_ax4, -Js_sig, r'$\alpha -$', color='g',
+                                  horizontalalignment='right',
+                                  verticalalignment='top')
+    axes[4].set_yticks([ue.jointJ(1 - significance_level), ue.jointJ(0.5),
+                        ue.jointJ(significance_level)])
+    # Try '1 - 0.34' to see the floating point errors
+    axes[4].set_yticklabels(np.round([1 - significance_level, 0.5,
+                                      significance_level], decimals=6))
 
-    axes[4].set_ylim(plot_params['S_ylim'])
+    # autoscale fix to mind the text positions.
+    # See https://stackoverflow.com/questions/11545062/
+    # matplotlib-autoscale-axes-to-include-annotations
+    plt.get_current_fig_manager().canvas.draw()
+    for text_handle in (alpha_pos_text, alpha_neg_text):
+        bbox = text_handle.get_window_extent()
+        bbox_data = bbox.transformed(axes[4].transData.inverted())
+        axes[4].update_datalim(bbox_data.corners(), updatex=False)
+    axes[4].autoscale_view()
 
     mask_nonnan = ~np.isnan(Js_dict['Js'])
     significant_win_idx = np.nonzero(Js_dict['Js'][mask_nonnan] >= Js_sig)[0]
@@ -307,12 +359,10 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     for key in plot_params['events'].keys():
         for event_time in plot_params['events'][key]:
             axes[5].text(event_time - 10 * pq.ms,
-                         plot_params['S_ylim'][0] - 35, key,
+                         axes[5].get_ylim()[0] - 35, key,
                          fontsize=plot_params['fsize'], color='r')
 
-    if 'suptitle' in plot_params.keys():
-        plt.suptitle(f"Trial aligned on {plot_params['suptitle']}",
-                     fontsize=20)
+    plt.suptitle(plot_params['suptitle'], fontsize=20)
     plt.subplots_adjust(top=plot_params['top'],
                         right=plot_params['right'],
                         left=plot_params['left'],
