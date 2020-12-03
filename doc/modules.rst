@@ -15,3 +15,5 @@ Function Reference by Module
 .. automodule:: viziphant.gpfa
 
 .. automodule:: viziphant.unitary_event_analysis
+
+.. automodule:: viziphant.asset

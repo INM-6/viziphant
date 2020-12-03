@@ -2,7 +2,7 @@
 Spike Pattern Detection and Evaluation (SPADE) plots
 ----------------------------------------------------
 
-Visualizes output of :func:`elephant.spade.spade` analysis.
+Visualizes the output of :func:`elephant.spade.spade` analysis.
 
 .. autosummary::
     :toctree: toctree/spade/
@@ -12,7 +12,7 @@ Visualizes output of :func:`elephant.spade.spade` analysis.
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
-# License: Modified BSD, see LICENSE.txt.txt for details.
+# License: Modified BSD, see LICENSE.txt for details.
 
 from collections import defaultdict
 
@@ -174,7 +174,7 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
     """
     if isinstance(patterns, dict):
         patterns = [patterns]
-    axes = rasterplot(spiketrains, c='darkgray', s=circle_sizes[0])
+    axes = rasterplot(spiketrains, color='darkgray', s=circle_sizes[0])
     units = spiketrains[0].units
     time_scalar = units.rescale('ms').item()
     patterns_overlap = defaultdict(lambda: defaultdict(list))
