@@ -15,3 +15,13 @@ Function Reference by Module
 .. automodule:: viziphant.gpfa
 
 .. automodule:: viziphant.unitary_event_analysis
+
+.. automodule:: viziphant.spike_train_synchrony
+
+
+References
+----------
+
+.. bibliography:: bib/viziphant.bib
+   :style: unsrt
+   :all:
