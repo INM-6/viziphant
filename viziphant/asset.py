@@ -21,9 +21,10 @@ from viziphant.rasterplot import rasterplot
 
 def plot_synchronous_event(spiketrains, sse, title=None, **kwargs):
     """
-    Reorder and plot the `spiketrains` according to a synchronous event `sse`
-    extracted from ASSET analysis. Spike trains that do not participate in the
-    chosen group will be shown at the top in a different color.
+    Reorder and plot the `spiketrains` according to a series of synchronous
+    events `sse` obtained with the ASSET analysis. Spike trains that do not
+    participate in the chosen group will be shown at the top in a different
+    color.
 
     Parameters
     ----------
@@ -37,7 +38,7 @@ def plot_synchronous_event(spiketrains, sse, title=None, **kwargs):
         description.
         Default: None
     **kwargs
-        Additional arguments, passed in :func:`viziphant.rasterplot.rasterplot`
+        Additional arguments to :func:`viziphant.rasterplot.rasterplot`
 
     Returns
     -------
@@ -102,7 +103,7 @@ def plot_synchronous_event(spiketrains, sse, title=None, **kwargs):
     reordered_sts = [spiketrains[idx] for idx in indices_pattern]
     sts_not_a_pattern = [spiketrains[idx] for idx in sorted(indices_left)]
     if title is None:
-        title = "Neurons ordering reconstructed with ASSET synfire chain"
+        title = "Neurons ordering reconstructed with ASSET"
     axes = rasterplot([reordered_sts, sts_not_a_pattern],
                       title=title, **kwargs)
     axes.set_ylabel('reordered neurons')
