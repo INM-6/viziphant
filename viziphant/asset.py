@@ -6,7 +6,7 @@ Visualizes the output of :class:`elephant.asset.ASSET` analysis.
 .. autosummary::
     :toctree: toctree/asset
 
-    plot_synchronous_event
+    plot_synchronous_events
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
@@ -19,7 +19,7 @@ import warnings
 from viziphant.rasterplot import rasterplot
 
 
-def plot_synchronous_event(spiketrains, sse, title=None, **kwargs):
+def plot_synchronous_events(spiketrains, sse, title=None, **kwargs):
     """
     Reorder and plot the `spiketrains` according to a series of synchronous
     events `sse` obtained with the ASSET analysis. Spike trains that do not
@@ -82,7 +82,7 @@ def plot_synchronous_event(spiketrains, sse, title=None, **kwargs):
                                                 min_neighbors=3, stretch=5)
         sses = asset_obj.extract_synchronous_events(cmat)
 
-        viziphant.asset.plot_synchronous_event(spiketrains, sse=sses[1], s=10)
+        viziphant.asset.plot_synchronous_events(spiketrains, sse=sses[1], s=10)
         plt.show()
 
     Refer to `ASSET tutorial
