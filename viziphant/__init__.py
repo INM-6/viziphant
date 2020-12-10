@@ -7,7 +7,7 @@ based on Neo.
 # License: Modified BSD, see LICENSE.txt for details.
 
 from . import (asset, events, gpfa, rasterplot, spade, spike_train_correlation,
-               statistics, unitary_event_analysis)
+               spike_train_synchrony, statistics, unitary_event_analysis)
 
 
 def _get_version():
