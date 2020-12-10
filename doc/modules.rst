@@ -8,6 +8,8 @@ Function Reference by Module
 
 .. automodule:: viziphant.spike_train_correlation
 
+.. automodule:: viziphant.spike_train_synchrony
+
 .. automodule:: viziphant.events
 
 .. automodule:: viziphant.spade
@@ -16,7 +18,7 @@ Function Reference by Module
 
 .. automodule:: viziphant.unitary_event_analysis
 
-.. automodule:: viziphant.spike_train_synchrony
+.. automodule:: viziphant.asset
 
 
 References

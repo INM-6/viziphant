@@ -6,7 +6,7 @@ based on Neo.
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
-from . import (events, gpfa, rasterplot, spade, spike_train_correlation,
+from . import (asset, events, gpfa, rasterplot, spade, spike_train_correlation,
                spike_train_synchrony, statistics, unitary_event_analysis)
 
 

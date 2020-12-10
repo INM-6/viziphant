@@ -19,7 +19,7 @@ import numpy as np
 import quantities as pq
 
 from elephant import statistics
-from elephant.utils import check_same_units
+from viziphant.utils import check_same_units
 
 
 def plot_isi_histogram(spiketrains, axes=None, bin_size=3 * pq.ms, cutoff=None,
@@ -122,14 +122,12 @@ def plot_isi_histogram(spiketrains, axes=None, bin_size=3 * pq.ms, cutoff=None,
 
     if isinstance(spiketrains, pq.Quantity):
         spiketrains = [spiketrains]
+    check_same_units(spiketrains)
+
     if isinstance(spiketrains[0], (list, tuple)):
-        for sts in spiketrains:
-            check_same_units(sts)
-        check_same_units([sts[0] for sts in spiketrains])
         intervals = [np.hstack(isi_population(sts)) for sts in spiketrains]
         units = spiketrains[0][0].units
     else:
-        check_same_units(spiketrains)
         intervals = isi_population(spiketrains)
         units = spiketrains[0].units
 
