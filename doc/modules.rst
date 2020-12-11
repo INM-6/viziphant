@@ -12,7 +12,7 @@ Function Reference by Module
 
 .. automodule:: viziphant.events
 
-.. automodule:: viziphant.spade
+.. automodule:: viziphant.patterns
 
 .. automodule:: viziphant.gpfa
 
