@@ -8,8 +8,20 @@ or :func:`elephant.cell_assembly_detection.cell_assembly_detection` functions.
 .. autosummary::
     :toctree: toctree/patterns/
 
-    plot_patterns_statistics
     plot_patterns
+
+
+Spike patterns statistics plots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: toctree/patterns/
+
+    plot_patterns_statistics_all
+    plot_patterns_statistics_participation
+    plot_patterns_statistics_occurrence
+    plot_patterns_statistics_size
+    plot_patterns_statistics_lags
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
@@ -25,10 +37,158 @@ import quantities as pq
 from viziphant.rasterplot import rasterplot
 
 
-def plot_patterns_statistics(patterns):
+def plot_patterns_statistics_participation(patterns, axes=None):
     """
-    Create a histogram plot to visualise patterns statistics output of a SPADE
-    analysis.
+    Create a histogram of neural participation in patterns.
+
+    Parameters
+    ----------
+    patterns : list of dict
+        The output of `elephant.spade.spade`.
+    axes : matplotlib.axes.Axes or None
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+
+    Returns
+    -------
+    axes : matplotlib.axes.Axes
+
+    See Also
+    --------
+    plot_patterns_statistics_all
+
+    """
+    if axes is None:
+        fig, axes = plt.subplots()
+
+    neurons = []
+    for pattern in patterns:
+        neurons.append(pattern['neurons'])
+    neurons_participated, counts = np.unique(np.hstack(neurons),
+                                             return_counts=True)
+
+    axes.bar(neurons_participated, counts)
+    axes.set_xlabel('Neuronal participation in patterns')
+    axes.set_ylabel('Count')
+
+    return axes
+
+
+def plot_patterns_statistics_occurrence(patterns, axes=None):
+    """
+    Create a histogram of pattern occurrences.
+
+    Parameters
+    ----------
+    patterns : list of dict
+        The output of `elephant.spade.spade`.
+    axes : matplotlib.axes.Axes or None
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+
+    Returns
+    -------
+    axes : matplotlib.axes.Axes
+
+    See Also
+    --------
+    plot_patterns_statistics_all
+
+    """
+    if axes is None:
+        fig, axes = plt.subplots()
+
+    occurrence = []
+    for pattern in patterns:
+        occurrence.append(len(pattern['times']))
+    occurrences, counts = np.unique(occurrence, return_counts=True)
+
+    axes.bar(occurrences, counts)
+    axes.set_xlabel('Pattern occurrences')
+    axes.set_ylabel('Count')
+
+    return axes
+
+
+def plot_patterns_statistics_size(patterns, axes=None):
+    """
+    Create a histogram of pattern sizes.
+
+    Parameters
+    ----------
+    patterns : list of dict
+        The output of `elephant.spade.spade`.
+    axes : matplotlib.axes.Axes or None
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+
+    Returns
+    -------
+    axes : matplotlib.axes.Axes
+
+    See Also
+    --------
+    plot_patterns_statistics_all
+
+    """
+    if axes is None:
+        fig, axes = plt.subplots()
+
+    size = []
+    for pattern in patterns:
+        size.append(len(pattern['neurons']))
+    size_unique, counts = np.unique(size, return_counts=True)
+
+    axes.bar(size_unique, counts)
+    axes.set_xlabel('Pattern size')
+    axes.set_ylabel('Count')
+
+    return axes
+
+
+def plot_patterns_statistics_lags(patterns, axes=None):
+    """
+    Create a histogram of pattern lags.
+
+    Parameters
+    ----------
+    patterns : list of dict
+        The output of `elephant.spade.spade`.
+    axes : matplotlib.axes.Axes or None
+        Matplotlib axes handle. If None, new axes are created and returned.
+        Default: None
+
+    Returns
+    -------
+    axes : matplotlib.axes.Axes
+
+    See Also
+    --------
+    plot_patterns_statistics_all
+
+    """
+    if axes is None:
+        fig, axes = plt.subplots()
+    
+    # 'times' and 'lags' share the same units;
+    # however, only lag units are of interest
+    units = patterns[0]['lags'].units
+    lags = []
+    for pattern in patterns:
+        lags.append(pattern['lags'].magnitude)
+    lags_unique, counts = np.unique(np.hstack(lags), return_counts=True)
+
+    axes.bar(lags_unique, counts)
+    axes.set_xlabel(f'Lags ({units.dimensionality})')
+    axes.set_ylabel('Count')
+
+    return axes
+
+
+def plot_patterns_statistics_all(patterns):
+    """
+    Create a histogram plot to visualise all patterns statistics of SPADE
+    analysis output.
 
     Parameters
     ----------
@@ -59,54 +219,29 @@ def plot_patterns_statistics(patterns):
         patterns = spade.spade(spiketrains, bin_size=100*pq.ms,
                                winlen=1)['patterns']
 
-        viziphant.patterns.plot_patterns_statistics(patterns)
+        viziphant.patterns.plot_patterns_statistics_all(patterns)
         plt.show()
 
     """
-    stats = defaultdict(list)
-
-    # 'times' and 'lags' share the same units;
-    # however, only lag units are of interest
-    units = patterns[0]['lags'].units
+    lags = []
     for pattern in patterns:
-        stats['neurons'].append(pattern['neurons'])
-        stats['occurrences'].append(len(pattern['times']))
-        stats['pattern_size'].append(len(pattern['neurons']))
-        stats['lags'].append(pattern['lags'].magnitude)
-
-    lags, lags_counts = np.unique(np.hstack(stats['lags']), return_counts=True)
-    if len(lags) == 1:
+        lags.append(pattern['lags'].magnitude)
+    lags_unique, counts = np.unique(np.hstack(lags), return_counts=True)
+    if len(lags_unique) == 1:
         # case of only synchronous patterns
         fig, axes = plt.subplots(3, 1, figsize=(10, 8))
     else:
         # case of patterns with delays
         fig, axes = plt.subplots(4, 1, figsize=(10, 10))
         # adding panel with histogram of lags for delayed patterns
-        axes[3].bar(lags, lags_counts)
-        axes[3].set_xlabel(f'Lags ({units.dimensionality})')
-        axes[3].set_ylabel('Count')
+        plot_patterns_statistics_lags(patterns, axes=axes[3])
+    plt.suptitle('Patterns statistics')
+    plot_patterns_statistics_participation(patterns, axes=axes[0])
+    plot_patterns_statistics_occurrence(patterns, axes=axes[1])
+    plot_patterns_statistics_size(patterns, axes=axes[2])
     plt.subplots_adjust(hspace=0.5)
-    axes[0].set_title('Patterns statistics')
 
-    neurons_participated, counts = np.unique(np.hstack(stats['neurons']),
-                                             return_counts=True)
-    axes[0].bar(neurons_participated, counts)
-    axes[0].set_xlabel('Neuronal participation in patterns')
-    axes[0].set_ylabel('Count')
-
-    occurrences, counts = np.unique(stats['occurrences'],
-                                    return_counts=True)
-    axes[1].bar(occurrences, counts)
-    axes[1].set_xlabel('Pattern occurrences')
-    axes[1].set_ylabel('Count')
-
-    sizes, counts = np.unique(stats['pattern_size'],
-                              return_counts=True)
-    axes[2].bar(sizes, counts)
-    axes[2].set_xlabel('Pattern size')
-    axes[2].set_ylabel('Count')
-
-    return fig, axes
+    return axes
 
 
 def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
