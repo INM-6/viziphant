@@ -107,6 +107,6 @@ def plot_synchronous_events(spiketrains, sse, title=None, **kwargs):
     axes = rasterplot([reordered_sts, sts_not_a_pattern],
                       title=title, **kwargs)
     axes.set_ylabel('reordered neurons')
-    axes.yaxis.set_label_coords(0.0, 0.5)
+    axes.yaxis.set_label_coords(-0.01, 0.5)
 
     return axes

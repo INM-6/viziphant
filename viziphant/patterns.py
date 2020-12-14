@@ -245,4 +245,5 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
                              s=pie_chart_size, c=[wedge_color])
 
     axes.set_ylabel('Neuron')
+    axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes

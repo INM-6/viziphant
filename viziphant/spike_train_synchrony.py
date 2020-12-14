@@ -91,6 +91,6 @@ def plot_spike_contrast(trace, spiketrains=None, title=None, lw=1.0,
     if spiketrains is not None:
         rasterplot(spiketrains, axes=axes[1], **kwargs)
         axes[1].set_ylabel('neuron')
-        axes[1].yaxis.set_label_coords(0, 0.5)
+        axes[1].yaxis.set_label_coords(-0.01, 0.5)
     plt.tight_layout()
     return axes
