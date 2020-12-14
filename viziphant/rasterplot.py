@@ -771,7 +771,7 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title=None,
         sts_population = [st.magnitude for st in sts_population]
         axes = np.atleast_1d(axes)
         times_population = np.hstack(sts_population)
-        ys = np.hstack([[i + count] * len(st)
+        ys = np.hstack([np.repeat(i + count, repeats=len(st))
                         for i, st in enumerate(sts_population)])
         axes[0].scatter(times_population, ys, c=c, **kwargs)
         if histogram_bins:

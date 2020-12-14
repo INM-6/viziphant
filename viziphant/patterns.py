@@ -1,11 +1,12 @@
 """
-Spike Pattern Detection and Evaluation (SPADE) plots
-----------------------------------------------------
+Spike patterns plots
+--------------------
 
-Visualizes the output of :func:`elephant.spade.spade` analysis.
+Visualizes detected spike patterns returned by :func:`elephant.spade.spade`
+or :func:`elephant.cell_assembly_detection.cell_assembly_detection` functions.
 
 .. autosummary::
-    :toctree: toctree/spade/
+    :toctree: toctree/patterns/
 
     plot_patterns_statistics
     plot_patterns
@@ -26,8 +27,8 @@ from viziphant.rasterplot import rasterplot
 
 def plot_patterns_statistics(patterns):
     """
-    This function creates a histogram plot to visualise patterns statistics
-    output of a SPADE analysis.
+    Create a histogram plot to visualise patterns statistics output of a SPADE
+    analysis.
 
     Parameters
     ----------
@@ -58,16 +59,20 @@ def plot_patterns_statistics(patterns):
         patterns = spade.spade(spiketrains, bin_size=100*pq.ms,
                                winlen=1)['patterns']
 
-        viziphant.spade.plot_patterns_statistics(patterns)
+        viziphant.patterns.plot_patterns_statistics(patterns)
         plt.show()
 
     """
     stats = defaultdict(list)
+
+    # 'times' and 'lags' share the same units;
+    # however, only lag units are of interest
+    units = patterns[0]['lags'].units
     for pattern in patterns:
         stats['neurons'].append(pattern['neurons'])
         stats['occurrences'].append(len(pattern['times']))
         stats['pattern_size'].append(len(pattern['neurons']))
-        stats['lags'].append(pattern['lags'])
+        stats['lags'].append(pattern['lags'].magnitude)
 
     lags, lags_counts = np.unique(np.hstack(stats['lags']), return_counts=True)
     if len(lags) == 1:
@@ -78,7 +83,7 @@ def plot_patterns_statistics(patterns):
         fig, axes = plt.subplots(4, 1, figsize=(10, 10))
         # adding panel with histogram of lags for delayed patterns
         axes[3].bar(lags, lags_counts)
-        axes[3].set_xlabel('Lags (ms)')
+        axes[3].set_xlabel(f'Lags ({units.dimensionality})')
         axes[3].set_ylabel('Count')
     plt.subplots_adjust(hspace=0.5)
     axes[0].set_title('Patterns statistics')
@@ -106,19 +111,21 @@ def plot_patterns_statistics(patterns):
 
 def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
     """
-    Simple plot showing a raster plot in gray along with one or more chosen
-    SPADE patterns represented in color.
+    Raster plot with one or more chosen SPADE or CAD patterns ot top shown in
+    color.
 
-    Patterns that share neurons at a particular spike time are represented as
-    pie charts of individual pattern colors.
+    Overlapping patterns (patterns that share neurons at a particular spike
+    time) are represented as pie charts of individual pattern colors.
 
     Parameters
     ----------
     spiketrains : list of neo.SpikeTrain
-        List of `neo.SpikeTrain` that were used as the input.
+        List of spike trains that were used as the input.
     patterns : dict or list of dict
         One or more patterns from a list of found patterns returned by
-        :func:`elephant.spade.spade` function.
+        :func:`elephant.spade.spade` or
+        :func:`elephant.cell_assembly_detection.cell_assembly_detection`
+        pattern detectors.
     circle_sizes : tuple of float, optional
         A tuple of 3 elements:
           1) raster plot neurons size that don't participate in the patterns;
@@ -153,21 +160,44 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
         from elephant import spade
         from elephant.spike_train_generation import homogeneous_poisson_process
         import viziphant
-        np.random.seed(5)
 
+        np.random.seed(5)
         spiketrains = [homogeneous_poisson_process(rate=1 * pq.Hz,
                        t_stop=10 * pq.s) for _ in range(10)]
         patterns = spade.spade(spiketrains, bin_size=400 * pq.ms,
                                winlen=1)['patterns']
 
-        viziphant.spade.plot_patterns(spiketrains, patterns[:2])
+        axes = viziphant.patterns.plot_patterns(spiketrains, patterns[:2])
         plt.show()
 
-    Additionally, one can add events to the returned plot:
+    CAD example:
+
+    .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import quantities as pq
+        from elephant.cell_assembly_detection import cell_assembly_detection
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_generation import compound_poisson_process
+        import viziphant
+
+        np.random.seed(30)
+        spiketrains = compound_poisson_process(rate=15 * pq.Hz,
+            amplitude_distribution=[0, 0.95, 0, 0, 0, 0, 0.05], t_stop=5*pq.s)
+        bst = BinnedSpikeTrain(spiketrains, bin_size=10 * pq.ms)
+        bst.rescale('ms')
+        patterns = cell_assembly_detection(bst, max_lag=2)
+
+        viziphant.patterns.plot_patterns(spiketrains, patterns=patterns[:2],
+                                         circle_sizes=(3, 30, 40))
+        plt.show()
+
+    Additionally, one can add events to the returned axes:
 
     .. code-block:: python
 
-        axes = viziphant.spade.plot_patterns(spiketrains, patterns[:2])
         event = neo.Event([0.5, 3.8] * pq.s, labels=['Trig ON', 'Trig OFF'])
         viziphant.events.add_event(axes, event=event)
 
