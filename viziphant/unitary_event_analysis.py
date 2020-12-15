@@ -220,7 +220,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     if plot_params['unit_real_ids'] is None:
         plot_params['unit_real_ids'] = ['not specified'] * n_neurons
     if len(plot_params['unit_real_ids']) != n_neurons:
-        raise ValueError('length of unit_ids should be' +
+        raise ValueError('length of unit_ids should be ' +
                          'equal to number of neurons!')
     plt.rcParams.update({'font.size': plot_params['fsize']})
     ls = '-'
