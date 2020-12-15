@@ -101,7 +101,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         User-defined plotting parameters used to update the default plotting
         parameter values. The valid keys:
 
-        'events' : list
+        'events' : dict
           Epochs to be marked on the time axis.
         'figsize' : tuple of int
           The dimensions for the figure size.
