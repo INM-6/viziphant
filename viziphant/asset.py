@@ -44,6 +44,10 @@ def plot_synchronous_events(spiketrains, sse, title=None, **kwargs):
     -------
     axes : matplotlib.Axes.axes
 
+    See Also
+    --------
+    viziphant.patterns.plot_patterns : plot patterns repeated in time
+
     Examples
     --------
     In this example we
