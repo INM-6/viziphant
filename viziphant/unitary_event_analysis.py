@@ -31,7 +31,7 @@ FigureUE = namedtuple("FigureUE", ['axes_spike_events',
 
 plot_params_default = {
     # epochs to be marked on the time axis
-    'events': [],
+    'events': {},
     # figure size
     'figsize': (10, 12),
     # right margin
@@ -49,18 +49,18 @@ plot_params_default = {
     # font size
     'fsize': 12,
     # the actual unit ids from the experimental recording
-    'unit_real_ids': ['not specified', 'not specified'],
+    'unit_real_ids': None,
     # line width
     'lw': 2,
-    # y limit for the surprise
-    'S_ylim': (-3, 3),
     # marker size for the UEs and coincidences
     'ms': 5,
+    # figure title
+    'suptitle': None,
 }
 
 
-def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
-            pattern_hash, plot_params_user):
+def plot_ue(spiketrains, Js_dict, significance_level=0.05,
+            **plot_params):
     """
     Plots the results of pairwise unitary event analysis as a column of six
     subplots, comprised of raster plot, peri-stimulus time histogram,
@@ -69,91 +69,61 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
 
     Parameters
     ----------
-    data : list of list of neo.SpikeTrain
+    spiketrains : list of list of neo.SpikeTrain
         A nested list of trials, neurons and their neo.SpikeTrain objects,
         respectively. This should be identical to the one used to generate
         Js_dict.
     Js_dict : dict
-        The output of elephant.unitary_event_analysis.jointJ_window_analysis
+        The output of
+        :func:`elephant.unitary_event_analysis.jointJ_window_analysis`
         function. The values of each key has the shape of:
 
-        * different pattern hash --> 0-axis;
-        * different window --> 1-axis.
+          * different window --> 0-axis.
+          * different pattern hash --> 1-axis;
 
         Dictionary keys:
 
-        * 'Js': list of float
-
+        'Js': list of float
           JointSurprise of different given patterns within each window.
-        * 'indices': list of list of int
-
+        'indices': list of list of int
           A list of indices of pattern within each window.
-        * 'n_emp': list of int
-
+        'n_emp': list of int
           The empirical number of each observed pattern.
-        * 'n_exp': list of float
-
+        'n_exp': list of float
           The expected number of each pattern.
-        * 'rate_avg': list of float
-
+        'rate_avg': list of float
           The average firing rate of each neuron.
-    sig_level : float
+
+    significance_level : float
         The significance threshold used to determine which coincident events
         are classified as unitary events within a window.
-    binsize : quantities.Quantity
-        The size of bins for discretizing spike trains. This value should be
-        identical to the one used to generate Js_dict.
-    winsize : quantities.Quantity
-        The size of the window of analysis. This value should be identical to
-        the one used to generate Js_dict.
-    winstep : quantities.Quantity
-        The size of the window step. This value should be identical to the one
-        used to generate Js_dict.
-    pattern_hash : list of int
-        List of interested patterns in hash values. This value should be
-        identical to the one used to generate Js_dict.
-    plot_params_user : dict
-        A dictionary of plotting parameters used to update the default plotting
-        parameter values. Dictionary keys:
+    **plot_params
+        User-defined plotting parameters used to update the default plotting
+        parameter values. The valid keys:
 
-        * 'events' : list
-
+        'events' : dict
           Epochs to be marked on the time axis.
-        * 'figsize' : tuple of int
-
+        'figsize' : tuple of int
           The dimensions for the figure size.
-        * 'right' : float
-
+        'right' : float
           The size of the right margin.
-        * 'top' : float
-
+        'top' : float
           The size of the top margin.
-        * 'bottom' : float
-
+        'bottom' : float
           The size of the bottom margin.
-        * 'left' : float
-
+        'left' : float
           The size of the left margin.
-        * 'hspace' : flaot
-
+        'hspace' : flaot
           The size of the horizontal white space between subplots.
-        * 'wspace' : float
-
+        'wspace' : float
           The width of the white space between subplots.
-        * 'fsize' : int
-
+        'fsize' : int
           The size of the font.
-        * 'unit_real_ids' : list of int
-
+        'unit_real_ids' : list of int
           The unit ids from the experimental recording.
-        * 'lw' : int
-
+        'lw' : int
           The default line width.
-        * 'S_ylim' : tuple of ints or floats
-
-          The y-axis limits for the joint surprise plot.
-        * 'ms' : int
-
+        'ms' : int
           The marker size for the unitary events and coincidences.
 
     Returns
@@ -180,33 +150,221 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
         * axes_unitary_events : matplotlib.axes.Axes
 
           Contains the elements of the unitary events subplot.
+
+    Examples
+    --------
+    Unitary Events of homogenous Poisson random processes.
+
+    Since we don't expect to find significant correlations in random processes,
+    we show non-significant events (``significance_level=0.34``). Typically,
+    in your analyses, the significant level threshold is ~0.05.
+
+    .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import quantities as pq
+
+        import viziphant
+        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.unitary_event_analysis import jointJ_window_analysis
+
+        np.random.seed(10)
+
+        spiketrains1 = [homogeneous_poisson_process(rate=20 * pq.Hz,
+                        t_stop=2 * pq.s) for _ in range(5)]
+        spiketrains2 = [homogeneous_poisson_process(rate=50 * pq.Hz,
+                        t_stop=2 * pq.s) for _ in range(5)]
+
+        spiketrains = np.stack((spiketrains1, spiketrains2), axis=1)
+        ue_dict = jointJ_window_analysis(spiketrains,
+                                         bin_size=5 * pq.ms,
+                                         win_size=100 * pq.ms,
+                                         win_step=10 * pq.ms)
+        viziphant.unitary_event_analysis.plot_ue(spiketrains, Js_dict=ue_dict,
+                                                 significance_level=0.34,
+                                                 unit_real_ids=['1', '2'])
+        plt.show()
+
+    Refer to `UEA Tutorial <https://elephant.readthedocs.io/en/latest/
+    tutorials/unitary_event_analysis.html>`_ for real-case scenario.
     """
+    n_trials = len(spiketrains)
+    n_neurons = len(spiketrains[0])
 
-    t_start = data[0][0].t_start
-    t_stop = data[0][0].t_stop
+    input_parameters = Js_dict['input_parameters']
+    t_start = input_parameters['t_start']
+    t_stop = input_parameters['t_stop']
+    bin_size = input_parameters['bin_size']
+    win_size = input_parameters['win_size']
+    win_step = input_parameters['win_step']
+    pattern_hash = input_parameters['pattern_hash']
+    if len(pattern_hash) > 1:
+        raise ValueError(f"To not clutter the plots, only one pattern hash is "
+                         f"required; got {pattern_hash}. You can call this "
+                         f"function multiple times for each hash at a time.")
+    for key in ['Js', 'n_emp', 'n_exp', 'rate_avg']:
+        Js_dict[key] = Js_dict[key].squeeze()
+    neurons_participated = ue.inverse_hash_from_pattern(pattern_hash,
+                                                        N=n_neurons).squeeze()
 
-    N = len(data[0])
-
-    t_winpos = ue._winpos(t_start, t_stop, winsize, winstep)
-    Js_sig = ue.jointJ(sig_level)
-    num_tr = len(data)
+    t_winpos = ue._winpos(t_start=t_start, t_stop=t_stop, win_size=win_size,
+                          win_step=win_step)
+    Js_sig = ue.jointJ(significance_level)
 
     # figure format
+    plot_params_user = plot_params
     plot_params = plot_params_default.copy()
     plot_params.update(plot_params_user)
-    if len(plot_params['unit_real_ids']) != N:
-        raise ValueError('length of unit_ids should be' +
+    if plot_params['unit_real_ids'] is None:
+        plot_params['unit_real_ids'] = ['not specified'] * n_neurons
+    if len(plot_params['unit_real_ids']) != n_neurons:
+        raise ValueError('length of unit_ids should be ' +
                          'equal to number of neurons!')
     plt.rcParams.update({'font.size': plot_params['fsize']})
-    plt.rc('legend', fontsize=plot_params['fsize'])
-
-    num_row, num_col = 6, 1
     ls = '-'
     alpha = 0.5
-    plt.figure(1, figsize=plot_params['figsize'])
-    if 'suptitle' in plot_params.keys():
-        plt.suptitle("Trial aligned on " +
-                     plot_params['suptitle'], fontsize=20)
+
+    fig, axes = plt.subplots(nrows=6, sharex=True,
+                             figsize=plot_params['figsize'])
+    axes[5].get_shared_y_axes().join(axes[0], axes[2], axes[5])
+
+    for ax in (axes[0], axes[2], axes[5]):
+        for n in range(n_neurons):
+            for tr, data_tr in enumerate(spiketrains):
+                ax.plot(data_tr[n].rescale('ms').magnitude,
+                        np.full_like(data_tr[n].magnitude,
+                                     fill_value=n * n_trials + tr),
+                        '.', markersize=0.5, color='k')
+        for n in range(1, n_neurons):
+            # subtract 0.5 to separate the raster plots;
+            # otherwise, the line crosses the raster spikes
+            ax.axhline(n * n_trials - 0.5, lw=0.5, color='k')
+        ymax = max(ax.get_ylim()[1], 2 * n_trials - 0.5)
+        ax.set_ylim([-0.5, ymax])
+        ax.set_yticks([n_trials - 0.5, 2 * n_trials - 0.5])
+        ax.set_yticklabels([1, n_trials], fontsize=plot_params['fsize'])
+        ax.set_ylabel('Trial', fontsize=plot_params['fsize'])
+
+    for i, ax in enumerate(axes):
+        ax.set_xlim([t_winpos[0], t_winpos[-1] + win_size])
+        ax.text(-0.05, 1.1, string.ascii_uppercase[i],
+                transform=ax.transAxes, size=plot_params['fsize'] + 5,
+                weight='bold')
+        for key in plot_params['events'].keys():
+            for event_time in plot_params['events'][key]:
+                ax.axvline(event_time, ls=ls, color='r', lw=plot_params['lw'],
+                           alpha=alpha)
+
+    axes[0].set_title('Spike Events')
+    axes[0].text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][-1]}",
+                 fontsize=plot_params['fsize'] // 2,
+                 horizontalalignment='right',
+                 verticalalignment='bottom',
+                 transform=axes[0].transAxes)
+    axes[0].text(1.0, 0, f"Unit {plot_params['unit_real_ids'][0]}",
+                 fontsize=plot_params['fsize'] // 2,
+                 horizontalalignment='right',
+                 verticalalignment='top',
+                 transform=axes[0].transAxes)
+
+    axes[1].set_title('Spike Rates')
+    for n in range(n_neurons):
+        axes[1].plot(t_winpos + win_size / 2.,
+                     Js_dict['rate_avg'][:, n].rescale('Hz'),
+                     label=f"Unit {plot_params['unit_real_ids'][n]}",
+                     lw=plot_params['lw'])
+    axes[1].set_ylabel('Hz', fontsize=plot_params['fsize'])
+    axes[1].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
+    axes[1].locator_params(axis='y', tight=True, nbins=3)
+
+    axes[2].set_title('Coincident Events')
+    for n in range(n_neurons):
+        if not neurons_participated[n]:
+            continue
+        for tr, data_tr in enumerate(spiketrains):
+            indices = np.unique(Js_dict['indices'][f'trial{tr}'])
+            axes[2].plot(indices * bin_size,
+                         np.full_like(indices, fill_value=n * n_trials + tr),
+                         ls='', ms=plot_params['ms'], marker='s',
+                         markerfacecolor='none',
+                         markeredgecolor='c')
+    axes[2].set_ylabel('Trial', fontsize=plot_params['fsize'])
+
+    axes[3].set_title('Coincidence Rates')
+    axes[3].plot(t_winpos + win_size / 2.,
+                 Js_dict['n_emp'] / (
+                             win_size.rescale('s').magnitude * n_trials),
+                 label='Empirical', lw=plot_params['lw'], color='c')
+    axes[3].plot(t_winpos + win_size / 2.,
+                 Js_dict['n_exp'] / (
+                             win_size.rescale('s').magnitude * n_trials),
+                 label='Expected', lw=plot_params['lw'], color='m')
+    axes[3].set_ylabel('Hz', fontsize=plot_params['fsize'])
+    axes[3].legend(fontsize=plot_params['fsize'] // 2, loc='upper right')
+    axes[3].locator_params(axis='y', tight=True, nbins=3)
+
+    axes[4].set_title('Statistical Significance')
+    axes[4].plot(t_winpos + win_size / 2., Js_dict['Js'], lw=plot_params['lw'],
+                 color='k')
+    axes[4].axhline(Js_sig, ls='-', color='r')
+    axes[4].axhline(-Js_sig, ls='-', color='g')
+    xlim_ax4 = axes[4].get_xlim()[1]
+    alpha_pos_text = axes[4].text(xlim_ax4, Js_sig, r'$\alpha +$', color='r',
+                                  horizontalalignment='right',
+                                  verticalalignment='bottom')
+    alpha_neg_text = axes[4].text(xlim_ax4, -Js_sig, r'$\alpha -$', color='g',
+                                  horizontalalignment='right',
+                                  verticalalignment='top')
+    axes[4].set_yticks([ue.jointJ(1 - significance_level), ue.jointJ(0.5),
+                        ue.jointJ(significance_level)])
+    # Try '1 - 0.34' to see the floating point errors
+    axes[4].set_yticklabels(np.round([1 - significance_level, 0.5,
+                                      significance_level], decimals=6))
+
+    # autoscale fix to mind the text positions.
+    # See https://stackoverflow.com/questions/11545062/
+    # matplotlib-autoscale-axes-to-include-annotations
+    plt.get_current_fig_manager().canvas.draw()
+    for text_handle in (alpha_pos_text, alpha_neg_text):
+        bbox = text_handle.get_window_extent()
+        bbox_data = bbox.transformed(axes[4].transData.inverted())
+        axes[4].update_datalim(bbox_data.corners(), updatex=False)
+    axes[4].autoscale_view()
+
+    mask_nonnan = ~np.isnan(Js_dict['Js'])
+    significant_win_idx = np.nonzero(Js_dict['Js'][mask_nonnan] >= Js_sig)[0]
+    t_winpos_significant = t_winpos[mask_nonnan][significant_win_idx]
+    axes[5].set_title('Unitary Events')
+    if len(t_winpos_significant) > 0:
+        for n in range(n_neurons):
+            if not neurons_participated[n]:
+                continue
+            for tr, data_tr in enumerate(spiketrains):
+                indices = np.unique(Js_dict['indices'][f'trial{tr}'])
+                indices_significant = []
+                for t_sig in t_winpos_significant:
+                    mask = (indices * bin_size >= t_sig
+                            ) & (indices * bin_size < t_sig + win_size)
+                    indices_significant.append(indices[mask])
+                indices_significant = np.hstack(indices_significant)
+                indices_significant = np.unique(indices_significant)
+                # does nothing if indices_significant is empty
+                axes[5].plot(indices_significant * bin_size,
+                             np.full_like(indices_significant,
+                                          fill_value=n * n_trials + tr),
+                             ms=plot_params['ms'], marker='s', ls='',
+                             mfc='none', mec='r')
+    axes[5].set_xlabel(f'Time ({t_winpos.dimensionality})',
+                       fontsize=plot_params['fsize'])
+    for key in plot_params['events'].keys():
+        for event_time in plot_params['events'][key]:
+            axes[5].text(event_time - 10 * pq.ms,
+                         axes[5].get_ylim()[0] - 35, key,
+                         fontsize=plot_params['fsize'], color='r')
+
+    plt.suptitle(plot_params['suptitle'], fontsize=20)
     plt.subplots_adjust(top=plot_params['top'],
                         right=plot_params['right'],
                         left=plot_params['left'],
@@ -214,169 +372,5 @@ def plot_ue(data, Js_dict, sig_level, binsize, winsize, winstep,
                         hspace=plot_params['hspace'],
                         wspace=plot_params['wspace'])
 
-    print('plotting raster plot ...')
-    ax0 = plt.subplot(num_row, 1, 1)
-    ax0.set_title('Spike Events')
-    for n in range(N):
-        for tr, data_tr in enumerate(data):
-            ax0.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (num_tr + 1) + 1,
-                     '.', markersize=0.5, color='k')
-        if n < N - 1:
-            ax0.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax0.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax0.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax0.set_yticklabels([1, num_tr], fontsize=plot_params['fsize'])
-    ax0.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax0.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax0.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-    Xlim = ax0.get_xlim()
-    ax0.text(1.0, 1.0, f"Unit {plot_params['unit_real_ids'][1]}",
-               fontsize=plot_params['fsize']//2,
-               horizontalalignment='right',
-               verticalalignment='bottom',
-               transform=ax0.transAxes)
-    ax0.text(1.0, 0, f"Unit {plot_params['unit_real_ids'][0]}",
-               fontsize=plot_params['fsize']//2,
-               horizontalalignment='right',
-               verticalalignment='top',
-               transform=ax0.transAxes)
-
-    print('plotting Spike Rates ...')
-    ax1 = plt.subplot(num_row, 1, 2, sharex=ax0)
-    ax1.set_title('Spike Rates')
-    for n in range(N):
-        ax1.plot(t_winpos + winsize / 2.,
-                 Js_dict['rate_avg'][:, n].rescale('Hz'),
-                 label='Unit ' + str(plot_params['unit_real_ids'][n]),
-                 lw=plot_params['lw'])
-    ax1.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax1.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax1.legend(fontsize=plot_params['fsize']//2)
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax1.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting Raw Coincidences ...')
-    ax2 = plt.subplot(num_row, 1, 3, sharex=ax0)
-    ax2.set_title('Coincident Events')
-    for n in range(N):
-        for tr, data_tr in enumerate(data):
-            ax2.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (num_tr + 1) + 1,
-                     '.', markersize=0.5, color='k')
-            ax2.plot(
-                np.unique(Js_dict['indices']['trial' + str(tr)]) *
-                binsize,
-                np.ones_like(np.unique(Js_dict['indices'][
-                    'trial' + str(tr)])) * tr + n * (num_tr + 1) + 1,
-                ls='', ms=plot_params['ms'], marker='s',
-                markerfacecolor='none',
-                markeredgecolor='c')
-        if n < N - 1:
-            ax2.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax2.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax2.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax2.set_yticklabels([1, num_tr], fontsize=plot_params['fsize'])
-    ax2.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax2.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax2.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting emp. and exp. coincidences rate ...')
-    ax3 = plt.subplot(num_row, 1, 4, sharex=ax0)
-    ax3.set_title('Coincidence Rates')
-    ax3.plot(t_winpos + winsize / 2.,
-             Js_dict['n_emp'] / (winsize.rescale('s').magnitude * num_tr),
-             label='Empirical', lw=plot_params['lw'], color='c')
-    ax3.plot(t_winpos + winsize / 2.,
-             Js_dict['n_exp'] / (winsize.rescale('s').magnitude * num_tr),
-             label='Expected', lw=plot_params['lw'], color='m')
-    ax3.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax3.set_ylabel('(1/s)', fontsize=plot_params['fsize'])
-    ax3.legend(fontsize=plot_params['fsize']//2)
-    YTicks = ax3.get_ylim()
-    ax3.set_yticks([0, YTicks[1] / 2, YTicks[1]])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax3.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting Surprise ...')
-    ax4 = plt.subplot(num_row, 1, 5, sharex=ax0)
-    ax4.set_title('Statistical Significance')
-    ax4.plot(t_winpos + winsize / 2., Js_dict['Js'], lw=plot_params['lw'],
-             color='k')
-    ax4.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax4.axhline(Js_sig, ls='-', color='r')
-    ax4.axhline(-Js_sig, ls='-', color='g')
-    ax4.text(t_winpos[30], Js_sig + 0.3, '$\\alpha +$', color='r')
-    ax4.text(t_winpos[30], -Js_sig - 0.5, '$\\alpha -$', color='g')
-    ax4.set_yticks([ue.jointJ(0.99), ue.jointJ(0.5), ue.jointJ(0.01)])
-    ax4.set_yticklabels([0.99, 0.5, 0.01])
-
-    ax4.set_ylim(plot_params['S_ylim'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax4.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-
-    print('plotting UEs ...')
-    ax5 = plt.subplot(num_row, 1, 6, sharex=ax0)
-    ax5.set_title('Unitary Events')
-    for n in range(N):
-        for tr, data_tr in enumerate(data):
-            ax5.plot(data_tr[n].rescale('ms').magnitude,
-                     np.ones_like(data_tr[n].magnitude) *
-                     tr + n * (num_tr + 1) + 1, '.',
-                     markersize=0.5, color='k')
-            js_nonnan = Js_dict['Js'][~np.isnan(Js_dict['Js'])]
-            sig_idx_win = np.where(js_nonnan >= Js_sig)[0]
-            if len(sig_idx_win) > 0:
-                x = np.unique(Js_dict['indices']['trial' + str(tr)])
-                if len(x) > 0:
-                    xx = []
-                    for j in sig_idx_win:
-                        xx = np.append(xx, x[np.where(
-                            (x * binsize >= t_winpos[j]) &
-                            (x * binsize < t_winpos[j] + winsize))])
-                    ax5.plot(
-                        np.unique(
-                            xx) * binsize,
-                        np.ones_like(np.unique(xx)) *
-                        tr + n * (num_tr + 1) + 1,
-                        ms=plot_params['ms'], marker='s', ls='', mfc='none',
-                        mec='r')
-        if n < N - 1:
-            ax5.axhline((tr + 2) * (n + 1), lw=plot_params['lw'], color='k')
-    ax5.set_yticks([num_tr + 1, 2*num_tr + 1])
-    ax5.set_yticklabels([1, num_tr], fontsize=plot_params['fsize'])
-    ax5.set_ylim(0, (tr + 2) * (n + 1) + 1)
-    ax5.set_xlim(0, (max(t_winpos) + winsize).rescale('ms').magnitude)
-    ax5.set_ylabel('Trial', fontsize=plot_params['fsize'])
-    ax5.set_xlabel(f'Time ({t_start.dimensionality.string})',
-                   fontsize=plot_params['fsize'])
-    for key in plot_params['events'].keys():
-        for e_val in plot_params['events'][key]:
-            ax5.axvline(e_val, ls=ls, color='r', lw=plot_params['lw'],
-                        alpha=alpha)
-            ax5.text(e_val - 10 * pq.ms,
-                     plot_params['S_ylim'][0] - 35, key,
-                     fontsize=plot_params['fsize'], color='r')
-
-    for i in range(num_row):
-        ax = locals()['ax' + str(i)]
-        ax.text(-0.05, 1.1, string.ascii_uppercase[i],
-                transform=ax.transAxes, size=plot_params['fsize'] + 5,
-                weight='bold')
-
-    result = FigureUE(ax0, ax1, ax2, ax3, ax4, ax5)
-    return result
+    axes = FigureUE(*axes)
+    return axes
