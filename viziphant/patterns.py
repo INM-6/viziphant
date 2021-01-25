@@ -244,7 +244,8 @@ def plot_patterns_statistics_all(patterns):
     return axes
 
 
-def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
+def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
+                  colors=None):
     """
     Raster plot with one or more chosen SPADE or CAD patterns ot top shown in
     color.
@@ -270,6 +271,10 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
           3) pie chart (overlapped patterns) size.
 
         Default: (3, 50, 70)
+    colors : list of str or None
+        A user-defined list of pattern colors. If None, the HSV colormap will
+        be used to pick a different color for each pattern.
+        Default: None
 
     Returns
     -------
@@ -343,8 +348,16 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70)):
     units = spiketrains[0].units
     time_scalar = units.rescale('ms').item()
     patterns_overlap = defaultdict(lambda: defaultdict(list))
-    cmap = plt.cm.get_cmap("hsv", len(patterns) + 1)
-    colors = np.array([cmap(i) for i in range(len(patterns))])
+
+    if colors is None:
+        # +1 is necessary
+        cmap = plt.cm.get_cmap("hsv", len(patterns) + 1)
+        colors = np.array([cmap(i) for i in range(len(patterns))])
+    elif not isinstance(colors, (list, tuple, np.ndarray)):
+        raise TypeError("'colors' must be a list of colors")
+    elif len(colors) != len(patterns):
+        raise ValueError("The length of 'colors' must match the length of "
+                         "the input 'patterns'.")
 
     for pattern_id, pattern in enumerate(patterns):
         times_ms = pattern['times'].rescale(pq.ms).magnitude.astype(int)
