@@ -607,6 +607,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                                         'label': 'start'},
                                 eventplot_kwargs=dict(),
                                 slider_kwargs=dict(),
+                                animation_kwargs=dict(blit=True, repeat=True),
                                 figure_kwargs=dict()):
     r"""
     This function allows for 2D and 3D visualization of the latent space
@@ -718,6 +719,8 @@ def plot_trajectories_spikeplay(spiketrains,
     slider_kwargs : dict, optional
         Arguments dictionary for a slider passed to ``ax.axvline()``.
         Default: {}
+    animation_kwargs : dict, optional
+        Arguments dictionary passed to ``animation.FuncAnimation()``.
     figure_kwargs : dict, optional
         Arguments dictionary passed to ``plt.figure()``.
         Default: {}
@@ -845,8 +848,7 @@ def plot_trajectories_spikeplay(spiketrains,
     time_steps = np.arange(speed, n_time_bins + speed, speed)
     interval = speed * gpfa_instance.bin_size.rescale('ms').item()
     spikeplay = animation.FuncAnimation(fig, animate, frames=time_steps,
-                                        interval=interval, blit=True,
-                                        repeat=True)
+                                        interval=interval, **animation_kwargs)
 
     return fig, [ax1, ax2], spikeplay
 
