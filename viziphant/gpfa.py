@@ -10,6 +10,7 @@ Visualizes transformed trajectories output from
 
     plot_dimensions_vs_time
     plot_trajectories
+    plot_trajectories_spikeplay
     plot_cumulative_shared_covariance
     plot_transform_matrix
 """
@@ -19,6 +20,7 @@ import math
 import matplotlib.pyplot as plt
 import neo
 import numpy as np
+import matplotlib.animation as animation
 from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -348,7 +350,6 @@ def plot_trajectories(returned_data,
                       n_trials_to_plot=20,
                       trial_grouping_dict=None,
                       colors='grey',
-                      plot_single_trajectories=True,
                       plot_group_averages=False,
                       plot_args_single={'linewidth': 0.3,
                                         'alpha': 0.4,
@@ -435,7 +436,8 @@ def plot_trajectories(returned_data,
         timescales.
         Default: True
     n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot.
+        Number of single trial trajectories to plot. If zero, no single trial
+        trajectories will be shown.
         Default: 20
     trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
@@ -451,9 +453,6 @@ def plot_trajectories(returned_data,
         which case colors will be set automatically to correspond to individual
         groups.
         Default: 'grey'
-    plot_single_trajectories : bool, optional
-        If True, single trial trajectories are plotted.
-        Default: True
     plot_group_averages : bool, optional
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
@@ -514,7 +513,6 @@ def plot_trajectories(returned_data,
     ...        dimensions=[0,1,2],
     ...        trial_grouping_dict=trial_grouping_dict,
     ...        plot_group_averages=False,
-    ...        plot_single_trajectories=True,
     ...        n_trials_to_plot=200,
     ...        plot_args_single={'linewidth': 0.8,
     ...                          'alpha': 0.4, 'linestyle': '-'})
@@ -535,38 +533,35 @@ def plot_trajectories(returned_data,
     axes = fig.gca(projection=projection, aspect='auto')
 
     # loop over trials
-    if plot_single_trajectories:
-        for trial_idx in range(min(n_trials, n_trials_to_plot)):
-            dat = data[trial_idx][dimensions, :]
-            key_id, trial_type = _get_trial_type(trial_grouping_dict,
-                                                 trial_idx)
-            color = colors[key_id]
-            axes.plot(*dat,
-                      color=color,
-                      label=trial_type,
-                      **plot_args_single)
+    for trial_idx in range(min(n_trials, n_trials_to_plot)):
+        dat = data[trial_idx][dimensions, :]
+        key_id, trial_type = _get_trial_type(trial_grouping_dict,
+                                             trial_idx)
+        color = colors[key_id]
+        axes.plot(*dat,
+                  color=color,
+                  label=trial_type,
+                  **plot_args_single)
 
-            # plot single trial events
-            if block_with_cut_trials and neo_event_name and relevant_events:
-                time_bins_with_relevant_event, relevant_event_labels = \
-                    _get_event_times_and_labels(block_with_cut_trials,
-                                                trial_idx,
-                                                neo_event_name,
-                                                relevant_events,
-                                                gpfa_instance)
+        # plot single trial events
+        if block_with_cut_trials and neo_event_name and relevant_events:
+            time_bins_with_relevant_event, relevant_event_labels = \
+                _get_event_times_and_labels(block_with_cut_trials,
+                                            trial_idx,
+                                            neo_event_name,
+                                            relevant_events,
+                                            gpfa_instance)
 
-                marker = itertools.cycle(Line2D.filled_markers)
-                for event_id, (event_time,
-                               event_label) in enumerate(zip(
-                                   time_bins_with_relevant_event,
-                                   relevant_event_labels)):
-                    dat_event = [[dat[i][event_time]]
-                                 for i in range(n_dimensions)]
-                    axes.plot(*dat_event,
-                              marker=next(marker),
-                              label=event_label,
-                              color=color,
-                              **plot_args_marker)
+            marker = itertools.cycle(Line2D.filled_markers)
+            for event_time, event_label in zip(
+                    time_bins_with_relevant_event,
+                    relevant_event_labels):
+                dat_event = [[dat_dim[event_time]] for dat_dim in dat]
+                axes.plot(*dat_event,
+                          marker=next(marker),
+                          label=event_label,
+                          color=color,
+                          **plot_args_marker)
 
     if plot_group_averages:
         for color, trial_type in zip(colors, trial_grouping_dict.keys()):
@@ -589,6 +584,205 @@ def plot_trajectories(returned_data,
     plt.tight_layout()
 
     return fig, axes
+
+
+def plot_trajectories_spikeplay(spiketrains,
+                                returned_data,
+                                gpfa_instance,
+                                dimensions=[0, 1],
+                                orthonormalized_dimensions=True,
+                                n_trials_to_plot=20,
+                                trial_grouping_dict=None,
+                                colors='grey',
+                                plot_group_averages=False,
+                                plot_args_single={'linewidth': 0.3,
+                                                  'alpha': 0.4,
+                                                  'linestyle': '-'},
+                                plot_args_average={'linewidth': 2,
+                                                   'alpha': 1,
+                                                   'linestyle': 'dashdot'},
+                                plot_args_marker_start={'marker': 'p',
+                                                        'markersize': 10,
+                                                        'label': 'start'}):
+    """
+    This function allows for 2D and 3D visualization of the latent space
+    variables identified by the GPFA.
+
+    Optional visual aids are offered such as grouping the trials and color
+    coding their traces.
+    Changes to optics of the plot can be applied by providing respective
+    dictionaries.
+
+    This function is an adaption of the MATLAB implementation
+    by Byron Yu which was published with his paper:
+    Yu et al., J Neurophysiol, 2009.
+
+    Parameters
+    ----------
+    returned_data : np.ndarray or dict
+        When the length of `returned_data` is one, a single np.ndarray,
+        containing the requested data (the first entry in `returned_data`
+        keys list), is returned. Otherwise, a dict of multiple np.ndarrays
+        with the keys identical to the data names in `returned_data` is
+        returned.
+
+        N-th entry of each np.ndarray is a np.ndarray of the following
+        shape, specific to each data type, containing the corresponding
+        data for the n-th trial:
+
+            `latent_variable_orth`: (#latent_vars, #bins) np.ndarray
+
+            `latent_variable`:  (#latent_vars, #bins) np.ndarray
+
+            `y`:  (#units, #bins) np.ndarray
+
+            `Vsm`:  (#latent_vars, #latent_vars, #bins) np.ndarray
+
+            `VsmGP`:  (#bins, #bins, #latent_vars) np.ndarray
+
+        Note that the num. of bins (#bins) can vary across trials,
+        reflecting the trial durations in the given `spiketrains` data.
+    gpfa_instance : GPFA
+        Instance of the GPFA() class in elephant, which was used to obtain
+        returned_data.
+    dimensions : list of int, optional
+        List specifying the indices of the dimensions to use for the
+        2D or 3D plot.
+        Default: [0, 1]
+    orthonormalized_dimensions : bool, optional
+        Boolean which specifies whether to plot the orthonormalized latent
+        state space dimension corresponding to the entry 'latent_variable_orth'
+        in returned data (True) or the unconstrained dimension corresponding
+        to the entry 'latent_variable' (False).
+        Beware that the unconstrained state space dimensions 'latent_variable'
+        are not ordered by their explained variance. These dimensions each
+        represent one Gaussian process timescale $\tau$.
+        On the contrary, the orthonormalized dimensions 'latent_variable_orth'
+        are ordered by decreasing explained variance, allowing a similar
+        intuitive interpretation to the dimensions obtained in a PCA. Due to
+        the orthonormalization, these dimensions reflect mixtures of
+        timescales.
+        Default: True
+    n_trials_to_plot : int, optional
+        Number of single trial trajectories to plot. If zero, no single trial
+        trajectories will be shown.
+        Default: 20
+    trial_grouping_dict : dict or None, optional
+        Dictionary which specifies the groups of trials which belong together
+        (e.g. due to same trial type). Each item specifies one group: its
+        key defines the group name (which appears in the legend) and the
+        corresponding value is a list or np.ndarray of trial IDs.
+        Default: None
+    colors : str or list of str, optional
+        List of strings specifying the colors of the different trial groups.
+        The length of this list should correspond to the number of items
+        in trial_grouping_dict. In case a string is given, all trials will
+        share the same color unless `trial_grouping_dict` is specified, in
+        which case colors will be set automatically to correspond to individual
+        groups.
+        Default: 'grey'
+    plot_group_averages : bool, optional
+        If True, trajectories of those trials belonging together specified
+        in the trial_grouping_dict are averaged and plotted.
+        Default: False
+    plot_args_single : dict, optional
+        Arguments dictionary passed to ax.plot() of the single trajectories.
+    plot_args_average : dict, optional
+        Arguments dictionary passed to ax.plot() of the average trajectories.
+        if ax is None.
+    plot_args_marker_start : dict, optional
+        Arguments dictionary passed to ax.plot() for the marker of the
+        average trajectory start.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    axes : matplotlib.axes.Axes
+    spikeplay : matplotlib.animation.FuncAnimation
+
+    """
+    # prepare the input
+    projection, n_dimensions = _check_dimensions(gpfa_instance, dimensions)
+    data = _check_input_data(returned_data, orthonormalized_dimensions)
+    if trial_grouping_dict is None:
+        trial_grouping_dict = {}
+    colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
+
+    # infer n_trial from shape of the data
+    n_trials = data.shape[0]
+    n_trials_to_plot = min(n_trials, n_trials_to_plot)
+
+    # initialize figure and axis
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto')
+
+    units = spiketrains[0].units
+    ax1.eventplot([st.magnitude for st in spiketrains], linelengths=1)
+    ax1.set_yticks([0, len(spiketrains) - 1])
+    ax1.set_ylabel("Neuron")
+    ax1.yaxis.set_label_coords(-0.02, 0.5)
+    ax1.set_xlabel(f"Time ({units.dimensionality})")
+    ymin, ymax = ax1.get_ylim()
+    slider = ax1.axvline(x=0, ymin=ymin, ymax=ymax)
+    slider_step = gpfa_instance.bin_size.rescale(units).item()
+
+    empty_data = [[]] * n_dimensions
+    lines_trials = []
+    for trial_idx in range(n_trials_to_plot):
+        dat = data[trial_idx][dimensions, :]
+        key_id, trial_type = _get_trial_type(trial_grouping_dict,
+                                             trial_idx)
+        ax2.plot(*dat, alpha=0)  # to setup the plot limits
+        color = colors[key_id]
+        line, = ax2.plot(*empty_data,
+                         color=color,
+                         label=trial_type,
+                         **plot_args_single)
+        lines_trials.append(line)
+
+    lines_groups = []
+    group_averages = []
+    if plot_group_averages:
+        for color, trial_type in zip(colors, trial_grouping_dict.keys()):
+            group_average = data[trial_grouping_dict[trial_type]].mean()
+            group_average = group_average[dimensions, :]
+            group_averages.append(group_average)
+            line, = ax2.plot(*empty_data,
+                             color=color,
+                             label=trial_type,
+                             **plot_args_average)
+            lines_groups.append(line)
+            ax2.plot(*group_average[:, 0],
+                     color=color,
+                     **plot_args_marker_start)
+
+    _set_axis_labels_trajectories(ax2,
+                                  orthonormalized_dimensions,
+                                  dimensions)
+    _show_unique_legend(axes=ax2)
+    plt.tight_layout()
+
+    def line_set_data(line, data):
+        line.set_data(data[0, :], data[1, :])
+        if n_dimensions == 3:
+            line.set_3d_properties(data[2, :])
+
+    def animate(t):
+        slider.set_xdata(t * slider_step)
+        for data_trial, line in zip(data, lines_trials):
+            line_set_data(line, data_trial[dimensions, :t])
+        for group_average, line in zip(group_averages, lines_groups):
+            line_set_data(line, group_average[:, :t])
+        artists = [slider, *lines_trials, *lines_groups]
+        return artists
+
+    n_steps = data[0].shape[1]
+    spikeplay = animation.FuncAnimation(fig, animate,
+                                        frames=np.arange(n_steps) + 1,
+                                        interval=200, blit=True, repeat=True)
+
+    return fig, [ax1, ax2], spikeplay
 
 
 def _check_input_data(returned_data, orthonormalized_dimensions):
