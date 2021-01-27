@@ -927,15 +927,15 @@ def _set_axis_labels_trajectories(ax,
                                   orthonormalized_dimensions,
                                   dimensions):
     if orthonormalized_dimensions:
-        str1 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[0])
-        str2 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[1])
+        str1 = rf"$\tilde{{\mathbf{{x}}}}_{{{dimensions[0]}}}$"
+        str2 = rf"$\tilde{{\mathbf{{x}}}}_{{{dimensions[1]}}}$"
         if len(dimensions) == 3:
-            str3 = r"$\tilde{{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[2])
+            str3 = rf"$\tilde{{\mathbf{{x}}}}_{{{dimensions[2]}}}$"
     else:
-        str1 = r"${{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[0])
-        str2 = r"${{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[1])
+        str1 = rf"${{\mathbf{{x}}}}_{{{dimensions[0]}}}$"
+        str2 = rf"${{\mathbf{{x}}}}_{{{dimensions[1]}}}$"
         if len(dimensions) == 3:
-            str3 = r"${{\mathbf{{x}}}}_{{{},:}}$".format(dimensions[2])
+            str3 = rf"${{\mathbf{{x}}}}_{{{dimensions[2]}}}$"
     ax.set_xlabel(str1, fontsize=16)
     ax.set_ylabel(str2, fontsize=16)
     if len(dimensions) == 3:
