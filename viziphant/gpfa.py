@@ -487,6 +487,7 @@ def plot_trajectories(returned_data,
     >>> import quantities as pq
     >>> from elephant.gpfa import GPFA
     >>> from elephant.spike_train_generation import homogeneous_poisson_process
+    >>> from viziphant.gpfa import plot_trajectories
     >>> data = []
     >>> for trial in range(50):
     >>>     n_channels = 20
@@ -494,7 +495,7 @@ def plot_trajectories(returned_data,
     ...                                      size=n_channels) * pq.Hz
     >>>     spike_times = [homogeneous_poisson_process(rate=rate)
     ...                    for rate in firing_rates]
-    >>>     data.append((trial, spike_times))
+    >>>     data.append(spike_times)
     ...
     >>> gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
     >>> gpfa.fit(data)
@@ -511,14 +512,9 @@ def plot_trajectories(returned_data,
     >>> plot_trajectories(
     ...        results,
     ...        gpfa,
-    ...        block_with_cut_trials=None,
-    ...        relevant_events=None,
     ...        dimensions=[0,1,2],
     ...        trial_grouping_dict=trial_grouping_dict,
-    ...        plot_group_averages=False,
-    ...        n_trials_to_plot=200,
-    ...        plot_args_single={'linewidth': 0.8,
-    ...                          'alpha': 0.4, 'linestyle': '-'})
+    ...        plot_group_averages=True)
 
     """
     # prepare the input
@@ -657,6 +653,9 @@ def plot_trajectories_spikeplay(spiketrains,
         List specifying the indices of the dimensions to use for the
         2D or 3D plot.
         Default: [0, 1]
+    speed : float, optional
+        The animation speed.
+        Default: 0.2
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'latent_variable_orth'
