@@ -468,7 +468,7 @@ def plot_trajectories(returned_data,
         Arguments dictionary passed to ax.plot() for the marker of the
         average trajectory start.
     figure_kwargs : dict, optional
-        Figure parameters in ``plt.figure()``.
+        Arguments dictionary passed to ``plt.figure()``.
         Default: {}
 
     Returns
@@ -599,6 +599,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 trial_grouping_dict=None,
                                 colors='grey',
                                 plot_group_averages=False,
+                                transparent_spikes=False,
                                 plot_args_single={'linewidth': 0.3,
                                                   'alpha': 0.4,
                                                   'linestyle': '-'},
@@ -611,7 +612,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 eventplot_kwargs=dict(),
                                 slider_kwargs=dict(),
                                 figure_kwargs=dict()):
-    """
+    r"""
     This function allows for 2D and 3D visualization of the latent space
     variables identified by the GPFA.
 
@@ -692,6 +693,18 @@ def plot_trajectories_spikeplay(spiketrains,
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
         Default: False
+    transparent_spikes : bool, optional
+        If True, neural activity will be shaded according to the influence
+        of a neuron on the chosen latent `dimensions`. The influence is
+        estimated as a normalized L1-norm of the columns of the pseudo-inverse
+        of `Corth` matrix:
+
+        .. math::
+            X \approx C_{\text{orth}}^{\dagger} Y
+
+        where :math:`Y` is (zero-mean) neuronal firing rates, estimated from
+        spikes, and :math:`X` - latent variables.
+        Default: False
     plot_args_single : dict, optional
         Arguments dictionary passed to ax.plot() of the single trajectories.
     plot_args_average : dict, optional
@@ -700,8 +713,14 @@ def plot_trajectories_spikeplay(spiketrains,
     plot_args_marker_start : dict, optional
         Arguments dictionary passed to ax.plot() for the marker of the
         average trajectory start.
+    eventplot_kwargs : dict, optional
+        Arguments dictionary passed to ``plt.eventplot()``.
+        Default: {}
+    slider_kwargs : dict, optional
+        Arguments dictionary for a slider passed to ``ax.axvline()``.
+        Default: {}
     figure_kwargs : dict, optional
-        Figure parameters in ``plt.figure()``.
+        Arguments dictionary passed to ``plt.figure()``.
         Default: {}
 
     Returns
@@ -732,7 +751,18 @@ def plot_trajectories_spikeplay(spiketrains,
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto')
 
-    ax1.eventplot([st.magnitude for st in spiketrains], **eventplot_kwargs)
+    if transparent_spikes:
+        Corth = gpfa_instance.params_estimated['Corth']
+        Corth_inv = np.linalg.pinv(Corth)
+        l1_norm = np.linalg.norm(Corth_inv[dimensions], ord=1, axis=0)
+        l1_norm /= l1_norm.max()
+        # TODO Use efficient vectorized eventplot call once
+        #  https://github.com/matplotlib/matplotlib/issues/19376 is resolved.
+        for st_id, st in enumerate(spiketrains):
+            ax1.eventplot(st.magnitude, alpha=l1_norm[st_id],
+                          lineoffsets=st_id + 1, **eventplot_kwargs)
+    else:
+        ax1.eventplot([st.magnitude for st in spiketrains], **eventplot_kwargs)
     ax1.set_yticks([0, len(spiketrains) - 1])
     ax1.set_ylabel("Neuron")
     ax1.yaxis.set_label_coords(-0.02, 0.5)
