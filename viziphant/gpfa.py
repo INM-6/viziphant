@@ -876,13 +876,11 @@ def _set_title_dimensions_vs_time(ax,
 
         # percentage of variance of the dimensionality reduced data
         # that is explained by this latent variable
-        variances = [np.var(np.hstack(data)[i, :]) for
-                     i in range(gpfa_instance.x_dim)]
+        variances = np.var(np.hstack(data), axis=1)
         total_variance = np.sum(variances)
-        explained_variance = np.round(
-            variances[latent_variable_idx]/total_variance*100, 2)
+        explained_variance = variances[latent_variable_idx] / total_variance
 
-        title = title + f'% exp. var.: {explained_variance} %'
+        title = title + f'% exp. var.: {explained_variance * 100:.2f} %'
     else:
         title = r"${{\mathbf{{x}}}}_{{{},:}}$".format(latent_variable_idx)
 
