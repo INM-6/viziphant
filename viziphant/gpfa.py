@@ -293,13 +293,9 @@ def plot_dimensions_vs_time(returned_data,
     if trial_grouping_dict is None:
         trial_grouping_dict = {}
     colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
-    # infer n_trial from shape of the data
-    n_trials = data.shape[0]
-    # infer n_time_bins from maximal number of bins
-    # TODO: deal with varying number of bins over trials?
-    n_time_bins = gpfa_instance.transform_info['num_bins'].max()
 
-    times = np.arange(1, n_time_bins + 1) * gpfa_instance.bin_size
+    n_trials = data.shape[0]
+    bin_size = gpfa_instance.bin_size.item()
 
     for dimension_index, axis in zip(dimensions, np.ravel(axes)):
         if plot_single_trajectories:
@@ -310,7 +306,8 @@ def plot_dimensions_vs_time(returned_data,
                                                      trial_idx)
 
                 # plot single trial trajectories
-                axis.plot(times.magnitude,
+                times = np.arange(1, dat.shape[1] + 1) * bin_size
+                axis.plot(times,
                           dat[dimension_index, :],
                           color=colors[key_id],
                           label=trial_type,
@@ -319,7 +316,8 @@ def plot_dimensions_vs_time(returned_data,
         if plot_group_averages:
             for color, trial_type in zip(colors, trial_grouping_dict.keys()):
                 group_average = data[trial_grouping_dict[trial_type]].mean()
-                axis.plot(times.magnitude,
+                times = np.arange(1, group_average.shape[1] + 1) * bin_size
+                axis.plot(times,
                           group_average[dimension_index],
                           color=color,
                           label=trial_type,
@@ -336,7 +334,7 @@ def plot_dimensions_vs_time(returned_data,
     plt.tight_layout()
 
     for axis in axes[-1, :]:
-        axis.set_xlabel(f'Time ({times.dimensionality})')
+        axis.set_xlabel(f'Time ({gpfa_instance.bin_size.dimensionality})')
 
     return fig, axes
 
