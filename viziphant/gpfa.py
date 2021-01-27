@@ -26,6 +26,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from elephant.conversion import BinnedSpikeTrain
+from elephant.utils import check_neo_consistency
 
 
 def plot_cumulative_shared_covariance(loading_matrix):
@@ -594,6 +595,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 returned_data,
                                 gpfa_instance,
                                 dimensions=[0, 1],
+                                speed=0.2,
                                 orthonormalized_dimensions=True,
                                 n_trials_to_plot=20,
                                 trial_grouping_dict=None,
@@ -608,6 +610,8 @@ def plot_trajectories_spikeplay(spiketrains,
                                 plot_args_marker_start={'marker': 'p',
                                                         'markersize': 10,
                                                         'label': 'start'},
+                                eventplot_kwargs=dict(),
+                                slider_kwargs=dict(),
                                 figure_kwargs=dict()):
     """
     This function allows for 2D and 3D visualization of the latent space
@@ -709,6 +713,11 @@ def plot_trajectories_spikeplay(spiketrains,
     spikeplay : matplotlib.animation.FuncAnimation
 
     """
+    # Input spiketrains that were binned must share the same t_start and t_stop
+    check_neo_consistency(spiketrains, object_type=neo.SpikeTrain)
+    units = spiketrains[0].units
+    t_start = spiketrains[0].t_start.item()
+
     # prepare the input
     projection, n_dimensions = _check_dimensions(gpfa_instance, dimensions)
     data = _check_input_data(returned_data, orthonormalized_dimensions)
@@ -725,15 +734,14 @@ def plot_trajectories_spikeplay(spiketrains,
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto')
 
-    units = spiketrains[0].units
-    ax1.eventplot([st.magnitude for st in spiketrains], linelengths=1)
+    ax1.eventplot([st.magnitude for st in spiketrains], **eventplot_kwargs)
     ax1.set_yticks([0, len(spiketrains) - 1])
     ax1.set_ylabel("Neuron")
     ax1.yaxis.set_label_coords(-0.02, 0.5)
     ax1.set_xlabel(f"Time ({units.dimensionality})")
     ymin, ymax = ax1.get_ylim()
-    slider = ax1.axvline(x=0, ymin=ymin, ymax=ymax)
-    slider_step = gpfa_instance.bin_size.rescale(units).item()
+    slider = ax1.axvline(x=t_start, ymin=ymin, ymax=ymax, **slider_kwargs)
+    bin_size = gpfa_instance.bin_size.rescale(units).item()
 
     empty_data = [[]] * n_dimensions
     lines_trials = []
@@ -771,24 +779,45 @@ def plot_trajectories_spikeplay(spiketrains,
     _show_unique_legend(axes=ax2)
     plt.tight_layout()
 
+    def interpolate(data_orig, iteration):
+        bin_id = int(iteration)
+        residual = iteration - bin_id
+        data = data_orig[:, :bin_id]
+        if bin_id != n_steps:
+            # append an intermediate point
+            vec = data_orig[:, bin_id] - data_orig[:, bin_id - 1]
+            data = np.c_[data,
+                         data_orig[:, bin_id - 1] + vec * residual]
+        return data
+
     def line_set_data(line, data):
         line.set_data(data[0, :], data[1, :])
         if n_dimensions == 3:
             line.set_3d_properties(data[2, :])
 
-    def animate(t):
-        slider.set_xdata(t * slider_step)
+    def animate(iteration):
+        slider.set_xdata(iteration * bin_size + t_start)
+        bin_id = int(iteration)
+        if bin_id == 0:
+            # The first bin dynamics cannot be interpolated due to the
+            # absence of previous bin dynamics.
+            return slider,
         for data_trial, line in zip(data, lines_trials):
-            line_set_data(line, data_trial[dimensions, :t])
+            data_trial = interpolate(data_trial[dimensions],
+                                     iteration=iteration)
+            line_set_data(line, data_trial)
         for group_average, line in zip(group_averages, lines_groups):
-            line_set_data(line, group_average[:, :t])
+            group_average = interpolate(group_average, iteration=iteration)
+            line_set_data(line, group_average)
         artists = [slider, *lines_trials, *lines_groups]
         return artists
 
-    n_steps = data[0].shape[1]
-    spikeplay = animation.FuncAnimation(fig, animate,
-                                        frames=np.arange(n_steps) + 1,
-                                        interval=200, blit=True, repeat=True)
+    n_steps = data[0].shape[1]  # the num. of bins
+    time_steps = np.arange(speed, n_steps + speed, speed)
+    interval = speed * gpfa_instance.bin_size.rescale('ms').item()
+    spikeplay = animation.FuncAnimation(fig, animate, frames=time_steps,
+                                        interval=interval, blit=True,
+                                        repeat=True)
 
     return fig, [ax1, ax2], spikeplay
 
