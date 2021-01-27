@@ -361,7 +361,8 @@ def plot_trajectories(returned_data,
                                          'linestyle': 'dashdot'},
                       plot_args_marker_start={'marker': 'p',
                                               'markersize': 10,
-                                              'label': 'start'}):
+                                              'label': 'start'},
+                      figure_kwargs=dict()):
 
     """
     This function allows for 2D and 3D visualization of the latent space
@@ -467,6 +468,9 @@ def plot_trajectories(returned_data,
     plot_args_marker_start : dict, optional
         Arguments dictionary passed to ax.plot() for the marker of the
         average trajectory start.
+    figure_kwargs : dict, optional
+        Figure parameters in ``plt.figure()``.
+        Default: {}
 
     Returns
     -------
@@ -529,7 +533,7 @@ def plot_trajectories(returned_data,
     n_trials = data.shape[0]
 
     # initialize figure and axis
-    fig = plt.figure()
+    fig = plt.figure(**figure_kwargs)
     axes = fig.gca(projection=projection, aspect='auto')
 
     # loop over trials
@@ -603,7 +607,8 @@ def plot_trajectories_spikeplay(spiketrains,
                                                    'linestyle': 'dashdot'},
                                 plot_args_marker_start={'marker': 'p',
                                                         'markersize': 10,
-                                                        'label': 'start'}):
+                                                        'label': 'start'},
+                                figure_kwargs=dict()):
     """
     This function allows for 2D and 3D visualization of the latent space
     variables identified by the GPFA.
@@ -693,6 +698,9 @@ def plot_trajectories_spikeplay(spiketrains,
     plot_args_marker_start : dict, optional
         Arguments dictionary passed to ax.plot() for the marker of the
         average trajectory start.
+    figure_kwargs : dict, optional
+        Figure parameters in ``plt.figure()``.
+        Default: {}
 
     Returns
     -------
@@ -713,7 +721,7 @@ def plot_trajectories_spikeplay(spiketrains,
     n_trials_to_plot = min(n_trials, n_trials_to_plot)
 
     # initialize figure and axis
-    fig = plt.figure()
+    fig = plt.figure(**figure_kwargs)
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto')
 
