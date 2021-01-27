@@ -749,7 +749,8 @@ def plot_trajectories_spikeplay(spiketrains,
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
     ax1 = fig.add_subplot(1, 2, 1)
-    ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto')
+    ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto',
+                          title="GPFA latent trajectories")
 
     if transparent_spikes:
         Corth = gpfa_instance.params_estimated['Corth']
