@@ -783,7 +783,7 @@ def plot_trajectories_spikeplay(spiketrains,
         bin_id = int(iteration)
         residual = iteration - bin_id
         data = data_orig[:, :bin_id]
-        if bin_id != n_steps:
+        if bin_id < data_orig.shape[1]:
             # append an intermediate point
             vec = data_orig[:, bin_id] - data_orig[:, bin_id - 1]
             data = np.c_[data,
@@ -812,8 +812,9 @@ def plot_trajectories_spikeplay(spiketrains,
         artists = [slider, *lines_trials, *lines_groups]
         return artists
 
-    n_steps = data[0].shape[1]  # the num. of bins
-    time_steps = np.arange(speed, n_steps + speed, speed)
+    # GPFA implementation allows different n_bins. So does viziphant.
+    n_time_bins = gpfa_instance.transform_info['num_bins'].max()
+    time_steps = np.arange(speed, n_time_bins + speed, speed)
     interval = speed * gpfa_instance.bin_size.rescale('ms').item()
     spikeplay = animation.FuncAnimation(fig, animate, frames=time_steps,
                                         interval=interval, blit=True,
