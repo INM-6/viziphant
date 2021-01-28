@@ -595,7 +595,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 trial_grouping_dict=None,
                                 colors='grey',
                                 plot_group_averages=False,
-                                transparent_spikes=False,
+                                hide_irrelevant_neurons=False,
                                 plot_args_single={'linewidth': 0.3,
                                                   'alpha': 0.4,
                                                   'linestyle': '-'},
@@ -693,7 +693,7 @@ def plot_trajectories_spikeplay(spiketrains,
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
         Default: False
-    transparent_spikes : bool, optional
+    hide_irrelevant_neurons : bool, optional
         If True, neural activity will be shaded according to the influence
         of a neuron on the chosen latent `dimensions`. The influence is
         estimated as a normalized L1-norm of the columns of the pseudo-inverse
@@ -754,7 +754,7 @@ def plot_trajectories_spikeplay(spiketrains,
     ax2 = fig.add_subplot(1, 2, 2, projection=projection, aspect='auto',
                           title="GPFA latent trajectories")
 
-    if transparent_spikes:
+    if hide_irrelevant_neurons:
         Corth = gpfa_instance.params_estimated['Corth']
         Corth_inv = np.linalg.pinv(Corth)
         l1_norm = np.linalg.norm(Corth_inv[dimensions], ord=1, axis=0)
