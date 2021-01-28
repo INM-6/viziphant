@@ -730,6 +730,14 @@ def plot_trajectories_spikeplay(spiketrains,
     fig : matplotlib.figure.Figure
     axes : matplotlib.axes.Axes
     spikeplay : matplotlib.animation.FuncAnimation
+        Matplotlib animation that can be saved in a GIF or a video file.
+
+        .. code-block:: python
+
+            import matplotlib.animation as animation
+            spikeplay.save("gpfa.gif")
+            writergif = animation.FFMpegWriter(fps=60)
+            spikeplay.save("gpfa.mov", writer=writergif)
 
     """
     # Input spiketrains that were binned must share the same t_start and t_stop
