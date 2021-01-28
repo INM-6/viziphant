@@ -1,5 +1,5 @@
 neo>=0.9.0
-elephant @ git+https://github.com/NeuralEnsemble/elephant.git#egg=feature/tca
+elephant @ git+https://github.com/INM-6/elephant.git#egg=feature/tca
 numpy>=1.18.1
 quantities>=0.12.1
 six>=1.10.0
