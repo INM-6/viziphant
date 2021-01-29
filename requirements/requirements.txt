@@ -1,5 +1,5 @@
 neo>=0.9.0
-[-e] git+https://github.com/INM-6/elephant.git@feature/tca#egg=elephant
+elephant @ git+https://github.com/INM-6/elephant.git@feature/tca#egg=elephant
 numpy>=1.18.1
 quantities>=0.12.1
 six>=1.10.0
