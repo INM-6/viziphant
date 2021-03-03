@@ -367,7 +367,8 @@ def plot_trajectories(returned_data,
                       plot_args_marker_start={'marker': 'p',
                                               'markersize': 10,
                                               'label': 'start'},
-                      figure_kwargs=dict()):
+                      figure_kwargs=dict(),
+                      verbose=False):
 
     """
     This function allows for 2D and 3D visualization of the latent space
@@ -479,6 +480,9 @@ def plot_trajectories(returned_data,
     figure_kwargs : dict, optional
         Arguments dictionary passed to ``plt.figure()``.
         Default: {}
+    verbose: bool
+        Print hopefully helpful messages for debugging purposes.
+        Default: False
 
     Returns
     -------
@@ -553,13 +557,14 @@ def plot_trajectories(returned_data,
                   **plot_args_single)
 
         # plot single trial events
-        if block_with_cut_trials and neo_event_name and relevant_events:
+        if block_with_cut_trials and relevant_events:
             time_bins_with_relevant_event, relevant_event_labels = \
                 _get_event_times_and_labels(block_with_cut_trials,
                                             trial_idx,
-                                            neo_event_name,
+                                            # neo_event_name,
                                             relevant_events,
-                                            gpfa_instance)
+                                            gpfa_instance,
+                                            verbose)
 
             marker = itertools.cycle(Line2D.filled_markers)
             for event_time, event_label in zip(
@@ -967,39 +972,51 @@ def _set_axis_labels_trajectories(ax,
 
 def _get_event_times_and_labels(block_with_cut_trials,
                                 trial_idx,
-                                neo_event_name,
+                                # neo_event_name,
                                 relevant_events,
-                                gpfa_instance):
+                                gpfa_instance,
+                                verbose):
+    
+    
+    trial = block_with_cut_trials.segments[trial_idx]
 
-    trial_events = block_with_cut_trials.segments[trial_idx].filter(
-        objects='Event',
-        name=neo_event_name)[0]
+    event_times = []
+    event_labels = []
+    for event_label in relevant_events:
+        events = neo.utils.get_events(trial, labels=event_label)
+        if len(events) == 0:
+            if verbose:
+                print(f'No event found for label {event_label}.')
+            continue
+        if len(events[0].times) > 1 and verbose:
+            print(f'More than one events for label {event_label}.',
+                   'Proceed by choosing the first one.')
+        event_times.append(events[0].times[0])
+        event_labels.append(event_label)
 
-    # get mask for the relevant events
-    mask = np.zeros(trial_events.array_annotations['trial_event_labels'].shape,
-                    dtype='bool')
-    for event in relevant_events:
-        mask = np.logical_or(
-            mask,
-            trial_events.array_annotations['trial_event_labels'] == event)
+    # # get mask for the relevant events
+    # mask = np.zeros(trial_events.array_annotations['trial_event_labels'].shape,
+    #                 dtype='bool')
+    # for event in relevant_events:
+    #     mask = np.logical_or(
+    #         mask,
+    #         trial_events.array_annotations['trial_event_labels'] == event)
 
     # cheating by converting event times to binned spiketrain
-    t_start = block_with_cut_trials.segments[trial_idx].t_start
-    t_stop = block_with_cut_trials.segments[trial_idx].t_stop
-
-    event_spiketrain = neo.SpikeTrain(trial_events.times[mask],
-                                      t_start=t_start,
-                                      t_stop=t_stop)
+    event_spiketrain = neo.SpikeTrain(event_times,
+                                      units=trial.spiketrains[0].units,
+                                      t_start=trial.t_start,
+                                      t_stop=trial.t_stop)
     bin_size = gpfa_instance.bin_size
     binned_event_spiketrain = BinnedSpikeTrain(
         event_spiketrain,
         bin_size=bin_size).to_array().flatten()
 
     time_bins_with_relevant_event = np.nonzero(binned_event_spiketrain)[0]
-    relevant_event_labels = \
-        trial_events.array_annotations['trial_event_labels'][[mask]]
+    # relevant_event_labels = \
+    #     trial_events.array_annotations['trial_event_labels'][[mask]]
 
-    return time_bins_with_relevant_event, relevant_event_labels
+    return time_bins_with_relevant_event, event_labels
 
 
 def _show_unique_legend(axes):
