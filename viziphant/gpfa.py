@@ -117,7 +117,7 @@ def plot_dimensions_vs_time(returned_data,
                             gpfa_instance,
                             dimensions='all',
                             orthonormalized_dimensions=True,
-                            n_trials_to_plot=20,
+                            trials_to_plot=np.arange(20),
                             trial_grouping_dict=None,
                             colors='grey',
                             plot_single_trajectories=True,
@@ -190,9 +190,13 @@ def plot_dimensions_vs_time(returned_data,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer 
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)
     trial_grouping_dict : dict or None
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -295,11 +299,13 @@ def plot_dimensions_vs_time(returned_data,
     colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
 
     n_trials = data.shape[0]
+    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
+    
     bin_size = gpfa_instance.bin_size.item()
 
     for dimension_index, axis in zip(dimensions, np.ravel(axes)):
         if plot_single_trajectories:
-            for trial_idx in range(min(n_trials, n_trials_to_plot)):
+            for trial_idx in trials_to_plot:
                 dat = data[trial_idx]
 
                 key_id, trial_type = _get_trial_type(trial_grouping_dict,
@@ -346,7 +352,7 @@ def plot_trajectories(returned_data,
                       neo_event_name=None,
                       relevant_events=None,
                       orthonormalized_dimensions=True,
-                      n_trials_to_plot=20,
+                      trials_to_plot=np.arange(20),
                       trial_grouping_dict=None,
                       colors='grey',
                       plot_group_averages=False,
@@ -435,10 +441,13 @@ def plot_trajectories(returned_data,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot. If zero, no single trial
-        trajectories will be shown.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer 
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)
     trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -526,13 +535,14 @@ def plot_trajectories(returned_data,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
+    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
 
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
     axes = fig.gca(projection=projection, aspect='auto')
 
     # loop over trials
-    for trial_idx in range(min(n_trials, n_trials_to_plot)):
+    for trial_idx in trials_to_plot:
         dat = data[trial_idx][dimensions, :]
         key_id, trial_type = _get_trial_type(trial_grouping_dict,
                                              trial_idx)
@@ -591,7 +601,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 dimensions=[0, 1],
                                 speed=0.2,
                                 orthonormalized_dimensions=True,
-                                n_trials_to_plot=20,
+                                trials_to_plot=np.arange(20),
                                 trial_grouping_dict=None,
                                 colors='grey',
                                 plot_group_averages=False,
@@ -671,10 +681,13 @@ def plot_trajectories_spikeplay(spiketrains,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot. If zero, no single trial
-        trajectories will be shown.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer 
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)0
     trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -754,8 +767,8 @@ def plot_trajectories_spikeplay(spiketrains,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
-    n_trials_to_plot = min(n_trials, n_trials_to_plot)
-
+    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
+    
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
     ax1 = fig.add_subplot(1, 2, 1)
@@ -784,7 +797,7 @@ def plot_trajectories_spikeplay(spiketrains,
 
     empty_data = [[]] * n_dimensions
     lines_trials = []
-    for trial_idx in range(n_trials_to_plot):
+    for trial_idx in trials_to_plot:
         dat = data[trial_idx][dimensions, :]
         key_id, trial_type = _get_trial_type(trial_grouping_dict,
                                              trial_idx)
@@ -997,3 +1010,19 @@ def _show_unique_legend(axes):
         return
     by_label = dict(zip(labels, handles))
     axes.legend(by_label.values(), by_label.keys())
+
+def determine_trials_to_plot(trials_to_plot, n_trials):
+    
+    if isinstance(trials_to_plot, str):
+        if trials_to_plot == 'all':
+            trials_to_plot = np.arange(n_trials)
+        else:
+            print(f'`{trials_to_plot}` is an invalid input for the variable `trials_to_plot`. Please refer to the documentation.')
+    elif isinstance(trials_to_plot, int):
+        if n_trials < len(trials_to_plot):
+            trials_to_plot = np.arange(n_trials)
+        else:
+            trials_to_plot = np.arange(trials_to_plot)
+    elif isinstance(trials_to_plot, list):
+        pass
+    return trials_to_plot
