@@ -3,7 +3,7 @@ Release Notes
 =============
 
 Viziphant 0.2.0 release notes
-=============================
+*****************************
 
 Documentation
 -------------
@@ -21,6 +21,6 @@ Bug fixes
 
 
 Viziphant 0.1.0 release notes
-****************************
+*****************************
 
 This release constitutes the initial Viziphant release.
