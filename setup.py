@@ -12,10 +12,6 @@ with open("README.md") as f:
     long_description = f.read()
 with open('requirements/requirements.txt') as fp:
     install_requires = fp.read()
-extras_require = {}
-for extra in ['docs']:
-    with open('requirements/requirements-{0}.txt'.format(extra)) as fp:
-        extras_require[extra] = fp.read()
 
 
 setup(
@@ -24,7 +20,6 @@ setup(
     packages=['viziphant'],
     include_package_data=True,
     install_requires=install_requires,
-    extras_require=extras_require,
     author="Viziphant authors and contributors",
     author_email="contact@python-elephant.org",
     description="Viziphant is a package for the visualization of the analysis"

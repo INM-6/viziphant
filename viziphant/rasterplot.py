@@ -11,7 +11,7 @@ Raster and event plots of spike times
 
 """
 # Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
-# License: Modified BSD, see LICENSE.txt.txt for details.
+# License: Modified BSD, see LICENSE.txt for details.
 
 import matplotlib.axes
 import matplotlib.pyplot as plt
@@ -19,10 +19,11 @@ import numpy as np
 import quantities as pq
 import seaborn as sns
 import warnings
+import neo
 from math import log10, floor
 
 from elephant.statistics import mean_firing_rate
-from elephant.utils import check_same_units
+from viziphant.utils import check_same_units
 
 
 def _round_to_1(x):
@@ -675,7 +676,8 @@ def rasterplot_rates(spiketrains,
     return ax, axhistx, axhisty
 
 
-def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
+def rasterplot(spiketrains, axes=None, histogram_bins=0, title=None,
+               color=None, **kwargs):
     """
     Simple and fast raster plot of spike times.
 
@@ -690,9 +692,12 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
         Defines the number of histogram bins. If set to ``0``, no histogram
         is shown.
         Default: 0
-    title : str, optional
+    title : str or None, optional
         The axes title.
-        Default: ''
+        Default: None
+    color : str or list of str or None, optional
+        Raster colors.
+        Default: None
     **kwargs
         Additional parameters passed to matplotlib `scatter` function.
 
@@ -746,23 +751,38 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
         plt.show()
 
     """
+    if isinstance(spiketrains[0], neo.SpikeTrain):
+        spiketrains = [spiketrains]
+    spiketrains = list(filter(len, spiketrains))
     check_same_units(spiketrains)
-    units = spiketrains[0].units
-    spiketrains = [st.magnitude for st in spiketrains]
+    units = spiketrains[0][0].units
+    if color is None:
+        color = kwargs.pop('c', None)
+    if not isinstance(color, (list, tuple)):
+        color = [color] * len(spiketrains)
+
     if axes is None:
         nrows = 2 if histogram_bins else 1
         fig, axes = plt.subplots(nrows=nrows, ncols=1)
-    axes = np.atleast_1d(axes)
-    times_concat = np.hstack(spiketrains)
-    ys = np.hstack([[i] * len(st) for i, st in enumerate(spiketrains)])
-    axes[0].scatter(times_concat, ys, **kwargs)
-    axes[0].set_yticks([0, len(spiketrains) - 1])
+
+    count = 0
+    histtype = 'bar' if len(spiketrains) == 1 else 'step'
+    for sts_population, c in zip(spiketrains, color):
+        sts_population = [st.magnitude for st in sts_population]
+        axes = np.atleast_1d(axes)
+        times_population = np.hstack(sts_population)
+        ys = np.hstack([np.repeat(i + count, repeats=len(st))
+                        for i, st in enumerate(sts_population)])
+        axes[0].scatter(times_population, ys, c=c, **kwargs)
+        if histogram_bins:
+            axes[1].hist(times_population, bins=histogram_bins,
+                         histtype=histtype, color=c)
+        count += len(sts_population)
+    axes[0].set_yticks([0, count - 1])
     axes[0].set_title(title)
 
     if histogram_bins:
-        axes[1].hist(times_concat, bins=histogram_bins)
         axes[1].set_ylabel("Spike count")
-
     axes[-1].set_xlabel(f"Time ({units.dimensionality})")
 
     if len(axes) == 1:
@@ -771,7 +791,7 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
     return axes
 
 
-def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
+def eventplot(spiketrains, axes=None, histogram_bins=0, title=None, **kwargs):
     """
     Spike times eventplot with an additional histogram.
 
@@ -786,9 +806,9 @@ def eventplot(spiketrains, axes=None, histogram_bins=0, title='', **kwargs):
         Defines the number of histogram bins. If set to ``0``, no histogram
         is shown.
         Default: 0
-    title : str, optional
+    title : str or None, optional
         The axes title.
-        Default: ''
+        Default: None
     **kwargs
         Additional parameters passed to matplotlib `eventplot` function.
 
