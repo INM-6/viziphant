@@ -65,6 +65,9 @@ version = '.'.join(release.split('.')[:-1])
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+
 # Required to automatically create a summary page for each function listed in
 # the autosummary fields of each module.
 autosummary_generate = True
@@ -76,16 +79,21 @@ autosummary_generate = True
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+html_theme_options = {
+    'font_family': 'Arial',
+    'page_width': '1200px',  # default is 940
+    'sidebar_width': '280px',  # default is 220
+}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 # TODO: create logo and favicon
-# html_logo = 'images/viziphant_logo_sidebar.png'
+html_logo = 'images/viziphant_logo_sidebar.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = 'images/viziphant_favicon.ico'
+html_favicon = 'images/viziphant_favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -111,4 +119,4 @@ html_show_copyright = True
 htmlhelp_basename = 'viziphantdoc'
 
 # configuration for intersphinx: refer to Elephant
-intersphinx_mapping = {'elephant': ('https://elephant.readthedocs.io/en/latest/', None)}
+intersphinx_mapping = {'viziphant': ('https://viziphant.readthedocs.io/en/latest/', None)}
