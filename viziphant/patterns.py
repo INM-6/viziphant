@@ -24,7 +24,7 @@ Spike patterns statistics plots
     plot_patterns_statistics_lags
 
 """
-# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 from collections import defaultdict
