@@ -29,7 +29,7 @@ pip install git+https://github.com/INM-6/viziphant.git#egg=viziphant
 
 
 #### Copyright
-:copyright: 2015-2020 by the [Viziphant team](doc/authors.rst).
+:copyright: 2017-2022 by the [Viziphant team](doc/authors.rst).
 
 #### License
 BSD 3-Clause License, see [LICENSE.txt](LICENSE.txt) for details.

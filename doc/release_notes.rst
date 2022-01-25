@@ -7,7 +7,7 @@ Viziphant 0.2.0 release notes
 
 Documentation
 -------------
-The documentation is slightly revised in style, logo was added.
+* Documentation revised in style, logo was added
 
 New functionality and features
 ------------------------------
@@ -18,6 +18,14 @@ New functionality and features
 Bug fixes
 ---------
 * Bug fixes for the ISI and Unitary Event plots (https://github.com/INM-6/viziphant/pull/31) and (https://github.com/INM-6/viziphant/pull/32).
+
+Miscellaneous
+-------------
+* Continuous Integration (CI) was moved to github actions (https://github.com/INM-6/viziphant/pull/41)
+
+Selected dependency changes
+---------------------------
+* `elephant>=0.9.0`
 
 
 Viziphant 0.1.0 release notes
