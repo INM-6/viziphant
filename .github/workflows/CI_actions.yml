@@ -2,7 +2,7 @@
 # On pull requests and on pushes to master it will build the documentation .
 
 
-name: Viziphant-tests
+name: tests
 # define events that trigger workflow 'Viziphant-tests'
 on:
   # run on pull requests to master branch
