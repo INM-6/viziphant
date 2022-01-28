@@ -14,6 +14,13 @@ from datetime import date
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
 
+# -- Setup environment variables for elephant --------------------------------
+# set the following environment variables to ensure execution of plots when
+# building docs. This is of importance in connection with elephant modules
+# using OpenCL (pyopencl) or CUDA (pycuda).
+
+os.environ["ELEPHANT_USE_OPENCL"] = "0"
+os.environ["ELEPHANT_USE_CUDA"] = "0"
 
 # -- Project information -----------------------------------------------------
 
