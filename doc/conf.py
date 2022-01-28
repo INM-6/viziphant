@@ -94,7 +94,6 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# TODO: create logo and favicon
 html_logo = 'images/viziphant_logo_sidebar.png'
 
 # The name of an image file (within the static path) to use as favicon of the
