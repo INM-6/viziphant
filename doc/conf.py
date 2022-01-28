@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath('.'))
 # using OpenCL (pyopencl) or CUDA (pycuda).
 
 os.environ["ELEPHANT_USE_OPENCL"] = "0"
+os.environ["ELEPHANT_USE_CUDA"] = "0"
 
 # -- Project information -----------------------------------------------------
 
