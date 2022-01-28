@@ -1,6 +1,6 @@
 # Viziphant
 
-[![Build Status](https://travis-ci.org/INM-6/viziphant.svg?branch=master)](https://travis-ci.org/INM-6/viziphant)
+![example workflow](https://github.com/INM-6/viziphant/actions/workflows/CI_actions.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/viziphant/badge/?version=latest)](https://viziphant.readthedocs.io/en/latest/?badge=latest)
 [![![PyPi]](https://img.shields.io/pypi/v/viziphant)](https://pypi.org/project/viziphant/)
 
