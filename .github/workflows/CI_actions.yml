@@ -1,7 +1,8 @@
 # This workflow will setup GitHub-hosted runners and install the required dependencies for viziphant documentation.
-# On a pull requests and on pushes to master it will build and create the documentation .
+# On pull requests and on pushes to master it will build the documentation .
 
-name: Viziphant-tests
+
+name: tests
 # define events that trigger workflow 'Viziphant-tests'
 on:
   # run on pull requests to master branch
@@ -48,7 +49,8 @@ jobs:
          with:
             path: ~/.cache/pip
             # Look to see if there is a cache hit for the corresponding requirements files
-            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-docs.txt') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/environment.yml') }}-${{ steps.date.outputs.date }}
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-docs.txt') }}-${{ hashFiles('**/requirements.txt') }}-${{ steps.date.outputs.date }}
+
 
        - name: Install dependencies
          run: |
