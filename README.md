@@ -30,3 +30,12 @@ BSD 3-Clause License, see [LICENSE.txt](LICENSE.txt) for details.
 
 #### Acknowledgments
 See [acknowledgments](doc/acknowledgments.rst).
+
+#### Examples
+Rasterplot
+
+![Rasterplot](https://viziphant.readthedocs.io/en/latest/toctree/rasterplot/viziphant-rasterplot-rasterplot-2.hires.png)
+
+GPFA dimension vs. time (replace with plot of nice GPFA trajectory)
+
+![Rasterplot](https://viziphant.readthedocs.io/en/latest/toctree/gpfa/viziphant-gpfa-plot_dimensions_vs_time-1.hires.png)
