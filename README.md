@@ -31,7 +31,7 @@ BSD 3-Clause License, see [LICENSE.txt](LICENSE.txt) for details.
 #### Acknowledgments
 See [acknowledgments](doc/acknowledgments.rst).
 
-#### Examples
+#### Example visualizations with Viziphant
 Rasterplot
 
 ![Rasterplot](https://viziphant.readthedocs.io/en/latest/toctree/rasterplot/viziphant-rasterplot-rasterplot-2.hires.png)

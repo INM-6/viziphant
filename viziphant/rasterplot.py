@@ -746,7 +746,7 @@ def rasterplot(spiketrains, axes=None, histogram_bins=0, title=None,
                        t_stop=10 * pq.s) for r in range(1, 21)]
         event = neo.Event([0.5, 2.8] * pq.s, labels=['Trig ON', 'Trig OFF'])
 
-        axes = rasterplot(spiketrains, histogram_bins=50, title='Title', s=0.5)
+        axes = rasterplot(spiketrains, histogram_bins=50, title='', s=0.5)
         add_event(axes, event=event)
         plt.show()
 
