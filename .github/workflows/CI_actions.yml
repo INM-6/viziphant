@@ -26,7 +26,7 @@ jobs:
           # OS [ubuntu-latest, macos-latest, windows-latest]
           os: [ubuntu-latest]
           # relevant python versions for viziphant: [3.7, 3.8, 3.9]
-          python-version: [3.7, 3.8, 3.9, '3.10']
+          python-version: [3.7, 3.8, 3.9]
 
         # do not cancel all in-progress jobs if any matrix job fails
         fail-fast: false
