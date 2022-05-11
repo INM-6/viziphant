@@ -10,7 +10,7 @@ class PyViziphant(PythonPackage):
     """Viziphant is a package for the visualization of the analysis results of electrophysiology data in Python"""
 
     homepage = "https://viziphant.readthedocs.io/en/latest/"
-    pypi     = "viziphant/viziphant-0.1.0.tar.gz"
+    pypi = "viziphant/viziphant-0.1.0.tar.gz"
 
     # notify when the package is updated.
     maintainers = ['Moritz-Alexander-Kern']
