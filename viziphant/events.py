@@ -63,13 +63,18 @@ def add_event(axes, event, key=None, rotation=40):
     """
     axes = np.atleast_1d(axes)
     times = event.times.magnitude
+
+    # Get the limits of the last Axes object in the list
+    x_lim_min, x_lim_max = axes[-1].get_xlim()
+
     for event_idx, time in enumerate(times):
-        if key is None:
-            label = event.labels[event_idx]
-        else:
-            label = event.array_annotations[key][event_idx]
-        for axis in axes:
-            axis.axvline(time, color='black')
-        axes[0].text(time, axes[0].get_ylim()[1], label,
-                     horizontalalignment='left',
-                     verticalalignment='bottom', rotation=rotation)
+        if x_lim_min <= time <= x_lim_max:
+            if key is None:
+                label = event.labels[event_idx]
+            else:
+                label = event.array_annotations[key][event_idx]
+            for axis in axes:
+                axis.axvline(time, color='black')
+            axes[0].text(time, axes[0].get_ylim()[1], label,
+                         horizontalalignment='left',
+                         verticalalignment='bottom', rotation=rotation)
