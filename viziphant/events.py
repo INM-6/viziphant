@@ -66,6 +66,8 @@ def add_event(axes, event, key=None, rotation=40):
 
     # Get the limits of the last Axes object in the list
     x_lim_min, x_lim_max = axes[-1].get_xlim()
+    if x_lim_max < x_lim_min:
+        x_lim_min, x_lim_max = x_lim_max, x_lim_min
 
     for event_idx, time in enumerate(times):
         if x_lim_min <= time <= x_lim_max:
