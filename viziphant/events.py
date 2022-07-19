@@ -17,7 +17,7 @@ import numpy as np
 import quantities as pq
 
 
-def add_event(axes, event, key=None, rotation=40):
+def add_event(axes, event, key=None, rotation=40, exclude=None):
     """
     Add event(s) to axes plot.
 
@@ -43,6 +43,9 @@ def add_event(axes, event, key=None, rotation=40):
     rotation : int, optional
         Text label rotation in degrees.
         Default : 40
+    exclude : list, optional
+        List of event labels that should not be plotted.
+        Default: None
 
     Examples
     --------
@@ -75,6 +78,11 @@ def add_event(axes, event, key=None, rotation=40):
                 label = event.labels[event_idx]
             else:
                 label = event.array_annotations[key][event_idx]
+                
+    if exclude is None:
+        exclude = []
+
+        if label not in exclude:
             for axis in axes:
                 axis.axvline(time, color='black')
             axes[0].text(time, axes[0].get_ylim()[1], label,
