@@ -14,6 +14,7 @@ scientists that are used to Elephant.
 
    install
    modules
+   release_notes
    authors
    acknowledgments
 

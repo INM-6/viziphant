@@ -25,6 +25,7 @@ setup(
     description="Viziphant is a package for the visualization of the analysis"
                 "results of electrophysiology data in Python",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     license="BSD",
     url='https://github.com/INM-6/viziphant',
     classifiers=[
