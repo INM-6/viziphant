@@ -129,7 +129,8 @@ def plot_dimensions_vs_time(returned_data,
                             plot_args_average={'linewidth': 2,
                                                'alpha': 1,
                                                'linestyle': 'dashdot'},
-                            figure_args=dict(figsize=(10, 10))):
+                            figure_args=dict(figsize=(10, 10)),
+                            legend_args=dict()):
 
     """
     This function plots all latent space state dimensions versus time.
@@ -336,7 +337,7 @@ def plot_dimensions_vs_time(returned_data,
             data=data,
             gpfa_instance=gpfa_instance)
 
-    _show_unique_legend(axes=axes[0, 0])
+    _show_unique_legend(axes=axes[0, 0], legend_args)
     plt.tight_layout()
 
     for axis in axes[-1, :]:
@@ -1019,14 +1020,14 @@ def _get_event_times_and_labels(block_with_cut_trials,
     return time_bins_with_relevant_event, event_labels
 
 
-def _show_unique_legend(axes):
+def _show_unique_legend(axes, legend_args=dict()):
     # only plot unique labels
     handles, labels = axes.get_legend_handles_labels()
     if len(handles) == 0:
         # no labels have been provided
         return
     by_label = dict(zip(labels, handles))
-    axes.legend(by_label.values(), by_label.keys())
+    axes.legend(by_label.values(), by_label.keys(), **legend_args)
 
 def determine_trials_to_plot(trials_to_plot, n_trials):
     
