@@ -352,12 +352,12 @@ def plot_trajectories(returned_data,
                       gpfa_instance,
                       dimensions=[0, 1],
                       block_with_cut_trials=None,
-                      neo_event_name=None,
-                      relevant_events=None,
+                      neo_event_dict={},
                       orthonormalized_dimensions=True,
                       trials_to_plot=np.arange(20),
                       trial_grouping_dict=None,
                       colors='grey',
+                      markers=Line2D.filled_markers,
                       plot_group_averages=False,
                       plot_args_single={'linewidth': 0.3,
                                         'alpha': 0.4,
@@ -423,10 +423,16 @@ def plot_trajectories(returned_data,
         neo.Segment including the neo.Event with a specified
         `neo_event_name`.
         Default: None
-    neo_event_name : str or None, optional
-        A string specifying the name of the neo.Event which should be used
-        to identify the event times and labels of the `relevant_events`.
-        Default: None
+    neo_event_dict : dict, optional
+        Dictionary of names and properties of the events that should be plotted 
+        onto each trajectory.
+        The key specifies the label appearing in the legend. The item specifies
+        the neo_event_properties, which are used by neo.utils.get_events()
+        to filter the event. 
+        In case more than one event per dict-entry is available, only the first
+        one is chosen to be plotted. Please specify more properties to narrow
+        down the choice in that case.
+        Default: {}
     relevant_events : list of str or None, optional
         List of names of the event labels that should be plotted onto each
         single trial trajectory.
@@ -466,6 +472,9 @@ def plot_trajectories(returned_data,
         which case colors will be set automatically to correspond to individual
         groups.
         Default: 'grey'
+    markers : list of str, optional
+        List of strings specifying the markers of the different events.
+        Default: Line2D.filled_markers
     plot_group_averages : bool, optional
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
@@ -560,16 +569,16 @@ def plot_trajectories(returned_data,
                   **plot_args_single)
 
         # plot single trial events
-        if block_with_cut_trials and relevant_events:
+        if block_with_cut_trials and neo_event_dict:
             time_bins_with_relevant_event, relevant_event_labels = \
                 _get_event_times_and_labels(block_with_cut_trials,
                                             trial_idx,
                                             # neo_event_name,
-                                            relevant_events,
+                                            neo_event_dict,
                                             gpfa_instance,
                                             verbose)
 
-            marker = itertools.cycle(Line2D.filled_markers)
+            marker = itertools.cycle(markers)
             for event_time, event_label in zip(
                     time_bins_with_relevant_event,
                     relevant_event_labels):
@@ -975,8 +984,7 @@ def _set_axis_labels_trajectories(ax,
 
 def _get_event_times_and_labels(block_with_cut_trials,
                                 trial_idx,
-                                # neo_event_name,
-                                relevant_events,
+                                neo_event_dict,
                                 gpfa_instance,
                                 verbose):
     
@@ -985,8 +993,8 @@ def _get_event_times_and_labels(block_with_cut_trials,
 
     event_times = []
     event_labels = []
-    for event_label in relevant_events:
-        events = neo.utils.get_events(trial, labels=event_label)
+    for event_label, neo_event_properties in neo_event_dict.items():
+        events = neo.utils.get_events(trial, **neo_event_properties)
         if len(events) == 0:
             if verbose:
                 print(f'No event found for label {event_label}.')
@@ -996,14 +1004,6 @@ def _get_event_times_and_labels(block_with_cut_trials,
                    'Proceed by choosing the first one.')
         event_times.append(events[0].times[0])
         event_labels.append(event_label)
-
-    # # get mask for the relevant events
-    # mask = np.zeros(trial_events.array_annotations['trial_event_labels'].shape,
-    #                 dtype='bool')
-    # for event in relevant_events:
-    #     mask = np.logical_or(
-    #         mask,
-    #         trial_events.array_annotations['trial_event_labels'] == event)
 
     # cheating by converting event times to binned spiketrain
     event_spiketrain = neo.SpikeTrain(event_times,
@@ -1029,6 +1029,7 @@ def _show_unique_legend(axes, legend_args=dict()):
         # no labels have been provided
         return
     by_label = dict(zip(labels, handles))
+    
     axes.legend(by_label.values(), by_label.keys(), **legend_args)
 
 def determine_trials_to_plot(trials_to_plot, n_trials):
@@ -1039,7 +1040,7 @@ def determine_trials_to_plot(trials_to_plot, n_trials):
         else:
             print(f'`{trials_to_plot}` is an invalid input for the variable `trials_to_plot`. Please refer to the documentation.')
     elif isinstance(trials_to_plot, int):
-        if n_trials < len(trials_to_plot):
+        if n_trials < trials_to_plot:
             trials_to_plot = np.arange(n_trials)
         else:
             trials_to_plot = np.arange(trials_to_plot)
