@@ -339,7 +339,7 @@ def plot_dimensions_vs_time(returned_data,
             data=data,
             gpfa_instance=gpfa_instance)
 
-    _show_unique_legend(axes=axes[0, 0], legend_args)
+    _show_unique_legend(axes=axes[0, 0], **legend_args)
     plt.tight_layout()
 
     for axis in axes[-1, :]:
