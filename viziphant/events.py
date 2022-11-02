@@ -71,6 +71,9 @@ def add_event(axes, event, key=None, rotation=40, exclude=None):
     x_lim_min, x_lim_max = axes[-1].get_xlim()
     if x_lim_max < x_lim_min:
         x_lim_min, x_lim_max = x_lim_max, x_lim_min
+            
+    if exclude is None:
+        exclude = []
 
     for event_idx, time in enumerate(times):
         if x_lim_min <= time <= x_lim_max:
@@ -78,13 +81,10 @@ def add_event(axes, event, key=None, rotation=40, exclude=None):
                 label = event.labels[event_idx]
             else:
                 label = event.array_annotations[key][event_idx]
-                
-    if exclude is None:
-        exclude = []
 
-        if label not in exclude:
-            for axis in axes:
-                axis.axvline(time, color='black')
-            axes[0].text(time, axes[0].get_ylim()[1], label,
-                         horizontalalignment='left',
-                         verticalalignment='bottom', rotation=rotation)
+            if label not in exclude:
+                for axis in axes:
+                    axis.axvline(time, color='black')
+                axes[0].text(time, axes[0].get_ylim()[1], label,
+                            horizontalalignment='left',
+                            verticalalignment='bottom', rotation=rotation)
