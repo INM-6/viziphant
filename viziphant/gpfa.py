@@ -1057,6 +1057,6 @@ def _determine_trials_to_plot(trials_to_plot, n_trials):
     elif isinstance(trials_to_plot, list):
         return trials_to_plot
     else:
-        raise TypeError(f'`{trials_to_plot}` is of invalid type for the '
+        raise TypeError(f'`{type(trials_to_plot)}` is an invalid type for the '
                         f'variable `trials_to_plot`. '
                         f'Please refer to the documentation.')
