@@ -126,3 +126,6 @@ htmlhelp_basename = 'viziphantdoc'
 
 # configuration for intersphinx: refer to Elephant
 intersphinx_mapping = {'viziphant': ('https://viziphant.readthedocs.io/en/latest/', None)}
+
+# path to bibtex_bibfiles
+bibtex_bibfiles = ['bib/viziphant.bib']
