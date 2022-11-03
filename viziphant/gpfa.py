@@ -569,7 +569,7 @@ def plot_trajectories(returned_data,
 
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
-    axes = fig.gca(projection=projection, aspect='auto')
+    axes = fig.add_subplot(projection=projection, aspect='auto')
 
     # loop over trials
     for trial_idx in trials_to_plot:
