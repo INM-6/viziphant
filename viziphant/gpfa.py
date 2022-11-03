@@ -195,7 +195,7 @@ def plot_dimensions_vs_time(returned_data,
         Default: True
     trials_to_plot : str, int, list or np.array(), optional
         Variable that specifies the trials for which the single trajectories
-        should be plotted. Can be a string specifying 'all', an integer 
+        should be plotted. Can be a string specifying 'all', an integer
         specifying the first X trials or a list specifying the trial ids.
         Internally this is translated into a np.array() over which the
         function loops.
@@ -252,8 +252,9 @@ def plot_dimensions_vs_time(returned_data,
         import numpy as np
         import quantities as pq
         from elephant.gpfa import GPFA
-        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.spike_train_generation import StationaryPoissonProcess
         from viziphant.gpfa import plot_dimensions_vs_time
+
         np.random.seed(24)
         n_trials = 10
         n_channels = 5
@@ -262,9 +263,14 @@ def plot_dimensions_vs_time(returned_data,
         for trial in range(n_trials):
             firing_rates = np.random.randint(low=1, high=100,
                                              size=n_channels) * pq.Hz
-            spike_times = [homogeneous_poisson_process(rate=rate)
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
                            for rate in firing_rates]
             data.append(spike_times)
+
+        grouping_dict = {'trial type A': [0, 2, 4, 6, 8],
+                         'trial type B': [1, 3, 5, 7, 9]}
+
         gpfa = GPFA(bin_size=20 * pq.ms, x_dim=3, verbose=False)
         gpfa.fit(data)
         results = gpfa.transform(data, returned_data=['latent_variable_orth',
@@ -273,10 +279,14 @@ def plot_dimensions_vs_time(returned_data,
         plot_dimensions_vs_time(
             returned_data=results,
             gpfa_instance=gpfa,
-            dimensions=[0, 2],
+            dimensions='all',
             orthonormalized_dimensions=True,
-            n_columns=1)
+            n_columns=1,
+            plot_group_averages=True,
+            trials_to_plot="all",
+            trial_grouping_dict=grouping_dict)
         plt.show()
+
 
     """
     if dimensions == 'all':
@@ -302,8 +312,8 @@ def plot_dimensions_vs_time(returned_data,
     colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
 
     n_trials = data.shape[0]
-    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
-    
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
+
     bin_size = gpfa_instance.bin_size.item()
 
     for dimension_index, axis in zip(dimensions, np.ravel(axes)):
@@ -424,19 +434,15 @@ def plot_trajectories(returned_data,
         `neo_event_name`.
         Default: None
     neo_event_dict : dict, optional
-        Dictionary of names and properties of the events that should be plotted 
+        Dictionary of names and properties of the events that should be plotted
         onto each trajectory.
         The key specifies the label appearing in the legend. The item specifies
         the neo_event_properties, which are used by neo.utils.get_events()
-        to filter the event. 
+        to filter the event.
         In case more than one event per dict-entry is available, only the first
         one is chosen to be plotted. Please specify more properties to narrow
         down the choice in that case.
         Default: {}
-    relevant_events : list of str or None, optional
-        List of names of the event labels that should be plotted onto each
-        single trial trajectory.
-        Default: None
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'latent_variable_orth'
@@ -453,7 +459,7 @@ def plot_trajectories(returned_data,
         Default: True
     trials_to_plot : str, int, list or np.array(), optional
         Variable that specifies the trials for which the single trajectories
-        should be plotted. Can be a string specifying 'all', an integer 
+        should be plotted. Can be a string specifying 'all', an integer
         specifying the first X trials or a list specifying the trial ids.
         Internally this is translated into a np.array() over which the
         function loops.
@@ -508,38 +514,46 @@ def plot_trajectories(returned_data,
     rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
-    >>> import numpy as np
-    >>> import quantities as pq
-    >>> from elephant.gpfa import GPFA
-    >>> from elephant.spike_train_generation import homogeneous_poisson_process
-    >>> from viziphant.gpfa import plot_trajectories
-    >>> data = []
-    >>> for trial in range(50):
-    >>>     n_channels = 20
-    >>>     firing_rates = np.random.randint(low=1, high=100,
-    ...                                      size=n_channels) * pq.Hz
-    >>>     spike_times = [homogeneous_poisson_process(rate=rate)
-    ...                    for rate in firing_rates]
-    >>>     data.append(spike_times)
-    ...
-    >>> gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
-    >>> gpfa.fit(data)
-    >>> results = gpfa.transform(data, returned_data=['latent_variable_orth',
-    ...                                               'latent_variable'])
+    .. plot::
+        :include-source:
 
-    >>> trial_id_lists = np.arange(50).reshape(5,10)
-    >>> trial_group_names = ['A', 'B', 'C', 'D', 'E']
-    >>> trial_grouping_dict = {}
-    >>> for trial_group_name, trial_id_list in zip(trial_group_names,
-    ...                                            trial_id_lists):
-    >>>     trial_grouping_dict[trial_group_name] = trial_id_list
-    ...
-    >>> plot_trajectories(
-    ...        results,
-    ...        gpfa,
-    ...        dimensions=[0,1,2],
-    ...        trial_grouping_dict=trial_grouping_dict,
-    ...        plot_group_averages=True)
+        import numpy as np
+        import quantities as pq
+        from elephant.gpfa import GPFA
+        from elephant.spike_train_generation import StationaryPoissonProcess
+        from viziphant.gpfa import plot_trajectories
+        from matplotlib import pyplot as plt
+
+        data = []
+        for trial in range(50):
+            n_channels = 20
+            firing_rates = np.random.randint(low=1, high=100,
+                                             size=n_channels) * pq.Hz
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
+                           for rate in firing_rates]
+            data.append(spike_times)
+
+        gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
+        gpfa.fit(data)
+
+        results = gpfa.transform(data, returned_data=['latent_variable_orth',
+                                                      'latent_variable'])
+
+        trial_id_lists = np.arange(50).reshape(5, 10)
+        trial_group_names = ['A', 'B', 'C', 'D', 'E']
+
+        trial_grouping_dict = {}
+        for trial_group_name, trial_id_list in zip(trial_group_names,
+                                                   trial_id_lists):
+            trial_grouping_dict[trial_group_name] = trial_id_list
+
+        plot_trajectories(results,
+                          gpfa,
+                          dimensions=[0, 1, 2],
+                          trial_grouping_dict=trial_grouping_dict,
+                          plot_group_averages=True)
+        plt.show()
 
     """
     # prepare the input
@@ -551,7 +565,7 @@ def plot_trajectories(returned_data,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
-    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
 
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
@@ -700,7 +714,7 @@ def plot_trajectories_spikeplay(spiketrains,
         Default: True
     trials_to_plot : str, int, list or np.array(), optional
         Variable that specifies the trials for which the single trajectories
-        should be plotted. Can be a string specifying 'all', an integer 
+        should be plotted. Can be a string specifying 'all', an integer
         specifying the first X trials or a list specifying the trial ids.
         Internally this is translated into a np.array() over which the
         function loops.
@@ -784,8 +798,8 @@ def plot_trajectories_spikeplay(spiketrains,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
-    trials_to_plot = determine_trials_to_plot(trials_to_plot, n_trials)
-    
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
+
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
     ax1 = fig.add_subplot(1, 2, 1)
@@ -987,8 +1001,7 @@ def _get_event_times_and_labels(block_with_cut_trials,
                                 neo_event_dict,
                                 gpfa_instance,
                                 verbose):
-    
-    
+
     trial = block_with_cut_trials.segments[trial_idx]
 
     event_times = []
@@ -1001,7 +1014,7 @@ def _get_event_times_and_labels(block_with_cut_trials,
             continue
         if len(events[0].times) > 1 and verbose:
             print(f'More than one events for label {event_label}.',
-                   'Proceed by choosing the first one.')
+                  f'Proceed by choosing the first one.')
         event_times.append(events[0].times[0])
         event_labels.append(event_label)
 
@@ -1016,8 +1029,6 @@ def _get_event_times_and_labels(block_with_cut_trials,
         bin_size=bin_size).to_array().flatten()
 
     time_bins_with_relevant_event = np.nonzero(binned_event_spiketrain)[0]
-    # relevant_event_labels = \
-    #     trial_events.array_annotations['trial_event_labels'][[mask]]
 
     return time_bins_with_relevant_event, event_labels
 
@@ -1029,21 +1040,27 @@ def _show_unique_legend(axes, legend_args=dict()):
         # no labels have been provided
         return
     by_label = dict(zip(labels, handles))
-    
+
     axes.legend(by_label.values(), by_label.keys(), **legend_args)
 
-def determine_trials_to_plot(trials_to_plot, n_trials):
-    
+
+def _determine_trials_to_plot(trials_to_plot, n_trials):
+
     if isinstance(trials_to_plot, str):
         if trials_to_plot == 'all':
-            trials_to_plot = np.arange(n_trials)
+            return np.arange(n_trials)
         else:
-            print(f'`{trials_to_plot}` is an invalid input for the variable `trials_to_plot`. Please refer to the documentation.')
+            raise ValueError(f'`{trials_to_plot}` is an invalid input for the '
+                             f'variable `trials_to_plot`. '
+                             f'Please refer to the documentation.')
     elif isinstance(trials_to_plot, int):
         if n_trials < trials_to_plot:
-            trials_to_plot = np.arange(n_trials)
+            return np.arange(n_trials)
         else:
-            trials_to_plot = np.arange(trials_to_plot)
-    elif isinstance(trials_to_plot, list):
-        pass
-    return trials_to_plot
+            return np.arange(trials_to_plot)
+    elif isinstance(trials_to_plot, (list, np.ndarray)):
+        return trials_to_plot
+    else:
+        raise TypeError(f'`{type(trials_to_plot)}` is an invalid type for the '
+                        f'variable `trials_to_plot`. '
+                        f'Please refer to the documentation.')
