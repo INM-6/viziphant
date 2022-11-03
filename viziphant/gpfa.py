@@ -530,8 +530,10 @@ def plot_trajectories(returned_data,
         data = []
         for trial in range(50):
             n_channels = 20
-            firing_rates = np.random.randint(low=1, high=100, size=n_channels) * pq.Hz
-            spike_times = [StationaryPoissonProcess(rate=rate).generate_spiketrain()
+            firing_rates = np.random.randint(low=1, high=100,
+                                             size=n_channels) * pq.Hz
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
                            for rate in firing_rates]
             data.append(spike_times)
 
@@ -545,7 +547,8 @@ def plot_trajectories(returned_data,
         trial_group_names = ['A', 'B', 'C', 'D', 'E']
 
         trial_grouping_dict = {}
-        for trial_group_name, trial_id_list in zip(trial_group_names, trial_id_lists):
+        for trial_group_name, trial_id_list in zip(trial_group_names,
+                                                   trial_id_lists):
             trial_grouping_dict[trial_group_name] = trial_id_list
 
         plot_trajectories(results,
