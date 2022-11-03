@@ -119,7 +119,7 @@ def plot_dimensions_vs_time(returned_data,
                             gpfa_instance,
                             dimensions='all',
                             orthonormalized_dimensions=True,
-                            n_trials_to_plot=20,
+                            trials_to_plot=np.arange(20),
                             trial_grouping_dict=None,
                             colors='grey',
                             plot_single_trajectories=True,
@@ -131,7 +131,8 @@ def plot_dimensions_vs_time(returned_data,
                             plot_args_average={'linewidth': 2,
                                                'alpha': 1,
                                                'linestyle': 'dashdot'},
-                            figure_args=dict(figsize=(10, 10))):
+                            figure_args=dict(figsize=(10, 10)),
+                            legend_args=dict()):
 
     """
     This function plots all latent space state dimensions versus time.
@@ -192,9 +193,13 @@ def plot_dimensions_vs_time(returned_data,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)
     trial_grouping_dict : dict or None
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -247,8 +252,9 @@ def plot_dimensions_vs_time(returned_data,
         import numpy as np
         import quantities as pq
         from elephant.gpfa import GPFA
-        from elephant.spike_train_generation import homogeneous_poisson_process
+        from elephant.spike_train_generation import StationaryPoissonProcess
         from viziphant.gpfa import plot_dimensions_vs_time
+
         np.random.seed(24)
         n_trials = 10
         n_channels = 5
@@ -257,9 +263,14 @@ def plot_dimensions_vs_time(returned_data,
         for trial in range(n_trials):
             firing_rates = np.random.randint(low=1, high=100,
                                              size=n_channels) * pq.Hz
-            spike_times = [homogeneous_poisson_process(rate=rate)
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
                            for rate in firing_rates]
             data.append(spike_times)
+
+        grouping_dict = {'trial type A': [0, 2, 4, 6, 8],
+                         'trial type B': [1, 3, 5, 7, 9]}
+
         gpfa = GPFA(bin_size=20 * pq.ms, x_dim=3, verbose=False)
         gpfa.fit(data)
         results = gpfa.transform(data, returned_data=['latent_variable_orth',
@@ -268,10 +279,14 @@ def plot_dimensions_vs_time(returned_data,
         plot_dimensions_vs_time(
             returned_data=results,
             gpfa_instance=gpfa,
-            dimensions=[0, 2],
+            dimensions='all',
             orthonormalized_dimensions=True,
-            n_columns=1)
+            n_columns=1,
+            plot_group_averages=True,
+            trials_to_plot="all",
+            trial_grouping_dict=grouping_dict)
         plt.show()
+
 
     """
     if dimensions == 'all':
@@ -297,11 +312,13 @@ def plot_dimensions_vs_time(returned_data,
     colors = _check_colors(colors, trial_grouping_dict, n_trials=data.shape[0])
 
     n_trials = data.shape[0]
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
+
     bin_size = gpfa_instance.bin_size.item()
 
     for dimension_index, axis in zip(dimensions, np.ravel(axes)):
         if plot_single_trajectories:
-            for trial_idx in range(min(n_trials, n_trials_to_plot)):
+            for trial_idx in trials_to_plot:
                 dat = data[trial_idx]
 
                 key_id, trial_type = _get_trial_type(trial_grouping_dict,
@@ -332,7 +349,7 @@ def plot_dimensions_vs_time(returned_data,
             data=data,
             gpfa_instance=gpfa_instance)
 
-    _show_unique_legend(axes=axes[0, 0])
+    _show_unique_legend(axes=axes[0, 0], **legend_args)
     plt.tight_layout()
 
     for axis in axes[-1, :]:
@@ -345,12 +362,12 @@ def plot_trajectories(returned_data,
                       gpfa_instance,
                       dimensions=[0, 1],
                       block_with_cut_trials=None,
-                      neo_event_name=None,
-                      relevant_events=None,
+                      neo_event_dict={},
                       orthonormalized_dimensions=True,
-                      n_trials_to_plot=20,
+                      trials_to_plot=np.arange(20),
                       trial_grouping_dict=None,
                       colors='grey',
+                      markers=Line2D.filled_markers,
                       plot_group_averages=False,
                       plot_args_single={'linewidth': 0.3,
                                         'alpha': 0.4,
@@ -363,7 +380,8 @@ def plot_trajectories(returned_data,
                       plot_args_marker_start={'marker': 'p',
                                               'markersize': 10,
                                               'label': 'start'},
-                      figure_kwargs=dict()):
+                      figure_kwargs=dict(),
+                      verbose=False):
 
     """
     This function allows for 2D and 3D visualization of the latent space
@@ -415,14 +433,16 @@ def plot_trajectories(returned_data,
         neo.Segment including the neo.Event with a specified
         `neo_event_name`.
         Default: None
-    neo_event_name : str or None, optional
-        A string specifying the name of the neo.Event which should be used
-        to identify the event times and labels of the `relevant_events`.
-        Default: None
-    relevant_events : list of str or None, optional
-        List of names of the event labels that should be plotted onto each
-        single trial trajectory.
-        Default: None
+    neo_event_dict : dict, optional
+        Dictionary of names and properties of the events that should be plotted
+        onto each trajectory.
+        The key specifies the label appearing in the legend. The item specifies
+        the neo_event_properties, which are used by neo.utils.get_events()
+        to filter the event.
+        In case more than one event per dict-entry is available, only the first
+        one is chosen to be plotted. Please specify more properties to narrow
+        down the choice in that case.
+        Default: {}
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'latent_variable_orth'
@@ -437,10 +457,13 @@ def plot_trajectories(returned_data,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot. If zero, no single trial
-        trajectories will be shown.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)
     trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -455,6 +478,9 @@ def plot_trajectories(returned_data,
         which case colors will be set automatically to correspond to individual
         groups.
         Default: 'grey'
+    markers : list of str, optional
+        List of strings specifying the markers of the different events.
+        Default: Line2D.filled_markers
     plot_group_averages : bool, optional
         If True, trajectories of those trials belonging together specified
         in the trial_grouping_dict are averaged and plotted.
@@ -472,6 +498,9 @@ def plot_trajectories(returned_data,
     figure_kwargs : dict, optional
         Arguments dictionary passed to ``plt.figure()``.
         Default: {}
+    verbose: bool
+        Print hopefully helpful messages for debugging purposes.
+        Default: False
 
     Returns
     -------
@@ -485,38 +514,46 @@ def plot_trajectories(returned_data,
     rates up to 100 Hz and plot the resulting orthonormalized latent state
     space dimensions.
 
-    >>> import numpy as np
-    >>> import quantities as pq
-    >>> from elephant.gpfa import GPFA
-    >>> from elephant.spike_train_generation import homogeneous_poisson_process
-    >>> from viziphant.gpfa import plot_trajectories
-    >>> data = []
-    >>> for trial in range(50):
-    >>>     n_channels = 20
-    >>>     firing_rates = np.random.randint(low=1, high=100,
-    ...                                      size=n_channels) * pq.Hz
-    >>>     spike_times = [homogeneous_poisson_process(rate=rate)
-    ...                    for rate in firing_rates]
-    >>>     data.append(spike_times)
-    ...
-    >>> gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
-    >>> gpfa.fit(data)
-    >>> results = gpfa.transform(data, returned_data=['latent_variable_orth',
-    ...                                               'latent_variable'])
+    .. plot::
+        :include-source:
 
-    >>> trial_id_lists = np.arange(50).reshape(5,10)
-    >>> trial_group_names = ['A', 'B', 'C', 'D', 'E']
-    >>> trial_grouping_dict = {}
-    >>> for trial_group_name, trial_id_list in zip(trial_group_names,
-    ...                                            trial_id_lists):
-    >>>     trial_grouping_dict[trial_group_name] = trial_id_list
-    ...
-    >>> plot_trajectories(
-    ...        results,
-    ...        gpfa,
-    ...        dimensions=[0,1,2],
-    ...        trial_grouping_dict=trial_grouping_dict,
-    ...        plot_group_averages=True)
+        import numpy as np
+        import quantities as pq
+        from elephant.gpfa import GPFA
+        from elephant.spike_train_generation import StationaryPoissonProcess
+        from viziphant.gpfa import plot_trajectories
+        from matplotlib import pyplot as plt
+
+        data = []
+        for trial in range(50):
+            n_channels = 20
+            firing_rates = np.random.randint(low=1, high=100,
+                                             size=n_channels) * pq.Hz
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
+                           for rate in firing_rates]
+            data.append(spike_times)
+
+        gpfa = GPFA(bin_size=20*pq.ms, x_dim=8)
+        gpfa.fit(data)
+
+        results = gpfa.transform(data, returned_data=['latent_variable_orth',
+                                                      'latent_variable'])
+
+        trial_id_lists = np.arange(50).reshape(5, 10)
+        trial_group_names = ['A', 'B', 'C', 'D', 'E']
+
+        trial_grouping_dict = {}
+        for trial_group_name, trial_id_list in zip(trial_group_names,
+                                                   trial_id_lists):
+            trial_grouping_dict[trial_group_name] = trial_id_list
+
+        plot_trajectories(results,
+                          gpfa,
+                          dimensions=[0, 1, 2],
+                          trial_grouping_dict=trial_grouping_dict,
+                          plot_group_averages=True)
+        plt.show()
 
     """
     # prepare the input
@@ -528,13 +565,14 @@ def plot_trajectories(returned_data,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
 
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
     axes = fig.gca(projection=projection, aspect='auto')
 
     # loop over trials
-    for trial_idx in range(min(n_trials, n_trials_to_plot)):
+    for trial_idx in trials_to_plot:
         dat = data[trial_idx][dimensions, :]
         key_id, trial_type = _get_trial_type(trial_grouping_dict,
                                              trial_idx)
@@ -545,15 +583,16 @@ def plot_trajectories(returned_data,
                   **plot_args_single)
 
         # plot single trial events
-        if block_with_cut_trials and neo_event_name and relevant_events:
+        if block_with_cut_trials and neo_event_dict:
             time_bins_with_relevant_event, relevant_event_labels = \
                 _get_event_times_and_labels(block_with_cut_trials,
                                             trial_idx,
-                                            neo_event_name,
-                                            relevant_events,
-                                            gpfa_instance)
+                                            # neo_event_name,
+                                            neo_event_dict,
+                                            gpfa_instance,
+                                            verbose)
 
-            marker = itertools.cycle(Line2D.filled_markers)
+            marker = itertools.cycle(markers)
             for event_time, event_label in zip(
                     time_bins_with_relevant_event,
                     relevant_event_labels):
@@ -593,7 +632,7 @@ def plot_trajectories_spikeplay(spiketrains,
                                 dimensions=[0, 1],
                                 speed=0.2,
                                 orthonormalized_dimensions=True,
-                                n_trials_to_plot=20,
+                                trials_to_plot=np.arange(20),
                                 trial_grouping_dict=None,
                                 colors='grey',
                                 plot_group_averages=False,
@@ -673,10 +712,13 @@ def plot_trajectories_spikeplay(spiketrains,
         the orthonormalization, these dimensions reflect mixtures of
         timescales.
         Default: True
-    n_trials_to_plot : int, optional
-        Number of single trial trajectories to plot. If zero, no single trial
-        trajectories will be shown.
-        Default: 20
+    trials_to_plot : str, int, list or np.array(), optional
+        Variable that specifies the trials for which the single trajectories
+        should be plotted. Can be a string specifying 'all', an integer
+        specifying the first X trials or a list specifying the trial ids.
+        Internally this is translated into a np.array() over which the
+        function loops.
+        Default: np.arange(20)0
     trial_grouping_dict : dict or None, optional
         Dictionary which specifies the groups of trials which belong together
         (e.g. due to same trial type). Each item specifies one group: its
@@ -756,7 +798,7 @@ def plot_trajectories_spikeplay(spiketrains,
 
     # infer n_trial from shape of the data
     n_trials = data.shape[0]
-    n_trials_to_plot = min(n_trials, n_trials_to_plot)
+    trials_to_plot = _determine_trials_to_plot(trials_to_plot, n_trials)
 
     # initialize figure and axis
     fig = plt.figure(**figure_kwargs)
@@ -786,7 +828,7 @@ def plot_trajectories_spikeplay(spiketrains,
 
     empty_data = [[]] * n_dimensions
     lines_trials = []
-    for trial_idx in range(n_trials_to_plot):
+    for trial_idx in trials_to_plot:
         dat = data[trial_idx][dimensions, :]
         key_id, trial_type = _get_trial_type(trial_grouping_dict,
                                              trial_idx)
@@ -956,46 +998,69 @@ def _set_axis_labels_trajectories(ax,
 
 def _get_event_times_and_labels(block_with_cut_trials,
                                 trial_idx,
-                                neo_event_name,
-                                relevant_events,
-                                gpfa_instance):
+                                neo_event_dict,
+                                gpfa_instance,
+                                verbose):
 
-    trial_events = block_with_cut_trials.segments[trial_idx].filter(
-        objects='Event',
-        name=neo_event_name)[0]
+    trial = block_with_cut_trials.segments[trial_idx]
 
-    # get mask for the relevant events
-    mask = np.zeros(trial_events.array_annotations['trial_event_labels'].shape,
-                    dtype='bool')
-    for event in relevant_events:
-        mask = np.logical_or(
-            mask,
-            trial_events.array_annotations['trial_event_labels'] == event)
+    event_times = []
+    event_labels = []
+    for event_label, neo_event_properties in neo_event_dict.items():
+        events = neo.utils.get_events(trial, **neo_event_properties)
+        if len(events) == 0:
+            if verbose:
+                print(f'No event found for label {event_label}.')
+            continue
+        if len(events[0].times) > 1 and verbose:
+            print(f'More than one events for label {event_label}.',
+                  f'Proceed by choosing the first one.')
+        event_times.append(events[0].times[0])
+        event_labels.append(event_label)
 
     # cheating by converting event times to binned spiketrain
-    t_start = block_with_cut_trials.segments[trial_idx].t_start
-    t_stop = block_with_cut_trials.segments[trial_idx].t_stop
-
-    event_spiketrain = neo.SpikeTrain(trial_events.times[mask],
-                                      t_start=t_start,
-                                      t_stop=t_stop)
+    event_spiketrain = neo.SpikeTrain(event_times,
+                                      units=trial.spiketrains[0].units,
+                                      t_start=trial.t_start,
+                                      t_stop=trial.t_stop)
     bin_size = gpfa_instance.bin_size
     binned_event_spiketrain = BinnedSpikeTrain(
         event_spiketrain,
         bin_size=bin_size).to_array().flatten()
 
     time_bins_with_relevant_event = np.nonzero(binned_event_spiketrain)[0]
-    relevant_event_labels = \
-        trial_events.array_annotations['trial_event_labels'][[mask]]
 
-    return time_bins_with_relevant_event, relevant_event_labels
+    return time_bins_with_relevant_event, event_labels
 
 
-def _show_unique_legend(axes):
+def _show_unique_legend(axes, legend_args=dict()):
     # only plot unique labels
     handles, labels = axes.get_legend_handles_labels()
     if len(handles) == 0:
         # no labels have been provided
         return
     by_label = dict(zip(labels, handles))
-    axes.legend(by_label.values(), by_label.keys())
+
+    axes.legend(by_label.values(), by_label.keys(), **legend_args)
+
+
+def _determine_trials_to_plot(trials_to_plot, n_trials):
+
+    if isinstance(trials_to_plot, str):
+        if trials_to_plot == 'all':
+            return np.arange(n_trials)
+        else:
+            raise ValueError(f'`{trials_to_plot}` is an invalid input for the '
+                             f'variable `trials_to_plot`. '
+                             f'Please refer to the documentation.')
+    elif isinstance(trials_to_plot, int):
+        if n_trials < trials_to_plot:
+            return np.arange(n_trials)
+        else:
+            return np.arange(trials_to_plot)
+    elif isinstance(trials_to_plot, (list, np.ndarray)):
+        return trials_to_plot
+    else:
+        raise TypeError(f'`{type(trials_to_plot)}` is an invalid type for the '
+                        f'variable `trials_to_plot`. '
+                        f'Please refer to the documentation.')
