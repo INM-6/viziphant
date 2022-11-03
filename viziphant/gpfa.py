@@ -442,10 +442,6 @@ def plot_trajectories(returned_data,
         one is chosen to be plotted. Please specify more properties to narrow
         down the choice in that case.
         Default: {}
-    relevant_events : list of str or None, optional
-        List of names of the event labels that should be plotted onto each
-        single trial trajectory.
-        Default: None
     orthonormalized_dimensions : bool, optional
         Boolean which specifies whether to plot the orthonormalized latent
         state space dimension corresponding to the entry 'latent_variable_orth'
