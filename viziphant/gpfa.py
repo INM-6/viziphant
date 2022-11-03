@@ -263,7 +263,8 @@ def plot_dimensions_vs_time(returned_data,
         for trial in range(n_trials):
             firing_rates = np.random.randint(low=1, high=100,
                                              size=n_channels) * pq.Hz
-            spike_times = [StationaryPoissonProcess(rate=rate).generate_spiketrain()
+            spike_times = [StationaryPoissonProcess(rate=rate
+                                                    ).generate_spiketrain()
                            for rate in firing_rates]
             data.append(spike_times)
 
@@ -1001,7 +1002,6 @@ def _get_event_times_and_labels(block_with_cut_trials,
                                 gpfa_instance,
                                 verbose):
 
-
     trial = block_with_cut_trials.segments[trial_idx]
 
     event_times = []
@@ -1014,7 +1014,7 @@ def _get_event_times_and_labels(block_with_cut_trials,
             continue
         if len(events[0].times) > 1 and verbose:
             print(f'More than one events for label {event_label}.',
-                   'Proceed by choosing the first one.')
+                  f'Proceed by choosing the first one.')
         event_times.append(events[0].times[0])
         event_labels.append(event_label)
 
