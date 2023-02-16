@@ -40,7 +40,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
     'matplotlib.sphinxext.plot_directive',
@@ -92,6 +91,9 @@ html_theme_options = {
     'sidebar_width': '280px',  # default is 220
 }
 
+# The name of math_renderer extension for HTML output.
+html_math_renderer = 'mathjax'
+
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
 html_logo = 'images/viziphant_logo_sidebar.png'
@@ -126,3 +128,6 @@ htmlhelp_basename = 'viziphantdoc'
 
 # configuration for intersphinx: refer to Elephant
 intersphinx_mapping = {'viziphant': ('https://viziphant.readthedocs.io/en/latest/', None)}
+
+# path to bibtex_bibfiles
+bibtex_bibfiles = ['bib/viziphant.bib']
