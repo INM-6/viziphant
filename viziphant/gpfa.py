@@ -145,8 +145,7 @@ def plot_dimensions_vs_time(returned_data,
     dictionaries.
 
     This function is an adaption of the MATLAB implementation
-    by Byron Yu which was published with his paper:
-    Yu et al., J Neurophysiol, 2009.
+    by Byron Yu which was published with his paper: :cite:`Yu09_614`
 
     Parameters
     ----------
@@ -393,8 +392,7 @@ def plot_trajectories(returned_data,
     dictionaries.
 
     This function is an adaption of the MATLAB implementation
-    by Byron Yu which was published with his paper:
-    Yu et al., J Neurophysiol, 2009.
+    by Byron Yu which was published with his paper: :cite:`Yu09_614`
 
     Parameters
     ----------
@@ -660,8 +658,7 @@ def plot_trajectories_spikeplay(spiketrains,
     dictionaries.
 
     This function is an adaption of the MATLAB implementation
-    by Byron Yu which was published with his paper:
-    Yu et al., J Neurophysiol, 2009.
+    by Byron Yu which was published with his paper: :cite:`Yu09_614`.
 
     Parameters
     ----------
