@@ -40,7 +40,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
     'matplotlib.sphinxext.plot_directive',
@@ -91,6 +90,9 @@ html_theme_options = {
     'page_width': '1200px',  # default is 940
     'sidebar_width': '280px',  # default is 220
 }
+
+# The name of math_renderer extension for HTML output.
+html_math_renderer = 'mathjax'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
