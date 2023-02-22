@@ -1,6 +1,6 @@
 neo>=0.9.0
 elephant>=0.9.0
-numpy>=1.18.1
+numpy>=1.19.5
 quantities>=0.12.1
 matplotlib>=3.3.2
 seaborn>=0.9.0
