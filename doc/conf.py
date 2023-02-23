@@ -89,7 +89,7 @@ html_theme_options = {
     'page_width': '1200px',  # default is 940
     'sidebar_width': '280px',  # default is 220
     'logo': 'viziphant_logo_sidebar.png',  # add logo to sidebar
-    #'fixed_sidebar': 'true',
+    'fixed_sidebar': 'true'
 }
 
 # The name of math_renderer extension for HTML output.
@@ -110,6 +110,8 @@ html_favicon = 'images/viziphant_favicon.ico'
 # see here https://github.com/phn/pytpm/issues/3#issuecomment-12133978
 numpydoc_show_class_members = False
 
+# If false, no index is generated.
+html_use_index = True
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
