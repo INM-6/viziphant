@@ -19,6 +19,7 @@ contribution, and may not be the current affiliation of a contributor.
 * Peter Bouss [1]
 * Cristiano Köhler [1]
 * Simon Essink [1]
+* Moritz Kern [1]
 
 
 1. Institute of Neuroscience and Medicine (INM-6), Computational and Systems Neuroscience & Institute for Advanced Simulation (IAS-6), Theoretical Neuroscience, Jülich Research Centre and JARA, Jülich, Germany
