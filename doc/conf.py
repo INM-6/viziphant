@@ -88,7 +88,8 @@ html_theme_options = {
     'font_family': 'Arial',
     'page_width': '1200px',  # default is 940
     'sidebar_width': '280px',  # default is 220
-    'logo': 'viziphant_logo_sidebar.png'  # add logo to sidebar
+    'logo': 'viziphant_logo_sidebar.png',  # add logo to sidebar
+    'fixed_sidebar': 'true'
 }
 
 # The name of math_renderer extension for HTML output.
