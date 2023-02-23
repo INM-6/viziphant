@@ -88,7 +88,8 @@ html_theme_options = {
     'font_family': 'Arial',
     'page_width': '1200px',  # default is 940
     'sidebar_width': '280px',  # default is 220
-    'logo': 'viziphant_logo_sidebar.png'  # add logo to sidebar
+    'logo': 'viziphant_logo_sidebar.png',  # add logo to sidebar
+    'fixed_sidebar': 'true'
 }
 
 # The name of math_renderer extension for HTML output.
@@ -109,6 +110,8 @@ html_favicon = 'images/viziphant_favicon.ico'
 # see here https://github.com/phn/pytpm/issues/3#issuecomment-12133978
 numpydoc_show_class_members = False
 
+# If false, no index is generated.
+html_use_index = True
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -128,3 +131,62 @@ intersphinx_mapping = {'viziphant': ('https://viziphant.readthedocs.io/en/latest
 
 # path to bibtex_bibfiles
 bibtex_bibfiles = ['bib/viziphant.bib']
+
+# To configure your referencing style:
+bibtex_reference_style = 'author_year_round'
+
+# To configure the bibliography style:
+bibtex_default_style = 'author_year'
+
+# replace square brackets in citation with round brackets
+from dataclasses import dataclass, field
+import sphinxcontrib.bibtex.plugin
+
+from sphinxcontrib.bibtex.style.referencing import BracketStyle
+from sphinxcontrib.bibtex.style.referencing.author_year \
+    import AuthorYearReferenceStyle
+
+
+def bracket_style() -> BracketStyle:
+    return BracketStyle(
+        left='(',
+        right=')',
+    )
+
+
+@dataclass
+class RoundBracketReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = field(default_factory=bracket_style)
+    bracket_textual: BracketStyle = field(default_factory=bracket_style)
+    bracket_author: BracketStyle = field(default_factory=bracket_style)
+    bracket_label: BracketStyle = field(default_factory=bracket_style)
+    bracket_year: BracketStyle = field(default_factory=bracket_style)
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    'sphinxcontrib.bibtex.style.referencing',
+    'author_year_round', RoundBracketReferenceStyle)
+
+# Custom style for bibliography labels
+
+from pybtex.style.formatting.unsrt import Style as UnsrtStyle
+from pybtex.style.labels import BaseLabelStyle
+from pybtex.plugin import register_plugin
+
+
+# a simple label style which uses the bibtex keys for labels
+class AuthorYearStyle(BaseLabelStyle):
+
+    def format_labels(self, sorted_entries):
+        for entry in sorted_entries:
+            # create string for label
+            yield entry.persons["author"][0].last_names[0] + ", " +\
+                entry.fields["year"][-4:]
+
+
+class AuthorYear(UnsrtStyle):
+
+    default_label_style = AuthorYearStyle
+
+
+register_plugin('pybtex.style.formatting', 'author_year', AuthorYear)
