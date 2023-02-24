@@ -23,7 +23,7 @@ https://viziphant.readthedocs.io/en/latest/
 For instructions on installing Viziphant, please see https://viziphant.readthedocs.io/en/latest/install.html
 
 #### Copyright
-:copyright: 2017-2022 by the [Viziphant team](doc/authors.rst).
+:copyright: 2017-2023 by the [Viziphant team](doc/authors.rst).
 
 #### License
 BSD 3-Clause License, see [LICENSE.txt](LICENSE.txt) for details.

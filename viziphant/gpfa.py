@@ -14,7 +14,7 @@ Visualizes transformed trajectories output from
     plot_cumulative_shared_covariance
     plot_transform_matrix
 """
-# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 import itertools
