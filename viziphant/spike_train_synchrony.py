@@ -8,7 +8,7 @@ Spike train synchrony plots
     plot_spike_contrast
 
 """
-# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 import matplotlib.pyplot as plt

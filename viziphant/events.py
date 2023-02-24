@@ -8,7 +8,7 @@ Adding time events to axes plot
     add_event
 
 """
-# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.
 
 
@@ -71,7 +71,7 @@ def add_event(axes, event, key=None, rotation=40, exclude=None):
     x_lim_min, x_lim_max = axes[-1].get_xlim()
     if x_lim_max < x_lim_min:
         x_lim_min, x_lim_max = x_lim_max, x_lim_min
-            
+
     if exclude is None:
         exclude = []
 

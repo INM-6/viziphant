@@ -24,7 +24,7 @@ Spike patterns statistics plots
     plot_patterns_statistics_lags
 
 """
-# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 from collections import defaultdict
@@ -169,7 +169,7 @@ def plot_patterns_statistics_lags(patterns, axes=None):
     """
     if axes is None:
         fig, axes = plt.subplots()
-    
+
     # 'times' and 'lags' share the same units;
     # however, only lag units are of interest
     units = patterns[0]['lags'].units

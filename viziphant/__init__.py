@@ -3,7 +3,7 @@ Viziphant is a package for the visualization of the analysis results from
 Elephant, which is a package for the analysis of neurophysiological data,
 based on Neo.
 """
-# Copyright 2017-2022 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 from . import (asset, events, gpfa, patterns, rasterplot,
