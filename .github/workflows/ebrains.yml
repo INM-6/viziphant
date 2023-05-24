@@ -14,7 +14,7 @@ jobs:
       # this task will push the master branch of the source_repo (github) to the
       # destination_repo (ebrains gitlab)
       - name: syncmaster
-        uses:  wei/git-sync@55c6b63b4f21607da0e9877ca9b4d11a29fc6d83
+        uses: wei/git-sync@55c6b63b4f21607da0e9877ca9b4d11a29fc6d83
         # component owners need to set their own variables
         # the destination_repo format is
         # https://gitlab_service_account_name:${{ secrets.EBRAINS_GITLAB_ACCESS_TOKEN }}@gitlab.ebrains.eu/name_of_mirror.git
@@ -25,7 +25,7 @@ jobs:
           destination_branch: "master"
       # this task will push all tags from the source_repo to the destination_repo
       - name: synctags
-        uses:  wei/git-sync@55c6b63b4f21607da0e9877ca9b4d11a29fc6d83
+        uses: wei/git-sync@55c6b63b4f21607da0e9877ca9b4d11a29fc6d83
         with:
           source_repo: "INM-6/viziphant"
           source_branch: "refs/tags/*"
