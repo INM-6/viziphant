@@ -45,7 +45,7 @@ jobs:
             python-version: ${{ matrix.python-version }}
 
        - name: Cache pip
-         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # corresponds to V3.3.1
+         uses: actions/cache@v3
          with:
             path: ~/.cache/pip
             # Look to see if there is a cache hit for the corresponding requirements files
@@ -96,7 +96,7 @@ jobs:
             python-version: ${{ matrix.python-version }}
 
        - name: Cache pip
-         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # corresponds to V3.3.1
+         uses: actions/cache@v3
          with:
             path: ~/.cache/pip
             # Look to see if there is a cache hit for the corresponding requirements files
