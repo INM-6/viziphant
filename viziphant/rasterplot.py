@@ -10,7 +10,7 @@ Raster and event plots of spike times
     rasterplot_rates
 
 """
-# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 import matplotlib.axes

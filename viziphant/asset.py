@@ -9,7 +9,7 @@ Visualizes the output of :class:`elephant.asset.ASSET` analysis.
     plot_synchronous_events
 
 """
-# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 

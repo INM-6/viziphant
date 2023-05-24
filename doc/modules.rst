@@ -24,6 +24,4 @@ Function Reference by Module
 References
 ----------
 
-.. bibliography:: bib/viziphant.bib
-   :style: unsrt
-   :all:
+.. bibliography::

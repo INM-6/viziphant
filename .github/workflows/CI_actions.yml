@@ -1,7 +1,8 @@
 # This workflow will setup GitHub-hosted runners and install the required dependencies for viziphant documentation.
-# On a pull requests and on pushes to master it will build and create the documentation .
+# On pull requests and on pushes to master it will build the documentation .
 
-name: Viziphant-tests
+
+name: tests
 # define events that trigger workflow 'Viziphant-tests'
 on:
   # run on pull requests to master branch
@@ -24,8 +25,8 @@ jobs:
         matrix:
           # OS [ubuntu-latest, macos-latest, windows-latest]
           os: [ubuntu-latest]
-          # relevant python versions for viziphant: [3.6, 3.7, 3.8]
-          python-version: [3.6, 3.7, 3.8]
+          # relevant python versions for viziphant: [3.7, 3.8, 3.9, "3.10", 3.11]
+          python-version: [3.8, 3.9, "3.10", 3.11]
 
         # do not cancel all in-progress jobs if any matrix job fails
         fail-fast: false
@@ -34,21 +35,22 @@ jobs:
 
        - name: Get current year-month
          id: date
-         run: echo "::set-output name=date::$(date +'%Y-%m')"
+         run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
 
-       - uses: actions/checkout@v2
+       - uses: actions/checkout@v3
 
        - name: Set up Python ${{ matrix.python-version }}
-         uses: actions/setup-python@v2
+         uses: actions/setup-python@v4
          with:
             python-version: ${{ matrix.python-version }}
 
        - name: Cache pip
-         uses: actions/cache@v2
+         uses: actions/cache@v3
          with:
             path: ~/.cache/pip
             # Look to see if there is a cache hit for the corresponding requirements files
-            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-docs.txt') }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/environment.yml') }}-${{ steps.date.outputs.date }}
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-docs.txt') }}-${{ hashFiles('**/requirements.txt') }}-${{ steps.date.outputs.date }}
+
 
        - name: Install dependencies
          run: |
@@ -65,3 +67,50 @@ jobs:
             python --version
             cd doc
             make html
+
+  # install dependencies and run tests with pytest
+  tests:
+       runs-on: ${{ matrix.os }}
+       strategy:
+
+        matrix:
+          # OS [ubuntu-latest, macos-latest, windows-latest]
+          os: [ubuntu-latest]
+          # relevant python versions for viziphant: [3.7, 3.8, 3.9, "3.10"]
+          python-version: [3.9]
+
+        # do not cancel all in-progress jobs if any matrix job fails
+        fail-fast: false
+
+       steps:
+
+       - name: Get current year-month
+         id: date
+         run: echo "date=$(date +'%Y-%m')" >> $GITHUB_OUTPUT
+
+       - uses: actions/checkout@v3
+
+       - name: Set up Python ${{ matrix.python-version }}
+         uses: actions/setup-python@v4
+         with:
+            python-version: ${{ matrix.python-version }}
+
+       - name: Cache pip
+         uses: actions/cache@v3
+         with:
+            path: ~/.cache/pip
+            # Look to see if there is a cache hit for the corresponding requirements files
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-docs.txt') }}-${{ hashFiles('**/requirements.txt') }}-${{ steps.date.outputs.date }}
+
+       - name: Install dependencies
+         run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements/requirements-docs.txt
+            pip install -r requirements/requirements-tests.txt
+            pip install -r requirements/requirements.txt
+            pip install .
+
+       - name: run tests
+         run: |
+            python --version
+            pytest viziphant

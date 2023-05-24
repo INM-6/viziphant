@@ -12,7 +12,7 @@ the original publication. The output is assumed to be from
     plot_ue
 
 """
-# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.
 
 import numpy as np

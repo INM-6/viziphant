@@ -8,7 +8,7 @@ Adding time events to axes plot
     add_event
 
 """
-# Copyright 2017-2020 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.
 
 
@@ -17,7 +17,7 @@ import numpy as np
 import quantities as pq
 
 
-def add_event(axes, event, key=None, rotation=40):
+def add_event(axes, event, key=None, rotation=40, exclude=None):
     """
     Add event(s) to axes plot.
 
@@ -43,6 +43,9 @@ def add_event(axes, event, key=None, rotation=40):
     rotation : int, optional
         Text label rotation in degrees.
         Default : 40
+    exclude : list, optional
+        List of event labels that should not be plotted.
+        Default: None
 
     Examples
     --------
@@ -63,13 +66,25 @@ def add_event(axes, event, key=None, rotation=40):
     """
     axes = np.atleast_1d(axes)
     times = event.times.magnitude
+
+    # Get the limits of the last Axes object in the list
+    x_lim_min, x_lim_max = axes[-1].get_xlim()
+    if x_lim_max < x_lim_min:
+        x_lim_min, x_lim_max = x_lim_max, x_lim_min
+
+    if exclude is None:
+        exclude = []
+
     for event_idx, time in enumerate(times):
-        if key is None:
-            label = event.labels[event_idx]
-        else:
-            label = event.array_annotations[key][event_idx]
-        for axis in axes:
-            axis.axvline(time, color='black')
-        axes[0].text(time, axes[0].get_ylim()[1], label,
-                     horizontalalignment='left',
-                     verticalalignment='bottom', rotation=rotation)
+        if x_lim_min <= time <= x_lim_max:
+            if key is None:
+                label = event.labels[event_idx]
+            else:
+                label = event.array_annotations[key][event_idx]
+
+            if label not in exclude:
+                for axis in axes:
+                    axis.axvline(time, color='black')
+                axes[0].text(time, axes[0].get_ylim()[1], label,
+                            horizontalalignment='left',
+                            verticalalignment='bottom', rotation=rotation)

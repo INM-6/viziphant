@@ -4,7 +4,7 @@
 Installation
 ************
 
-Viziphant requires Python 3.6, 3.7, or 3.8.
+Viziphant requires Python 3.8, 3.9, 3.10 or 3.11
 
 .. tabs::
 
