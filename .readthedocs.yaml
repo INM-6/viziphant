@@ -4,13 +4,12 @@ version: 2
 build:
     os: ubuntu-22.04
     tools:
-      python: "mambaforge-22.9"
+      python: "3.11"
 sphinx:
   builder: html
   configuration: doc/conf.py
 
 python:
-    version: 3.11
     install:
         - requirements: requirements/requirements-docs.txt
         - method: pip
