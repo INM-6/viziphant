@@ -2,14 +2,14 @@
 version: 2
 
 build:
-    image: latest
+    os: ubuntu-22.04
 
 sphinx:
   builder: html
   configuration: doc/conf.py
 
 python:
-    version: 3.8
+    version: 3.11
     install:
         - requirements: requirements/requirements-docs.txt
         - method: pip
