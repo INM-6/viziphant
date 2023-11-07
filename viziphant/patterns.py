@@ -22,6 +22,7 @@ Spike patterns statistics plots
     plot_patterns_statistics_occurrence
     plot_patterns_statistics_size
     plot_patterns_statistics_lags
+    plot_patterns_graph
 
 """
 # Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
@@ -36,6 +37,8 @@ import quantities as pq
 
 from viziphant.rasterplot import rasterplot
 
+from viziphant.patterns_src.hypergraph import Hypergraph
+from viziphant.patterns_src.view import View, VisualizationStyle, weight, repulsive
 
 def plot_patterns_statistics_participation(patterns, axes=None):
     """
@@ -395,3 +398,114 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.set_ylabel('Neuron')
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
+
+def plot_patterns_graph(patterns, n_recorded_neurons=None, show_all_neurons=False,
+                    subset_style = VisualizationStyle.COLOR,
+                    triangulation_style = VisualizationStyle.INVISIBLE):
+    """
+    Hypergraph visualization of spike patterns.
+
+    The spike patterns are interpreted as a hypergraph. Neurons are interpreted
+    as vertices of the hypergraph while patterns are interpreted as hyperedges.
+    Thus, every pattern connects multiple neurons.
+
+    Neurons are depicted as circles on a 2D diagram. A graph layout algorithm
+    is applied to the hypergraph in order to determine suitable positions
+    for the neurons. Neurons participating in common patterns are placed
+    close to each other while neurons not sharing a common pattern are placed
+    further apart.
+
+    Each pattern is drawn, based on this diagram of neurons, in such a way
+    that it illustrate which neurons participated in the pattern. The method
+    used for this is called the subset standard. The pattern is drawn as a
+    smooth shape around all neurons that participated in it.
+
+    The shapes of the patterns are colored depending on the input data:
+    If only one data set is given, every pattern has its own color. This makes
+    distinguishing between different patterns easier, especially if their
+    drawings overlap. If multiple data sets are given, the patterns of one data
+    set are colored in the same color while every data set has its own color.
+    This helps to show differences and similarities among the data sets.
+
+    Parameters
+    ----------
+    patterns: dict or list of dict
+        Either a single dict containing patterns as returned by the SPADE
+        analysis for a single dataset, or a list of dicts containing patterns
+        of multiple datasets.
+    show_all_neurons: bool
+        Whether to display all neurons or only those that are part of at least
+        one pattern
+    n_recorded_neurons: int
+        Total number of recorded neurons, relevant only if show_all_neurons
+    subset_style: int
+        Style in which to draw the polygons.
+        0: Not shown
+        1: black
+        2: colored
+        Default: 2
+    triangulation_style: int
+        Style in which to draw the triangulation skeleton.
+        0: Not shown
+        1: black
+        2: colored
+        Default: 0
+
+    Returns
+    -------
+    A handle to a matplotlib figure containing the hypergraph.
+    """
+    # If only patterns of a single dataset are given, wrap them in a list to
+    # work with them in a uniform way
+    if isinstance(patterns, dict):
+        patterns = [patterns]
+
+    # List of hypergraphs that will be constructed from the given patterns
+    hypergraphs = []
+
+    if show_all_neurons:
+        # All n_recorded_neurons neurons become vertices of the hypergraphs
+        vertices = list(range(0, n_recorded_neurons))
+        # TODO: Enable specifying all neuron IDs (vertex labels)
+        vertex_labels = None
+    else:
+        # Else only vertices that are in at least one pattern in any dataset
+        # become vertices
+        vertices_to_labels = {}
+        for dataset in patterns:
+            dataset = dataset['patterns']
+            for pattern in dataset:
+                neuron_ids = map(lambda x, y: "ch{}#{}".format(x, y),
+                                 pattern['channel_ids'],
+                                 pattern['unit_ids'])
+                vertices_to_labels.update(zip(pattern['neurons'], neuron_ids))
+
+        vertices_to_labels = sorted(list(vertices_to_labels.items()),
+                                    key=lambda x: x[0])
+        vertices, vertex_labels = zip(*vertices_to_labels)
+
+    # Create one hypergraph per dataset
+    for dataset in patterns:
+        # Extract list of patterns
+        dataset = dataset['patterns']
+
+        hyperedges = []
+        # Create one hyperedge from every pattern
+        for pattern in dataset:
+            # A hyperedge is the set of neurons of a pattern
+            hyperedges.append(pattern['neurons'])
+
+        # Currently, all hyperedges receive the same weights
+        weights = [weight] * len(hyperedges)
+
+        hg = Hypergraph(vertices=vertices,
+                        vertex_labels=vertex_labels,
+                        hyperedges=hyperedges,
+                        weights=weights,
+                        repulse=repulsive)
+        hypergraphs.append(hg)
+
+    view = View(hypergraphs)
+    fig = view.show(subset_style=subset_style, triangulation_style=triangulation_style)
+
+    return fig
