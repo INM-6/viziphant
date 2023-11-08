@@ -228,7 +228,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
 
     fig, axes = plt.subplots(nrows=6, sharex=True,
                              figsize=plot_params['figsize'])
-    axes[5].get_shared_y_axes().join(axes[0], axes[2], axes[5])
+    axes[5].sharey(axes[0])
+    axes[0].sharey(axes[2])
 
     for ax in (axes[0], axes[2], axes[5]):
         for n in range(n_neurons):
