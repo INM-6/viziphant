@@ -107,9 +107,6 @@ class View:
         # hv.Graph displays the nodes (and optionally binary edges) of a graph
         dynamic_map = hv.DynamicMap(hv.Graph, streams=[pipe])
 
-        # Enlarge the resulting visualization
-        # opts.defaults(opts.Graph(width=600, height=600))
-
         # Define options for visualization
         dynamic_map.opts(
             # Some space around the Graph in order to avoid nodes being on the
@@ -233,7 +230,7 @@ class View:
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
 
-        return hv.render(plot)
+        return hv.render(plot, backend="matplotlib")
 
     def draw_hyperedges(self,
                         subset_style=VisualizationStyle.COLOR,

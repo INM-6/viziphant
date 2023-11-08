@@ -399,9 +399,8 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
 
-def plot_patterns_graph(patterns, n_recorded_neurons=None, show_all_neurons=False,
-                    subset_style = VisualizationStyle.COLOR,
-                    triangulation_style = VisualizationStyle.INVISIBLE):
+def plot_patterns_graph(patterns, n_recorded_neurons=None,
+        show_all_neurons=False):
     """
     Hypergraph visualization of spike patterns.
 
@@ -420,36 +419,20 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None, show_all_neurons=Fals
     used for this is called the subset standard. The pattern is drawn as a
     smooth shape around all neurons that participated in it.
 
-    The shapes of the patterns are colored depending on the input data:
-    If only one data set is given, every pattern has its own color. This makes
-    distinguishing between different patterns easier, especially if their
-    drawings overlap. If multiple data sets are given, the patterns of one data
-    set are colored in the same color while every data set has its own color.
-    This helps to show differences and similarities among the data sets.
+    The shapes of the patterns are colored such that every pattern has its own
+    color. This makes distinguishing between different patterns easier, especially if their
+    drawings overlap.
 
     Parameters
     ----------
-    patterns: dict or list of dict
-        Either a single dict containing patterns as returned by the SPADE
-        analysis for a single dataset, or a list of dicts containing patterns
-        of multiple datasets.
+    patterns: dict
+        A dict containing patterns as returned by the SPADE analysis for a
+        single dataset.
     show_all_neurons: bool
         Whether to display all neurons or only those that are part of at least
         one pattern
     n_recorded_neurons: int
         Total number of recorded neurons, relevant only if show_all_neurons
-    subset_style: int
-        Style in which to draw the polygons.
-        0: Not shown
-        1: black
-        2: colored
-        Default: 2
-    triangulation_style: int
-        Style in which to draw the triangulation skeleton.
-        0: Not shown
-        1: black
-        2: colored
-        Default: 0
 
     Returns
     -------
@@ -459,6 +442,10 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None, show_all_neurons=Fals
     # work with them in a uniform way
     if isinstance(patterns, dict):
         patterns = [patterns]
+
+    if len(patterns) != 1:
+        raise ValueError("Currently, only a single pattern dictionary can be "
+                         "drawn as a graph.")
 
     # List of hypergraphs that will be constructed from the given patterns
     hypergraphs = []
@@ -506,6 +493,7 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None, show_all_neurons=Fals
         hypergraphs.append(hg)
 
     view = View(hypergraphs)
-    fig = view.show(subset_style=subset_style, triangulation_style=triangulation_style)
+    fig = view.show(subset_style=VisualizationStyle.COLOR,
+                    triangulation_style=VisualizationStyle.INVISIBLE)
 
     return fig
