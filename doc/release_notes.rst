@@ -2,6 +2,31 @@
 Release Notes
 =============
 
+
+Viziphant 0.4.0 release notes
+*****************************
+New functionality and features
+------------------------------
+* Added new functionality to visualize complex sets of (spike) patterns as hypergraphs (#75)
+
+Bug fixes
+---------
+* Resolved a bug in the `plot_ue` function that addressed issues with joining axes in the plot (#72)
+
+Miscellaneous
+-------------
+* Updated the copyright statement to reflect the latest changes (#68)
+* Enhance security of actions (#69)
+* Install mirror to gitlab (#67)
+* In Readthedocs, deprecated the configuration key `build.image` in favor of `build.os`  (#71)
+
+Selected dependency changes
+---------------------------
+bokeh>=3.0.0
+holoviews>=1.16.0
+networkx>=3.0.0
+
+
 Viziphant 0.3.0 release notes
 *****************************
 
