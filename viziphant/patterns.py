@@ -439,8 +439,8 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
     -------
     A handle to a matplotlib figure containing the hypergraph.
 
-    Example
-    -------
+    Examples
+    --------
     Here, we show an example of plotting random patterns from the CAD method:
 
     .. plot::
@@ -464,6 +464,7 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         viziphant.patterns.plot_patterns_hypergraph(patterns)
 
         plt.show()
+
     """
     # If only patterns of a single dataset are given, wrap them in a list to
     # work with them in a uniform way
