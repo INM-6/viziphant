@@ -462,9 +462,8 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None,
         for dataset in patterns:
             dataset = dataset['patterns']
             for pattern in dataset:
-                neuron_ids = map(lambda x, y: "ch{}#{}".format(x, y),
-                                 pattern['channel_ids'],
-                                 pattern['unit_ids'])
+                neuron_ids = map(lambda x: "neuron{}".format(x),
+                                 pattern['neurons'])
                 vertices_to_labels.update(zip(pattern['neurons'], neuron_ids))
 
         vertices_to_labels = sorted(list(vertices_to_labels.items()),
