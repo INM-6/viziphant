@@ -424,9 +424,11 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
 
     Parameters
     ----------
-    patterns: dict
-        A dict containing patterns as returned by the SPADE analysis for a
-        single dataset.
+    patterns : dict or list of dict
+        One or more patterns from a list of found patterns returned by
+        :func:`elephant.spade.spade` or
+        :func:`elephant.cell_assembly_detection.cell_assembly_detection`
+        pattern detectors.
     num_neurons: None or int
         If None, only the neurons that are part of a pattern are shown. If an
         integer is passed, it identifies the total number of recorded neurons
@@ -436,15 +438,37 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
     Returns
     -------
     A handle to a matplotlib figure containing the hypergraph.
+
+    Example
+    -------
+    Here, we show an example of plotting random patterns from the CAD method:
+
+    .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import quantities as pq
+        from elephant.cell_assembly_detection import cell_assembly_detection
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_generation import compound_poisson_process
+        import viziphant
+
+        np.random.seed(30)
+        spiketrains = compound_poisson_process(rate=15 * pq.Hz,
+            amplitude_distribution=[0, 0.95, 0, 0, 0, 0, 0.05], t_stop=5*pq.s)
+        bst = BinnedSpikeTrain(spiketrains, bin_size=10 * pq.ms)
+        bst.rescale('ms')
+        patterns = cell_assembly_detection(bst, max_lag=2)
+
+        viziphant.patterns.plot_patterns_hypergraph(patterns)
+
+        plt.show()
     """
     # If only patterns of a single dataset are given, wrap them in a list to
     # work with them in a uniform way
     if isinstance(patterns, dict):
         patterns = [patterns]
-
-    if len(patterns) != 1:
-        raise ValueError("Currently, only a single pattern dictionary can be "
-                         "drawn as a graph.")
 
     # List of hypergraphs that will be constructed from the given patterns
     hypergraphs = []
@@ -458,37 +482,31 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         # Else only vertices that are in at least one pattern in any dataset
         # become vertices
         vertices_to_labels = {}
-        for dataset in patterns:
-            dataset = dataset['patterns']
-            for pattern in dataset:
-                neuron_ids = map(lambda x: "neuron{}".format(x),
-                                 pattern['neurons'])
-                vertices_to_labels.update(zip(pattern['neurons'], neuron_ids))
+        for pattern in patterns:
+            neuron_ids = map(lambda x: "neuron{}".format(x),
+                             pattern['neurons'])
+            vertices_to_labels.update(zip(pattern['neurons'], neuron_ids))
 
         vertices_to_labels = sorted(list(vertices_to_labels.items()),
                                     key=lambda x: x[0])
         vertices, vertex_labels = zip(*vertices_to_labels)
 
     # Create one hypergraph per dataset
-    for dataset in patterns:
-        # Extract list of patterns
-        dataset = dataset['patterns']
+    hyperedges = []
+    # Create one hyperedge from every pattern
+    for pattern in patterns:
+        # A hyperedge is the set of neurons of a pattern
+        hyperedges.append(pattern['neurons'])
 
-        hyperedges = []
-        # Create one hyperedge from every pattern
-        for pattern in dataset:
-            # A hyperedge is the set of neurons of a pattern
-            hyperedges.append(pattern['neurons'])
+    # Currently, all hyperedges receive the same weights
+    weights = [weight] * len(hyperedges)
 
-        # Currently, all hyperedges receive the same weights
-        weights = [weight] * len(hyperedges)
-
-        hg = Hypergraph(vertices=vertices,
-                        vertex_labels=vertex_labels,
-                        hyperedges=hyperedges,
-                        weights=weights,
-                        repulse=repulsive)
-        hypergraphs.append(hg)
+    hg = Hypergraph(vertices=vertices,
+                    vertex_labels=vertex_labels,
+                    hyperedges=hyperedges,
+                    weights=weights,
+                    repulse=repulsive)
+    hypergraphs.append(hg)
 
     view = View(hypergraphs)
     fig = view.show(subset_style=VisualizationStyle.COLOR,
