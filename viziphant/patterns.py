@@ -22,7 +22,7 @@ Spike patterns statistics plots
     plot_patterns_statistics_occurrence
     plot_patterns_statistics_size
     plot_patterns_statistics_lags
-    plot_patterns_graph
+    plot_patterns_hypergraph
 
 """
 # Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
