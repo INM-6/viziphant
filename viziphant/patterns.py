@@ -463,6 +463,7 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
 
         fig = viziphant.patterns.plot_patterns_hypergraph(patterns)
         fig
+        plt.show()
 
     """
     # If only patterns of a single dataset are given, wrap them in a list to
