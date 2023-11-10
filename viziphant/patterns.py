@@ -22,6 +22,7 @@ Spike patterns statistics plots
     plot_patterns_statistics_occurrence
     plot_patterns_statistics_size
     plot_patterns_statistics_lags
+    plot_patterns_hypergraph
 
 """
 # Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
@@ -36,6 +37,8 @@ import quantities as pq
 
 from viziphant.rasterplot import rasterplot
 
+from viziphant.patterns_src.hypergraph import Hypergraph
+from viziphant.patterns_src.view import View, VisualizationStyle, weight, repulsive
 
 def plot_patterns_statistics_participation(patterns, axes=None):
     """
@@ -395,3 +398,118 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.set_ylabel('Neuron')
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
+
+def plot_patterns_hypergraph(patterns, num_neurons=None):
+    """
+    Hypergraph visualization of spike patterns.
+
+    The spike patterns are interpreted as a hypergraph. Neurons are interpreted
+    as vertices of the hypergraph while patterns are interpreted as hyperedges.
+    Thus, every pattern connects multiple neurons.
+
+    Neurons are depicted as circles on a 2D diagram. A graph layout algorithm
+    is applied to the hypergraph in order to determine suitable positions
+    for the neurons. Neurons participating in common patterns are placed
+    close to each other while neurons not sharing a common pattern are placed
+    further apart.
+
+    Each pattern is drawn, based on this diagram of neurons, in such a way
+    that it illustrates which neurons participated in the pattern. The method
+    used for this is called the subset standard. The pattern is drawn as a
+    smooth shape around all neurons that participated in it.
+
+    The shapes of the patterns are colored such that every pattern has its own
+    color. This makes distinguishing between different patterns easier, especially if their
+    drawings overlap.
+
+    Parameters
+    ----------
+    patterns : dict or list of dict
+        One or more patterns from a list of found patterns returned by
+        :func:`elephant.spade.spade` or
+        :func:`elephant.cell_assembly_detection.cell_assembly_detection`
+        pattern detectors.
+    num_neurons: None or int
+        If None, only the neurons that are part of a pattern are shown. If an
+        integer is passed, it identifies the total number of recorded neurons
+        including non-pattern neurons to be additionally shown in the graph.
+        Default: None
+
+    Returns
+    -------
+    A handle to a matplotlib figure containing the hypergraph.
+
+    Examples
+    --------
+    Here, we show an example of plotting random patterns from the CAD method:
+
+    .. plot::
+        :include-source:
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import quantities as pq
+        from elephant.cell_assembly_detection import cell_assembly_detection
+        from elephant.conversion import BinnedSpikeTrain
+        from elephant.spike_train_generation import compound_poisson_process
+        import viziphant
+
+        np.random.seed(30)
+        spiketrains = compound_poisson_process(rate=15 * pq.Hz,
+            amplitude_distribution=[0, 0.95, 0, 0, 0, 0, 0.05], t_stop=5*pq.s)
+        bst = BinnedSpikeTrain(spiketrains, bin_size=10 * pq.ms)
+        bst.rescale('ms')
+        patterns = cell_assembly_detection(bst, max_lag=2)
+
+        fig = viziphant.patterns.plot_patterns_hypergraph(patterns)
+        plt.show()
+
+    """
+    # If only patterns of a single dataset are given, wrap them in a list to
+    # work with them in a uniform way
+    if isinstance(patterns, dict):
+        patterns = [patterns]
+
+    # List of hypergraphs that will be constructed from the given patterns
+    hypergraphs = []
+
+    if num_neurons is not None and num_neurons > 0:
+        # All n_recorded_neurons neurons become vertices of the hypergraphs
+        vertices = list(range(0, num_neurons))
+        # TODO: Enable specifying all neuron IDs (vertex labels)
+        vertex_labels = None
+    else:
+        # Else only vertices that are in at least one pattern in any dataset
+        # become vertices
+        vertices_to_labels = {}
+        for pattern in patterns:
+            neuron_ids = map(lambda x: "neuron{}".format(x),
+                             pattern['neurons'])
+            vertices_to_labels.update(zip(pattern['neurons'], neuron_ids))
+
+        vertices_to_labels = sorted(list(vertices_to_labels.items()),
+                                    key=lambda x: x[0])
+        vertices, vertex_labels = zip(*vertices_to_labels)
+
+    # Create one hypergraph per dataset
+    hyperedges = []
+    # Create one hyperedge from every pattern
+    for pattern in patterns:
+        # A hyperedge is the set of neurons of a pattern
+        hyperedges.append(pattern['neurons'])
+
+    # Currently, all hyperedges receive the same weights
+    weights = [weight] * len(hyperedges)
+
+    hg = Hypergraph(vertices=vertices,
+                    vertex_labels=vertex_labels,
+                    hyperedges=hyperedges,
+                    weights=weights,
+                    repulse=repulsive)
+    hypergraphs.append(hg)
+
+    view = View(hypergraphs)
+    fig = view.show(subset_style=VisualizationStyle.COLOR,
+                    triangulation_style=VisualizationStyle.INVISIBLE)
+
+    return fig
