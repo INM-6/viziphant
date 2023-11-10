@@ -399,8 +399,7 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
 
-def plot_patterns_graph(patterns, n_recorded_neurons=None,
-        show_all_neurons=False):
+def plot_patterns_hypergraph(patterns, num_neurons=None):
     """
     Hypergraph visualization of spike patterns.
 
@@ -415,7 +414,7 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None,
     further apart.
 
     Each pattern is drawn, based on this diagram of neurons, in such a way
-    that it illustrate which neurons participated in the pattern. The method
+    that it illustrates which neurons participated in the pattern. The method
     used for this is called the subset standard. The pattern is drawn as a
     smooth shape around all neurons that participated in it.
 
@@ -428,11 +427,11 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None,
     patterns: dict
         A dict containing patterns as returned by the SPADE analysis for a
         single dataset.
-    show_all_neurons: bool
-        Whether to display all neurons or only those that are part of at least
-        one pattern
-    n_recorded_neurons: int
-        Total number of recorded neurons, relevant only if show_all_neurons
+    num_neurons: None or int
+        If None, only the neurons that are part of a pattern are shown. If an
+        integer is passed, it identifies the total number of recorded neurons
+        including non-pattern neurons to be additionally shown in the graph.
+        Default: None
 
     Returns
     -------
@@ -450,9 +449,9 @@ def plot_patterns_graph(patterns, n_recorded_neurons=None,
     # List of hypergraphs that will be constructed from the given patterns
     hypergraphs = []
 
-    if show_all_neurons:
+    if num_neurons is not None and num_neurons > 0:
         # All n_recorded_neurons neurons become vertices of the hypergraphs
-        vertices = list(range(0, n_recorded_neurons))
+        vertices = list(range(0, num_neurons))
         # TODO: Enable specifying all neuron IDs (vertex labels)
         vertex_labels = None
     else:
