@@ -399,6 +399,7 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
 
+# TODO: add a parameter node_size
 def plot_patterns_hypergraph(patterns, num_neurons=None):
     """
     Hypergraph visualization of spike patterns.
@@ -461,7 +462,7 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         bst.rescale('ms')
         patterns = cell_assembly_detection(bst, max_lag=2)
 
-        fig = viziphant.patterns.plot_patterns_hypergraph(patterns)
+        viziphant.patterns.plot_patterns_hypergraph(patterns)
         plt.show()
 
     """

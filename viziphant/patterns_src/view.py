@@ -53,8 +53,8 @@ class View:
         # Which color of the color map to use next
         self.current_color = 1
 
-        # Size of the vertices
-        self.node_radius = 0.2
+        # Size of the vertices TODO: add as parameter
+        self.node_radius = .2
 
         # Selected title of the figure
         self.title = title
@@ -225,8 +225,8 @@ class View:
         plot = self.dynamic_map * self.dynamic_map_edges
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
-
-        axes = hv.render(plot, backend="matplotlib").axes[0]
+        # TODO: how to get axes? currently figure
+        axes = hv.render(plot, backend="matplotlib")
         return axes
 
     def draw_hyperedges(self,
