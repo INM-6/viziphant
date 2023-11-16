@@ -11,6 +11,7 @@ import holoviews as hv
 from holoviews import opts
 from holoviews.streams import Pipe
 import numpy as np
+import matplotlib.pyplot as plt
 
 from viziphant.patterns_src.hypergraph import Hypergraph
 
@@ -230,7 +231,8 @@ class View:
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
 
-        return hv.render(plot, backend="matplotlib")
+        axes = hv.render(plot, backend="matplotlib").axes[0]
+        return axes
 
     def draw_hyperedges(self,
                         subset_style=VisualizationStyle.COLOR,
