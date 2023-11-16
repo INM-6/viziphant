@@ -173,11 +173,6 @@ class View:
             # differently
             import colorcet
             cmap = colorcet.glasbey[:len(self.hypergraphs[0].hyperedges)]
-        elif self.n_hypergraphs <= 10:
-            # Select Category10 colormap as default for up to 10 data sets
-            # This is an often used colormap
-            from bokeh.palettes import all_palettes
-            cmap = list(all_palettes['Category10'][10][1:self.n_hypergraphs+1])[::-1]
         else:
             # For larger numbers of data sets, select Glasbey colormap
             import colorcet
