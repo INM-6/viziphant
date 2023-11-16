@@ -34,7 +34,7 @@ See [acknowledgments](doc/acknowledgments.rst).
 #### Example visualizations with Viziphant
 Rasterplot
 
-![Rasterplot](https://viziphant.readthedocs.io/en/latest/toctree/rasterplot/viziphant-rasterplot-rasterplot-2.hires.png)
+![Rasterplot](https://viziphant.readthedocs.io/en/latest/_downloads/2aeb1537d67a3e64142738f990a99b04/viziphant-rasterplot-rasterplot-1.hires.png)
 
 GPFA dimension vs. time (replace with plot of nice GPFA trajectory)
 
