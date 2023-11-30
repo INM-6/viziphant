@@ -463,7 +463,6 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         patterns = cell_assembly_detection(bst, max_lag=2)
 
         viziphant.patterns.plot_patterns_hypergraph(patterns)
-        plt.show()
 
     """
     # If only patterns of a single dataset are given, wrap them in a list to
