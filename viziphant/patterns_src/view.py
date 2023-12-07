@@ -11,6 +11,7 @@ import holoviews as hv
 from holoviews import opts
 from holoviews.streams import Pipe
 import numpy as np
+import matplotlib.pyplot as plt
 
 from viziphant.patterns_src.hypergraph import Hypergraph
 
@@ -34,7 +35,7 @@ class View:
     for the visualization of hypergraphs.
     """
 
-    def __init__(self, hypergraphs, title=None):
+    def __init__(self, hypergraphs, node_size=3, mark_neuron=None, node_color='white', title=None):
         """
         Constructs a View object that handles the visualization
         of the given hypergraphs.
@@ -44,6 +45,15 @@ class View:
         hypergraphs: list of Hypergraph objects
             Hypergraphs to be visualized.
             Each hypergraph should contain data of one data set.
+
+        node_size (optional) : int
+            Size of the nodes in the Hypergraphs
+        
+        mark_neuron (optional) : int
+            Neuron with given number will be highlighted
+        
+        node_color (optional) : String
+            change the color of the nodes
         """
 
         # Hyperedge drawings
@@ -52,11 +62,20 @@ class View:
         # Which color of the color map to use next
         self.current_color = 1
 
-        # Size of the vertices
-        self.node_radius = 0.2
+        # radius of the hyperedges
+        self.node_radius = .2
+        
+        # Size of the nodes (vertices of hypergraph)
+        self.node_size = node_size
+
+        # Color of the nodes
+        self.node_color = node_color
 
         # Selected title of the figure
         self.title = title
+
+        # Marked node will be in a different color
+        self.mark_neuron = mark_neuron
 
         # If no data was provided, fill in dummy data
         if hypergraphs:
@@ -106,7 +125,7 @@ class View:
         # The hv.Graph visualization is used for displaying the data
         # hv.Graph displays the nodes (and optionally binary edges) of a graph
         dynamic_map = hv.DynamicMap(hv.Graph, streams=[pipe])
-
+        
         # Define options for visualization
         dynamic_map.opts(
             # Some space around the Graph in order to avoid nodes being on the
@@ -123,8 +142,7 @@ class View:
             # All in black
             cmap=['#ffffff', '#ffffff'] * 50,
             # Size of the nodes
-            node_size=self.node_radius))
-
+            node_size=self.node_size, node_color=self.node_color, show_legend=True))
         return dynamic_map, pipe
 
     def _setup_hyperedge_drawing(self):
@@ -172,11 +190,6 @@ class View:
             # differently
             import colorcet
             cmap = colorcet.glasbey[:len(self.hypergraphs[0].hyperedges)]
-        elif self.n_hypergraphs <= 10:
-            # Select Category10 colormap as default for up to 10 data sets
-            # This is an often used colormap
-            from bokeh.palettes import all_palettes
-            cmap = list(all_palettes['Category10'][10][1:self.n_hypergraphs+1])[::-1]
         else:
             # For larger numbers of data sets, select Glasbey colormap
             import colorcet
@@ -229,10 +242,11 @@ class View:
         plot = self.dynamic_map * self.dynamic_map_edges
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
-
-        return hv.render(plot, backend="matplotlib")
-
-    def draw_hyperedges(self,
+        # TODO: how to get axes? currently figure
+        fig = hv.render(plot, backend="matplotlib")
+        return fig
+        
+    def draw_hyperedges(self, highlight_neuron=None,
                         subset_style=VisualizationStyle.COLOR,
                         triangulation_style=VisualizationStyle.INVISIBLE):
         """
@@ -399,7 +413,7 @@ class View:
         nodes = hv.Nodes((pos_x, pos_y, vertex_ids, vertex_labels),
                          extents=(0.01, 0.01, 0.01, 0.01),
                          vdims='Label')
-
+        
         new_data = ((edge_source, edge_target), nodes)
         self.pipe.send(new_data)
 
