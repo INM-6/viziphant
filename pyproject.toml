@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "viziphant"
+dynamic = [
+        "version",
+        "dependencies",
+        "optional-dependencies"]
+description = "Viziphant is a package for the visualization of the analysis results of electrophysiology data in Python"
+license = {file = "LICENSE.txt"}
+classifiers = [
+        "Development Status :: 5 - Production/Stable", 
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: BSD License",
+        "Natural Language :: English", "Operating System :: OS Independent",
+        'Programming Language :: Python :: 3',
+        "Topic :: Scientific/Engineering"]
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">= 3.8"
+
+[project.urls]
+Homepage = "https://github.com/INM-6/viziphant"
+Documentation = "https://viziphant.readthedocs.io/en/latest/"
+Repository = "https://github.com/INM-6/viziphant"
+Issues = "https://github.com/INM-6/viziphant/issues"
+Changelog = "https://github.com/INM-6/viziphant/releases"
+
+[tool.setuptools.dynamic.optional-dependencies]
+docs = {file = ["requirements/requirements-docs.txt"]}
+tests = {file = ["requirements/requirements-tests.txt"]}
+
+[tool.setuptools.dynamic]
+version = {file = "viziphant/VERSION"}
+dependencies = {file = ["requirements/requirements.txt"]}
+
+[tool.setuptools]
+packages = ["viziphant", "viziphant.test"]
+
+
+# This file was created following this guide:
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-pyproject-toml
