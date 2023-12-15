@@ -1,5 +1,5 @@
 # This workflow will setup GitHub-hosted runners and install the required dependencies for viziphant documentation.
-# On pull requests and on pushes to master it will build the documentation .
+# On pull requests and on pushes to master it will build the documentation.
 
 
 name: tests
