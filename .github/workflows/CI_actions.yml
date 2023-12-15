@@ -8,7 +8,7 @@ on:
   # run on pull requests to master branch
   pull_request:
     branches: [master]
-    types: [synchronize, opened, reopened, ready_for_review]
+    types: [synchronize, opened, reopened]
 
   # run on pushes to master branch
   push:
