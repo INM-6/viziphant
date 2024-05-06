@@ -34,8 +34,7 @@ class View:
     In summary, this class represents an interactive tool
     for the visualization of hypergraphs.
     """
-
-    def __init__(self, hypergraphs, node_size=3, mark_neuron=None, node_color='white', title=None):
+    def __init__(self, hypergraphs, node_size=3, node_color='white', node_linewidth=1, title=None):
         """
         Constructs a View object that handles the visualization
         of the given hypergraphs.
@@ -49,11 +48,11 @@ class View:
         node_size (optional) : int
             Size of the nodes in the Hypergraphs
         
-        mark_neuron (optional) : int
-            Neuron with given number will be highlighted
-        
         node_color (optional) : String
             change the color of the nodes
+
+        node_linewidth (optional) : int
+            change the line width of the nodes
         """
 
         # Hyperedge drawings
@@ -71,11 +70,11 @@ class View:
         # Color of the nodes
         self.node_color = node_color
 
+        # Width of the Node lines
+        self.node_linewidth = node_linewidth
+
         # Selected title of the figure
         self.title = title
-
-        # Marked node will be in a different color
-        self.mark_neuron = mark_neuron
 
         # If no data was provided, fill in dummy data
         if hypergraphs:
@@ -125,7 +124,7 @@ class View:
         # The hv.Graph visualization is used for displaying the data
         # hv.Graph displays the nodes (and optionally binary edges) of a graph
         dynamic_map = hv.DynamicMap(hv.Graph, streams=[pipe])
-        
+
         # Define options for visualization
         dynamic_map.opts(
             # Some space around the Graph in order to avoid nodes being on the
@@ -142,7 +141,7 @@ class View:
             # All in black
             cmap=['#ffffff', '#ffffff'] * 50,
             # Size of the nodes
-            node_size=self.node_size, node_color=self.node_color, show_legend=True))
+            node_size=self.node_size, node_color=self.node_color, node_linewidth=self.node_linewidth, show_legend=True))
         return dynamic_map, pipe
 
     def _setup_hyperedge_drawing(self):
