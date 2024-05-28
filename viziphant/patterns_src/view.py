@@ -19,9 +19,12 @@ hv.extension('matplotlib')
 
 
 class VisualizationStyle:
-    INVISIBLE = 1
-    NOCOLOR = 2
-    COLOR = 3
+    styles = {
+        'invisible': 1,
+        'nocolor': 2,
+        'color': 3
+    }
+
 
 
 class View:
@@ -219,8 +222,8 @@ class View:
         return dynamic_map, pipe
 
     def show(self,
-             subset_style=VisualizationStyle.COLOR,
-             triangulation_style=VisualizationStyle.INVISIBLE):
+             subset_style=VisualizationStyle.styles['color'],
+             triangulation_style=VisualizationStyle.styles['invisible']):
         """
         Set up the correct arrangement and combination of the
         DynamicMap objects.
@@ -246,8 +249,8 @@ class View:
         return fig
         
     def draw_hyperedges(self, highlight_neuron=None,
-                        subset_style=VisualizationStyle.COLOR,
-                        triangulation_style=VisualizationStyle.INVISIBLE):
+                        subset_style=VisualizationStyle.styles['color'],
+                        triangulation_style=VisualizationStyle.styles['invisible']):
         """
         Handler for drawing the hyperedges of the hypergraphs
         in the given style
@@ -256,14 +259,14 @@ class View:
         ----------
         subset_style: enum VisualizationStyle
             How to do the subset standard visualization of the hyperedges:
-            VisualizationStyle.INVISIBLE => not at all
-            VisualizationStyle.NOCOLOR => Only contours without color
-            VisualizationStyle.COLOR => Contours filled with color
+            VisualizationStyle.styles['invisible] => not at all
+            VisualizationStyle.styles['nocolor] => Only contours without color
+            VisualizationStyle.styles['color] => Contours filled with color
         triangulation_style: enum VisualizationStyle
             How to do the triangulation visualization of the hyperedges:
-            VisualizationStyle.INVISIBLE => not at all
-            VisualizationStyle.NOCOLOR => Only contours without color
-            VisualizationStyle.COLOR => Contours filled with color
+            VisualizationStyle.styles['invisible] => not at all
+            VisualizationStyle.styles['nocolor] => Only contours without color
+            VisualizationStyle.styles['color] => Contours filled with color
         """
 
         # Collect all polygons to pass them to the visualization together
@@ -280,11 +283,11 @@ class View:
                 # Options are: invisible, nocolor, color
                 # If invisible, the corresponding visualization does not need
                 # to be constructed
-                if subset_style != VisualizationStyle.INVISIBLE:
+                if subset_style != VisualizationStyle.styles['invisible']:
                     polygons_subset.append(create_subset(hyperedge,
                                                          self.positions,
                                                          self.node_radius))
-                if triangulation_style != VisualizationStyle.INVISIBLE:
+                if triangulation_style != VisualizationStyle.styles['invisible']:
                     polygons_triang.extend(
                         create_triangulation(hyperedge, self.positions))
 
@@ -310,10 +313,10 @@ class View:
                 # Call the postprocessing function, color added only if needed
                 polygons.extend(process_polygons(
                         polygons_subset,
-                        subset_style == VisualizationStyle.COLOR))
+                        subset_style == VisualizationStyle.styles['color']))
                 polygons.extend(process_polygons(
                         polygons_triang,
-                        triangulation_style == VisualizationStyle.COLOR))
+                        triangulation_style == VisualizationStyle.styles['color']))
 
         # Save as instance attribute so widgets can work with the polygons
         self.polygons = polygons

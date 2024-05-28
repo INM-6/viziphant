@@ -527,7 +527,7 @@ def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
     hypergraphs.append(hg)
     view = View(hypergraphs=hypergraphs, node_size=node_size, 
                 node_color=node_color, node_linewidth=node_linewidth)
-    fig = view.show(subset_style=VisualizationStyle.COLOR,
-                    triangulation_style=VisualizationStyle.INVISIBLE)
+    fig = view.show(subset_style=VisualizationStyle.styles['color'],
+                    triangulation_style=VisualizationStyle.styles['invisible'])
 
     return fig
