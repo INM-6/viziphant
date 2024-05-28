@@ -399,7 +399,8 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
 
-def plot_patterns_hypergraph(patterns, num_neurons=None):
+def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
+                            must_involve_neuron=None, node_size=3, node_color='white', node_linewidth=1):
     """
     Hypergraph visualization of spike patterns.
 
@@ -429,11 +430,22 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         :func:`elephant.spade.spade` or
         :func:`elephant.cell_assembly_detection.cell_assembly_detection`
         pattern detectors.
+    node_size (optional): int
+        Change the size of the drawen nodes
+    pattern_size (optional): range
+        Only draw patterns that are in range of pattern_size
     num_neurons: None or int
         If None, only the neurons that are part of a pattern are shown. If an
         integer is passed, it identifies the total number of recorded neurons
         including non-pattern neurons to be additionally shown in the graph.
         Default: None
+    must_involve_neuron (optional) : int
+        Highlight pattern which includes neuron x
+    node_color (optional) : String
+        change the color of the nodes
+
+    node_linewidth (optional) : int
+            change the line width of the nodes
 
     Returns
     -------
@@ -461,8 +473,7 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
         bst.rescale('ms')
         patterns = cell_assembly_detection(bst, max_lag=2)
 
-        fig = viziphant.patterns.plot_patterns_hypergraph(patterns)
-        plt.show()
+        viziphant.patterns.plot_patterns_hypergraph(patterns)
 
     """
     # If only patterns of a single dataset are given, wrap them in a list to
@@ -496,8 +507,15 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
     # Create one hyperedge from every pattern
     for pattern in patterns:
         # A hyperedge is the set of neurons of a pattern
-        hyperedges.append(pattern['neurons'])
+        if pattern_size is None or len(pattern['neurons']) in pattern_size:
+            hyperedges.append(pattern['neurons'])
 
+    if must_involve_neuron is not None and isinstance(must_involve_neuron, int):
+        hyperedges = [edge for edge in hyperedges if must_involve_neuron in edge]
+    
+    elif must_involve_neuron is not None and isinstance(must_involve_neuron, list):
+        hyperedges = [edge for edge in hyperedges if any(elem in edge for elem in must_involve_neuron)]
+        
     # Currently, all hyperedges receive the same weights
     weights = [weight] * len(hyperedges)
 
@@ -507,9 +525,9 @@ def plot_patterns_hypergraph(patterns, num_neurons=None):
                     weights=weights,
                     repulse=repulsive)
     hypergraphs.append(hg)
-
-    view = View(hypergraphs)
-    fig = view.show(subset_style=VisualizationStyle.COLOR,
-                    triangulation_style=VisualizationStyle.INVISIBLE)
+    view = View(hypergraphs=hypergraphs, node_size=node_size, 
+                node_color=node_color, node_linewidth=node_linewidth)
+    fig = view.show(subset_style=VisualizationStyle.styles['color'],
+                    triangulation_style=VisualizationStyle.styles['invisible'])
 
     return fig

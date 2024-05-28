@@ -11,6 +11,7 @@ import holoviews as hv
 from holoviews import opts
 from holoviews.streams import Pipe
 import numpy as np
+import matplotlib.pyplot as plt
 
 from viziphant.patterns_src.hypergraph import Hypergraph
 
@@ -18,9 +19,12 @@ hv.extension('matplotlib')
 
 
 class VisualizationStyle:
-    INVISIBLE = 1
-    NOCOLOR = 2
-    COLOR = 3
+    styles = {
+        'invisible': 1,
+        'nocolor': 2,
+        'color': 3
+    }
+
 
 
 class View:
@@ -33,8 +37,7 @@ class View:
     In summary, this class represents an interactive tool
     for the visualization of hypergraphs.
     """
-
-    def __init__(self, hypergraphs, title=None):
+    def __init__(self, hypergraphs, node_size=3, node_color='white', node_linewidth=1, title=None):
         """
         Constructs a View object that handles the visualization
         of the given hypergraphs.
@@ -44,6 +47,15 @@ class View:
         hypergraphs: list of Hypergraph objects
             Hypergraphs to be visualized.
             Each hypergraph should contain data of one data set.
+
+        node_size (optional) : int
+            Size of the nodes in the Hypergraphs
+        
+        node_color (optional) : String
+            change the color of the nodes
+
+        node_linewidth (optional) : int
+            change the line width of the nodes
         """
 
         # Hyperedge drawings
@@ -52,8 +64,17 @@ class View:
         # Which color of the color map to use next
         self.current_color = 1
 
-        # Size of the vertices
-        self.node_radius = 0.2
+        # radius of the hyperedges
+        self.node_radius = .2
+        
+        # Size of the nodes (vertices of hypergraph)
+        self.node_size = node_size
+
+        # Color of the nodes
+        self.node_color = node_color
+
+        # Width of the Node lines
+        self.node_linewidth = node_linewidth
 
         # Selected title of the figure
         self.title = title
@@ -123,8 +144,7 @@ class View:
             # All in black
             cmap=['#ffffff', '#ffffff'] * 50,
             # Size of the nodes
-            node_size=self.node_radius))
-
+            node_size=self.node_size, node_color=self.node_color, node_linewidth=self.node_linewidth, show_legend=True))
         return dynamic_map, pipe
 
     def _setup_hyperedge_drawing(self):
@@ -172,11 +192,6 @@ class View:
             # differently
             import colorcet
             cmap = colorcet.glasbey[:len(self.hypergraphs[0].hyperedges)]
-        elif self.n_hypergraphs <= 10:
-            # Select Category10 colormap as default for up to 10 data sets
-            # This is an often used colormap
-            from bokeh.palettes import all_palettes
-            cmap = list(all_palettes['Category10'][10][1:self.n_hypergraphs+1])[::-1]
         else:
             # For larger numbers of data sets, select Glasbey colormap
             import colorcet
@@ -207,8 +222,8 @@ class View:
         return dynamic_map, pipe
 
     def show(self,
-             subset_style=VisualizationStyle.COLOR,
-             triangulation_style=VisualizationStyle.INVISIBLE):
+             subset_style=VisualizationStyle.styles['color'],
+             triangulation_style=VisualizationStyle.styles['invisible']):
         """
         Set up the correct arrangement and combination of the
         DynamicMap objects.
@@ -229,12 +244,13 @@ class View:
         plot = self.dynamic_map * self.dynamic_map_edges
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
-
-        return hv.render(plot, backend="matplotlib")
-
-    def draw_hyperedges(self,
-                        subset_style=VisualizationStyle.COLOR,
-                        triangulation_style=VisualizationStyle.INVISIBLE):
+        # TODO: how to get axes? currently figure
+        fig = hv.render(plot, backend="matplotlib")
+        return fig
+        
+    def draw_hyperedges(self, highlight_neuron=None,
+                        subset_style=VisualizationStyle.styles['color'],
+                        triangulation_style=VisualizationStyle.styles['invisible']):
         """
         Handler for drawing the hyperedges of the hypergraphs
         in the given style
@@ -243,14 +259,14 @@ class View:
         ----------
         subset_style: enum VisualizationStyle
             How to do the subset standard visualization of the hyperedges:
-            VisualizationStyle.INVISIBLE => not at all
-            VisualizationStyle.NOCOLOR => Only contours without color
-            VisualizationStyle.COLOR => Contours filled with color
+            VisualizationStyle.styles['invisible] => not at all
+            VisualizationStyle.styles['nocolor] => Only contours without color
+            VisualizationStyle.styles['color] => Contours filled with color
         triangulation_style: enum VisualizationStyle
             How to do the triangulation visualization of the hyperedges:
-            VisualizationStyle.INVISIBLE => not at all
-            VisualizationStyle.NOCOLOR => Only contours without color
-            VisualizationStyle.COLOR => Contours filled with color
+            VisualizationStyle.styles['invisible] => not at all
+            VisualizationStyle.styles['nocolor] => Only contours without color
+            VisualizationStyle.styles['color] => Contours filled with color
         """
 
         # Collect all polygons to pass them to the visualization together
@@ -267,11 +283,11 @@ class View:
                 # Options are: invisible, nocolor, color
                 # If invisible, the corresponding visualization does not need
                 # to be constructed
-                if subset_style != VisualizationStyle.INVISIBLE:
+                if subset_style != VisualizationStyle.styles['invisible']:
                     polygons_subset.append(create_subset(hyperedge,
                                                          self.positions,
                                                          self.node_radius))
-                if triangulation_style != VisualizationStyle.INVISIBLE:
+                if triangulation_style != VisualizationStyle.styles['invisible']:
                     polygons_triang.extend(
                         create_triangulation(hyperedge, self.positions))
 
@@ -297,10 +313,10 @@ class View:
                 # Call the postprocessing function, color added only if needed
                 polygons.extend(process_polygons(
                         polygons_subset,
-                        subset_style == VisualizationStyle.COLOR))
+                        subset_style == VisualizationStyle.styles['color']))
                 polygons.extend(process_polygons(
                         polygons_triang,
-                        triangulation_style == VisualizationStyle.COLOR))
+                        triangulation_style == VisualizationStyle.styles['color']))
 
         # Save as instance attribute so widgets can work with the polygons
         self.polygons = polygons
@@ -399,7 +415,7 @@ class View:
         nodes = hv.Nodes((pos_x, pos_y, vertex_ids, vertex_labels),
                          extents=(0.01, 0.01, 0.01, 0.01),
                          vdims='Label')
-
+        
         new_data = ((edge_source, edge_target), nodes)
         self.pipe.send(new_data)
 
