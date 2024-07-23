@@ -37,7 +37,12 @@ class View:
     In summary, this class represents an interactive tool
     for the visualization of hypergraphs.
     """
-    def __init__(self, hypergraphs, node_size=3, node_color='white', node_linewidth=1, title=None):
+
+    # Class variables to save data
+    node_data = []
+    polygons_data = []
+
+    def __init__(self, hypergraphs, node_size=5, node_color='white', node_linewidth=1, title=None):
         """
         Constructs a View object that handles the visualization
         of the given hypergraphs.
@@ -101,125 +106,8 @@ class View:
 
         # Set up the visualizations and interaction widgets that need to be
         # displayed
-        self.dynamic_map, self.pipe = self._setup_graph_visualization()
-        self.dynamic_map_edges, self.edges_pipe = \
-            self._setup_hyperedge_drawing()
 
         self.plot = None
-
-    def _setup_graph_visualization(self):
-        """
-        Set up the holoviews DynamicMap object
-        that visualizes the nodes of a graph
-        Returns
-        -------
-        dynamic_map: hv.DynamicMap
-            The DynamicMap object in which the nodes will be visualized.
-            This object needs to be displayed.
-        pipe: Pipe
-            The pipe which new data (i.e., new and changed nodes) are sent into
-        """
-
-        # Pipe that gets the updated data that are then sent to the dynamic map
-        pipe = Pipe(data=[], memoize=True)
-
-        # Holoviews DynamicMap with a stream that gets data from the pipe
-        # The hv.Graph visualization is used for displaying the data
-        # hv.Graph displays the nodes (and optionally binary edges) of a graph
-        dynamic_map = hv.DynamicMap(hv.Graph, streams=[pipe])
-
-        # Define options for visualization
-        dynamic_map.opts(
-            # Some space around the Graph in order to avoid nodes being on the
-            # edges of the visualization
-            padding=0.5,
-            # # Interactive tools that are provided by holoviews
-            # tools=['box_select', 'lasso_select', 'tap', 'hover'],
-            # Do not show axis information (i.e., axis ticks etc.)
-            xaxis=None, yaxis=None
-        ).opts(opts.Graph(
-            # Where to get information on color
-            # TODO
-            # color_index='index',
-            # All in black
-            cmap=['#ffffff', '#ffffff'] * 50,
-            # Size of the nodes
-            node_size=self.node_size, node_color=self.node_color, node_linewidth=self.node_linewidth, show_legend=True))
-        return dynamic_map, pipe
-
-    def _setup_hyperedge_drawing(self):
-        """
-        Set up the holoviews DynamicMap object
-        that visualizes the hyperedges of a hypergraph
-        Returns
-        -------
-        dynamic_map: hv.DynamicMap
-            The DynamicMap object in which the hyperedges will be visualized.
-            This object needs to be displayed.
-        pipe: Pipe
-            The pipe which new data (i.e., new and changed hyperedges)
-            are sent into
-        """
-
-        # Pipe that gets the updated data that are then sent to the dynamic map
-        pipe = Pipe(data=[], memoize=True)
-
-        # Function that creates hv.Polygons from the defined points
-        # Every hyperedge drawing is one (or multiple for triangulation) of
-        # these polygons
-        def create_polygon(*args, **kwargs):
-            # Define holoviews polygons with additional metadata dimensions:
-            # value is the index into the color map
-            # alpha specifies the alpha value for the fill color
-            # line_alpha specifies the alpha value for the boundary
-            pol = hv.Polygons(*args,
-                              vdims=['value', 'alpha'],
-                              **kwargs)
-            # Define the mapping described above
-            pol.opts(alpha='alpha')
-                     # TODO: check this
-                     #line_alpha='line_alpha',
-                     # color_index='value')
-            # The polygons are then displayed in the DynamicMap object
-            return pol
-
-        # dynamic_map gets input from pipe and visualizes it as polygons using
-        # the create_polygon function
-        dynamic_map = hv.DynamicMap(create_polygon, streams=[pipe])
-
-        if self.n_hypergraphs <= 1:
-            # If there is only a single hypergraph, all hyperedges are colored
-            # differently
-            import colorcet
-            cmap = colorcet.glasbey[:len(self.hypergraphs[0].hyperedges)]
-        else:
-            # For larger numbers of data sets, select Glasbey colormap
-            import colorcet
-            cmap = colorcet.glasbey[:self.n_hypergraphs]
-
-        # Setting limits for colormaps to make sure color index
-        # (hypergraph or hyperedge index) is used like a list index
-        # Generally indexing is equally spaced depending on the indexes
-        # that actually occur, e.g., if cmap has 5 entries and only indices
-        # 1, 2, 3 occur, colors 1, 3 and 5 will be used due to equal spacing
-        # Desired behavior here is always using colors 1, 2 and 3
-        # for indices 1, 2 and 3.
-        # Setting the limit to 5 in the above example causes the colormap
-        # to be spaced from 1 to 5, mapping color 1 to index 1 and
-        # color 5 to index 5.
-        # Equal spacing in between makes sure all other indices
-        # are mapped correctly as well.
-
-        # If there is more than one hypergraph, one color per hypergraph is
-        # needed
-        if self.n_hypergraphs > 1:
-            dynamic_map.opts(cmap=cmap, clim=(1, self.n_hypergraphs))
-        # If there is only one hypergraph, one color per hyperedge is needed
-        else:
-            dynamic_map.opts(cmap=cmap,
-                             clim=(1, len(self.hypergraphs[0].hyperedges)))
-
-        return dynamic_map, pipe
 
     def show(self,
              subset_style=VisualizationStyle.styles['color'],
@@ -239,9 +127,21 @@ class View:
         self.draw_hyperedges(subset_style=subset_style,
                              triangulation_style=triangulation_style)
 
+        # Each Hypergraph has a different color
+        import colorcet
+        cmap = colorcet.glasbey[:len(self.hypergraphs[0].hyperedges)]
+
+        # Create Graph and Polygon Objects representing the Nodes and Hypergraphs
+        graph = hv.Graph(self.node_data)
+        poly = hv.Polygons(self.polygons_data)
+
+        # Changing parameters
+        graph.opts(node_size=self.node_size, node_color=self.node_color, node_linewidth=self.node_linewidth)
+        poly.opts(alpha=.2, facecolor=cmap)
+        
         # Visualization as an overlay of the graph visualization and the
         # hyperedge drawings
-        plot = self.dynamic_map * self.dynamic_map_edges
+        plot = graph * poly
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
         # TODO: how to get axes? currently figure
@@ -381,7 +281,7 @@ class View:
             else:
                 x['line_alpha'] = 0.2
 
-        self.edges_pipe.send(data=data)
+        self.polygons_data = data
 
     def _update_nodes(self, data):
         """
@@ -416,8 +316,7 @@ class View:
                          extents=(0.01, 0.01, 0.01, 0.01),
                          vdims='Label')
         
-        new_data = ((edge_source, edge_target), nodes)
-        self.pipe.send(new_data)
+        self.node_data = ((edge_source, edge_target), nodes)
 
 
 # Parameters heuristically tested to produce pleasing results
