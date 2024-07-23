@@ -104,15 +104,23 @@ class Hypergraph:
         edges = []
         weights = []
         graph_vertices = list(self.vertices.copy())
+        if isinstance(self.vertices[0], int):
+            max_vertex = max(max(hyperedge) for hyperedge in self.hyperedges)
+        else:
+            max_vertex = 0
+        if isinstance(max_vertex, str):
+            max_vertex = 0
         for i, hyperedge in enumerate(self.hyperedges):
             # Pseudo-vertex corresponding to hyperedge
-            graph_vertices.append(-i - 1)
+            pseudo_vertex = max_vertex + i + 1
+            graph_vertices.append(pseudo_vertex)
+
             for j, vertex in enumerate(hyperedge):
                 # Every vertex of a hyperedge is adjacent to the pseudo-vertex
                 # corresponding to the hyperedge
-                edges.append([-i - 1, vertex])
-                # Weight is equal to the weight of the hyperedge (if
-                # applicable)
+                edges.append([pseudo_vertex, vertex])
+
+                # Weight is equal to the weight of the hyperedge (if applicable)
                 if self.weights:
                     weights.append(self.weights[i])
                 # Unique unordered combinations of vertices of this hyperedge
