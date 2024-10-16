@@ -1,5 +1,5 @@
 neo>=0.9.0
-elephant>=0.9.0
+elephant>=0.14.0
 numpy>=1.19.5
 quantities>=0.14.1
 matplotlib>=3.3.2
