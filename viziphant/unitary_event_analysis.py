@@ -20,6 +20,7 @@ import quantities as pq
 import matplotlib.pyplot as plt
 import string
 import elephant.unitary_event_analysis as ue
+from elephant.trials import Trials
 from collections import namedtuple
 
 FigureUE = namedtuple("FigureUE", ['axes_spike_events',
@@ -69,7 +70,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
 
     Parameters
     ----------
-    spiketrains : list of list of neo.SpikeTrain
+    spiketrains : list of list of neo.SpikeTrain or :class:`elephant.trials.Trials`
         A nested list of trials, neurons and their neo.SpikeTrain objects,
         respectively. This should be identical to the one used to generate
         Js_dict.
@@ -190,6 +191,8 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     Refer to `UEA Tutorial <https://elephant.readthedocs.io/en/latest/
     tutorials/unitary_event_analysis.html>`_ for real-case scenario.
     """
+    if isinstance(spiketrains, Trials):
+        spiketrains = [spiketrains.get_spiketrains_from_trial_as_list(idx) for idx in range(spiketrains.n_trials)]
     n_trials = len(spiketrains)
     n_neurons = len(spiketrains[0])
 
