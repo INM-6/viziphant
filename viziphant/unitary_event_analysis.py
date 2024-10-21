@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import string
 import elephant.unitary_event_analysis as ue
 from elephant.trials import Trials
+from elephant.utils import trials_to_list_of_spiketrainlist
 from collections import namedtuple
 
 FigureUE = namedtuple("FigureUE", ['axes_spike_events',
@@ -59,7 +60,7 @@ plot_params_default = {
     'suptitle': None,
 }
 
-
+@trials_to_list_of_spiketrainlist
 def plot_ue(spiketrains, Js_dict, significance_level=0.05,
             **plot_params):
     """
@@ -191,8 +192,6 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
     Refer to `UEA Tutorial <https://elephant.readthedocs.io/en/latest/
     tutorials/unitary_event_analysis.html>`_ for real-case scenario.
     """
-    if isinstance(spiketrains, Trials):
-        spiketrains = [spiketrains.get_spiketrains_from_trial_as_list(idx) for idx in range(spiketrains.n_trials)]
     n_trials = len(spiketrains)
     n_neurons = len(spiketrains[0])
 
