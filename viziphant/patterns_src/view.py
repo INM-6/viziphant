@@ -42,7 +42,8 @@ class View:
     node_data = []
     polygons_data = []
 
-    def __init__(self, hypergraphs, node_size=5, node_color='white', node_linewidth=1, title=None):
+    def __init__(self, hypergraphs, node_size=5, node_color='white', node_linewidth=1,
+                title=None, show_ids=True):
         """
         Constructs a View object that handles the visualization
         of the given hypergraphs.
@@ -55,12 +56,16 @@ class View:
 
         node_size (optional) : int
             Size of the nodes in the Hypergraphs
-        
+
         node_color (optional) : String
             change the color of the nodes
 
         node_linewidth (optional) : int
             change the line width of the nodes
+
+        show_ids (optional) : bool
+            If True, the id of each vertex is displayed next to its node.
+            Default: True
         """
 
         # Hyperedge drawings
@@ -80,6 +85,9 @@ class View:
 
         # Width of the Node lines
         self.node_linewidth = node_linewidth
+
+        # Whether to display the id of each vertex next to its node
+        self.show_ids = show_ids
 
         # Selected title of the figure
         self.title = title
@@ -142,6 +150,17 @@ class View:
         # Visualization as an overlay of the graph visualization and the
         # hyperedge drawings
         plot = graph * poly
+
+        if self.show_ids:
+            # Display the id of each vertex next to its node
+            label_offset = .25
+            labels = hv.Labels((self.positions[:, 0] + label_offset,
+                               self.positions[:, 1] + label_offset,
+                               [str(vertex) for vertex in self.vertices]))
+            labels.opts(size=self.node_size, horizontalalignment='center',
+                       verticalalignment='center', color='black')
+            plot = plot * labels
+
         # Set size of the plot to a square to avoid distortions
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
         # TODO: how to get axes? currently figure

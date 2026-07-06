@@ -400,7 +400,8 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     return axes
 
 def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
-                            must_involve_neuron=None, node_size=3, node_color='white', node_linewidth=1):
+                            must_involve_neuron=None, node_size=3, node_color='white',
+                            node_linewidth=1, show_ids=True):
     """
     Hypergraph visualization of spike patterns.
 
@@ -446,6 +447,10 @@ def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
 
     node_linewidth (optional) : int
             change the line width of the nodes
+
+    show_ids (optional) : bool
+        If True, the id of each neuron is displayed next to its node.
+        Default: True
 
     Returns
     -------
@@ -526,7 +531,8 @@ def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
                     repulse=repulsive)
     hypergraphs.append(hg)
     view = View(hypergraphs=hypergraphs, node_size=node_size, 
-                node_color=node_color, node_linewidth=node_linewidth)
+                node_color=node_color, node_linewidth=node_linewidth,
+                show_ids=show_ids)
     fig = view.show(subset_style=VisualizationStyle.styles['color'],
                     triangulation_style=VisualizationStyle.styles['invisible'])
 
