@@ -354,7 +354,7 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
 
     if colors is None:
         # +1 is necessary
-        cmap = plt.cm.get_cmap("hsv", len(patterns) + 1)
+        cmap = plt.get_cmap("hsv", len(patterns) + 1)
         colors = np.array([cmap(i) for i in range(len(patterns))])
     elif not isinstance(colors, (list, tuple, np.ndarray)):
         raise TypeError("'colors' must be a list of colors")
