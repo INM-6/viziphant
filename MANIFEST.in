@@ -6,4 +6,5 @@ include viziphant/VERSION
 recursive-include doc *
 prune doc/_build
 prune doc/toctree
+prune doc/adr
 recursive-exclude . *~
