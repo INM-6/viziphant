@@ -16,4 +16,8 @@
   `requires-python = ">=3.8"` for this patch release: setuptools 77.0 requires Python `>=3.9`
 - So for patch release (0.4.1) use Option 3 `setuptools >= 69.0, < 75.4`. Remove upper cap once python 3.8 
 support removed
+- Pinning setuptools below 77.0 also means giving up SPDX style `license` string +
+  top-level `license-files` as mentioned in PEP 639, which only exists from 77.0 onward.
+    - Reverted to `license = {file = "LICENSE.txt"}` to match what `setuptools >= 69.0, < 75.4` understands.
+	- Change back to how elephant has it once upper pin on setuptools is removed
 
