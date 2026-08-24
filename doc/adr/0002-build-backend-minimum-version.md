@@ -6,12 +6,14 @@
 
 ## Option
 |     | Option                                         | Pro               | Con                       |
-| --- | ---------------------------------------------- | ----------------- | ------------------------- |
+| --- | ----------------------------------------------- | ----------------- | ------------------------- |
 | 1   | No minimum bound                               |                   |                           |
 | 2   | Use same as PyPackage example                  | Looks more modern |                           |
-| 3   | Use elephant pyproject.toml setuptools version |                   | Very old (v61 vs v84 now) |
-## Decision
-Option 2
+| 3   | Use elephant pyproject.toml setuptools version | | Very old (v61 vs v84 now) |
 
-## Status
-Proposed
+## Decision
+- Option 2 (i.e. `setuptools >= 77.0`) conflicts with [ADR 3](0003-supported-python-version.md), which keeps
+  `requires-python = ">=3.8"` for this patch release: setuptools 77.0 requires Python `>=3.9`
+- So for patch release (0.4.1) use Option 3 `setuptools >= 69.0, < 75.4`. Remove upper cap once python 3.8 
+support removed
+
