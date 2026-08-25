@@ -35,7 +35,9 @@ def spiketrains_and_patterns():
 
 def test_plot_patterns_default_colors(spiketrains_and_patterns):
     """
-    Regression test for plt.cm.get_cmap -> plt.get_cmap
+    Regression test for #81 
+    Change following updates to matplotlib (`plt.cm.get_cmap` deprecation; alternatives are 
+    `plt.get_cmap` or `mpl.colormaps`)
     """
     spiketrains, patterns = spiketrains_and_patterns
     axes = viziphant.patterns.plot_patterns(spiketrains, patterns)
@@ -44,7 +46,7 @@ def test_plot_patterns_default_colors(spiketrains_and_patterns):
 
 def test_plot_patterns_colors_length_mismatch(spiketrains_and_patterns):
     """
-    Checks if plot_patterns raises value error on color lengh mismatch
+    Checks if plot_patterns raises value error on color length mismatch
     """
     spiketrains, patterns = spiketrains_and_patterns
     with pytest.raises(
