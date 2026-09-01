@@ -20,4 +20,9 @@ support removed
   top-level `license-files` as mentioned in PEP 639, which only exists from 77.0 onward.
     - Reverted to `license = {file = "LICENSE.txt"}` to match what `setuptools >= 69.0, < 75.4` understands.
 	- Change back to how elephant has it once upper pin on setuptools is removed
+    - Since the SPDX `license-expression` isn't available under this cap, kept the
+      `License :: OSI Approved :: BSD License` classifier as the only machine-readable license
+      indicator for now. Metadata 2.4 (setuptools >= 77.0) doesn't allow a classifier alongside
+      `license-expression`, so once the setuptools cap is lifted, switch to
+      `license = "BSD-3-Clause"` and remove this classifier at the same time.
 
