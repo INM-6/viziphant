@@ -39,7 +39,7 @@ jobs:
          run: |
             sudo apt install pandoc
             python -m pip install --upgrade pip
-            pip install .
+            pip install .["docs"]
             # run notebooks
             sed -i -E "s/nbsphinx_execute *=.*/nbsphinx_execute = 'always'/g" doc/conf.py
        - name: make html
@@ -78,7 +78,7 @@ jobs:
        - name: Install dependencies
          run: |
             python -m pip install --upgrade pip
-            pip install .
+            pip install .["tests"]
 
        - name: run tests
          run: |
