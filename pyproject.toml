@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools >= 69.0, < 75.4"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "viziphant"
+dynamic = ["version", "dependencies", "optional-dependencies"]
+description = "Viziphant is a package for the visualization of the analysis results of electrophysiology data in Python"
+authors = [
+    {name = "Viziphant authors and contributors", email = "contact@python-elephant.org"}
+]
+license = {file = "LICENSE.txt"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+keywords = ["neuroscience", "neurophysiology", "electrophysiology", "visualization", "data-analysis"]
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[project.urls]
+Repository = "https://github.com/INM-6/viziphant"
+Documentation = "https://viziphant.readthedocs.io/en/latest/"
+Issues = "https://github.com/INM-6/viziphant/issues"
+Changelog = "https://github.com/INM-6/viziphant/releases"
+
+[tool.setuptools]
+packages = ["viziphant"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {file = "viziphant/VERSION"}
+dependencies = {file = "requirements/requirements.txt"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+tests = {file = "requirements/requirements-tests.txt"}
+docs = {file = "requirements/requirements-docs.txt"}
