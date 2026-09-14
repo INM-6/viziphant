@@ -56,13 +56,10 @@ class View:
 
         node_size (optional) : int
             Size of the nodes in the Hypergraphs
-
         node_color (optional) : String
             change the color of the nodes
-
         node_linewidth (optional) : int
             change the line width of the nodes
-
         show_ids (optional) : bool
             If True, the id of each vertex is displayed next to its node.
             Default: True

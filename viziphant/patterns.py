@@ -399,9 +399,10 @@ def plot_patterns(spiketrains, patterns, circle_sizes=(3, 50, 70),
     axes.yaxis.set_label_coords(-0.01, 0.5)
     return axes
 
-def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
-                            must_involve_neuron=None, node_size=3, node_color='white',
-                            node_linewidth=1, show_ids=True):
+def plot_patterns_hypergraph(patterns, num_neurons=None, pattern_size=None,
+                            must_involve_neuron=None, node_size=3,
+                            node_color='white', node_linewidth=1,
+                            show_ids=True):
     """
     Hypergraph visualization of spike patterns.
 
@@ -431,17 +432,17 @@ def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
         :func:`elephant.spade.spade` or
         :func:`elephant.cell_assembly_detection.cell_assembly_detection`
         pattern detectors.
-    node_size (optional): int
-        Change the size of the drawen nodes
-    pattern_size (optional): range
-        Only draw patterns that are in range of pattern_size
     num_neurons: None or int
         If None, only the neurons that are part of a pattern are shown. If an
         integer is passed, it identifies the total number of recorded neurons
         including non-pattern neurons to be additionally shown in the graph.
         Default: None
+    pattern_size (optional): range
+        Only draw patterns that are in range of pattern_size
     must_involve_neuron (optional) : int
         Highlight pattern which includes neuron x
+    node_size (optional): int
+        Change the size of the drawen nodes
     node_color (optional) : String
         change the color of the nodes
 
@@ -478,7 +479,8 @@ def plot_patterns_hypergraph(patterns, pattern_size=None, num_neurons=None,\
         bst.rescale('ms')
         patterns = cell_assembly_detection(bst, max_lag=2)
 
-        viziphant.patterns.plot_patterns_hypergraph(patterns)
+        fig = viziphant.patterns.plot_patterns_hypergraph(patterns)
+        plt.show()
 
     """
     # If only patterns of a single dataset are given, wrap them in a list to

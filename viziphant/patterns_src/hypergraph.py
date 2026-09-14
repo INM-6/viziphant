@@ -104,10 +104,20 @@ class Hypergraph:
         edges = []
         weights = []
         graph_vertices = list(self.vertices.copy())
+        # Pseudo-vertices (one per hyperedge, added below) need IDs that
+        # don't collide with existing vertex IDs. If vertices are integers
+        # (e.g. neuron IDs), the largest vertex ID referenced by any
+        # hyperedge can be used as an offset to guarantee that.
         if isinstance(self.vertices[0], int):
             max_vertex = max(max(hyperedge) for hyperedge in self.hyperedges)
         else:
+            # Vertices are not integers (e.g. string labels), so there is
+            # no shared numeric ID space to avoid colliding with so they start at 0.
             max_vertex = 0
+        # A hyperedge could still contain a string
+        # vertex even though self.vertices[0] is an int, in which case
+        # max() above would return a string, which can't be used in the
+        # `max_vertex + i + 1` arithmetic below.
         if isinstance(max_vertex, str):
             max_vertex = 0
         for i, hyperedge in enumerate(self.hyperedges):
