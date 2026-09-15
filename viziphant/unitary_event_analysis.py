@@ -177,7 +177,7 @@ def plot_ue(spiketrains, Js_dict, significance_level=0.05,
         spiketrains2 = [homogeneous_poisson_process(rate=50 * pq.Hz,
                         t_stop=2 * pq.s) for _ in range(5)]
 
-        spiketrains = np.stack((spiketrains1, spiketrains2), axis=1)
+        spiketrains = [ [unit1, unit2] for unit1, unit2 in zip(spiketrains1, spiketrains2)]
         ue_dict = jointJ_window_analysis(spiketrains,
                                          bin_size=5 * pq.ms,
                                          win_size=100 * pq.ms,
