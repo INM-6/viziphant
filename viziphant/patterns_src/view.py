@@ -162,6 +162,11 @@ class View:
         self.plot = plot.redim.range(x=(-1, 11), y=(-1, 11))
         # TODO: how to get axes? currently figure
         fig = hv.render(plot, backend="matplotlib")
+        # hv.render returns a Figure unmanaged by pyplot, it needs to be attached to a
+        # pyplot manager so that plt.show() displays it
+        manager = plt.figure().canvas.manager
+        manager.canvas.figure = fig
+        fig.set_canvas(manager.canvas)
         return fig
         
     def draw_hyperedges(self, highlight_neuron=None,
