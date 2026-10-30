@@ -25,7 +25,7 @@ Spike patterns statistics plots
     plot_patterns_hypergraph
 
 """
-# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2026 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt for details.
 
 from collections import defaultdict
