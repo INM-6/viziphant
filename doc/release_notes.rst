@@ -3,6 +3,33 @@ Release Notes
 =============
 
 
+Viziphant 0.4.1 release notes
+*****************************
+New functionality and features
+------------------------------
+* Extended `plot_patterns_hypergraph` with new parameters to filter patterns (`pattern_size`, `must_involve_neuron`) and to customize node appearance (`node_size`, `node_color`, `node_linewidth`, `show_ids`); nodes can now be labeled with neuron IDs (#77)
+
+Bug fixes
+---------
+* Replaced the deprecated `plt.cm.get_cmap` API in `plot_patterns` with `matplotlib.colormaps` (#81)
+* Fixed `plt.show()` not displaying hypergraph plots (#77)
+* Fixed a silent failure in the `plot_ue` docstring example during the documentation build (#83)
+
+Miscellaneous
+-------------
+* Refactored the hypergraph visualization internals (`VisualizationStyle` and `View` classes) and removed the bokeh-based dynamic maps (#77)
+* Added unit tests for hypergraph plotting (#77)
+* Documentation build now fails on Sphinx warnings (#77)
+* Migrated packaging from `setup.py` to `pyproject.toml` (#82)
+* Refactored the CI workflow files (#83)
+
+Selected dependency changes
+---------------------------
+* Python 3.8–3.14 supported
+* `matplotlib>=3.6`
+* bokeh is no longer a dependency
+
+
 Viziphant 0.4.0 release notes
 *****************************
 New functionality and features
