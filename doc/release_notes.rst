@@ -17,7 +17,7 @@ Bug fixes
 
 Miscellaneous
 -------------
-* Refactored the hypergraph visualization internals (`VisualizationStyle` and `View` classes) and removed the bokeh-based dynamic maps (#77)
+* Refactored hypergraph plotting to use matplotlib instead of bokeh, for stability and consistency with the other Viziphant functions; this reworks the `VisualizationStyle` and `View` classes and removes the bokeh-based dynamic maps (#77)
 * Added unit tests for hypergraph plotting (#77)
 * Documentation build now fails on Sphinx warnings (#77)
 * Migrated packaging from `setup.py` to `pyproject.toml` (#82)
