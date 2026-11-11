@@ -20,11 +20,12 @@ contribution, and may not be the current affiliation of a contributor.
 * Cristiano Köhler [1]
 * Simon Essink [1]
 * Moritz Kern [1]
-* Harris Antony Jos [1]
-* Tobias Michels [1]
+* Harris Antony Jos [2]
+* Tobias Michels [2]
 
 
 1. Institute of Neuroscience and Medicine (INM-6), Computational and Systems Neuroscience & Institute for Advanced Simulation (IAS-6), Theoretical Neuroscience, Jülich Research Centre and JARA, Jülich, Germany
+2. Institute for Advanced Simulation (IAS-6), Jülich Research Centre, Jülich, Germany
 
 
 If we've somehow missed you off the list we're very sorry - please let us know.
