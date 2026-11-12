@@ -8,7 +8,7 @@ Adding time events to axes plot
     add_event
 
 """
-# Copyright 2017-2023 by the Viziphant team, see `doc/authors.rst`.
+# Copyright 2017-2026 by the Viziphant team, see `doc/authors.rst`.
 # License: Modified BSD, see LICENSE.txt.txt for details.
 
 

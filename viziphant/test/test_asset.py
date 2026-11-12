@@ -1,6 +1,6 @@
 """
 Unit tests for the ASSET analysis plot functions.
-:copyright: Copyright 2014-2023 by the Viziphant team, see `doc/authors.rst`.
+:copyright: Copyright 2014-2026 by the Viziphant team, see `doc/authors.rst`.
 :license: Modified BSD, see LICENSE.txt for details.
 """
 
